@@ -7,17 +7,20 @@
   </a>
 
   <div class="flex-grow-1 mx-3 search-container">
-    <i class="bi bi-search search-icon"></i>
-
+    <i data-lucide="search" class="search-icon"></i>
     <input
       type="text"
       class="form-control rounded-pill search-input"
       placeholder="Search by keyword or Product ID">
   </div>
 
-  <div class="d-flex gap-3 text-white fs-3 header-icons">
-    <i class="bi bi-heart-fill heart-icon"></i>
-    <i class="bi bi-cart3 cart-icon"></i>
+  <div class="d-flex gap-3 text-white header-icons">
+    <button class="icon-btn" aria-label="Wishlist">
+      <i data-lucide="heart" class="heart-icon"></i>
+    </button>
+    <button class="icon-btn" aria-label="Cart">
+      <i data-lucide="shopping-cart" class="cart-icon"></i>
+    </button>
   </div>
 
 </nav>
@@ -36,21 +39,26 @@
         Every Village
       </h1>
 
-      <p class="hero-subtitle mt-4">
-        AI Powered Route Optimization
-      </p>
-
-      <p class="hero-subtitle">
-        Urgent & Secure Delivery
-      </p>
+      <div class="hero-badges mt-4">
+        <span class="badge-pill">
+          <i data-lucide="cpu" class="badge-icon"></i>
+          AI Powered Route Optimization
+        </span>
+        <span class="badge-pill">
+          <i data-lucide="shield-check" class="badge-icon"></i>
+          Urgent &amp; Secure Delivery
+        </span>
+      </div>
 
       <div class="mt-4 hero-buttons">
 
         <button class="btn shop-btn">
+          <i data-lucide="shopping-bag" class="btn-icon"></i>
           Shop Now
         </button>
 
         <button class="btn track-btn">
+          <i data-lucide="map-pin" class="btn-icon"></i>
           Track Order
         </button>
 
@@ -74,52 +82,47 @@
 
 
 <!-- SERVICES -->
-<section class="container py-5">
+<section class="services-section">
 
-  <h2 class="text-center fw-bold mb-5">
-    Our Services
-  </h2>
+  <div class="services-container">
 
-  <div class="row g-4">
+    <h2 class="section-title">Our Services</h2>
+    <p class="section-subtitle">Bringing commerce to every corner of rural India</p>
 
-    <div class="col-6 col-md-6 col-lg-3">
-      <div class="card service-card shadow h-100">
-        <div class="card-body text-center">
-          <div class="service-icon">📦</div>
-          <h5>Parcel Delivery</h5>
-          <p>Fast parcel delivery to villages.</p>
+    <div class="services-grid">
+
+      <div class="service-card">
+        <div class="service-icon-wrap">
+          <i data-lucide="package" class="service-lucide-icon"></i>
         </div>
+        <h5>Parcel Delivery</h5>
+        <p>Fast parcel delivery to every village.</p>
       </div>
-    </div>
 
-    <div class="col-6 col-md-6 col-lg-3">
-      <div class="card service-card shadow h-100">
-        <div class="card-body text-center">
-          <div class="service-icon">⚡</div>
-          <h5>Urgent Delivery</h5>
-          <p>Priority delivery for emergency needs.</p>
+      <div class="service-card">
+        <div class="service-icon-wrap urgent">
+          <i data-lucide="zap" class="service-lucide-icon"></i>
         </div>
+        <h5>Urgent Delivery</h5>
+        <p>Priority delivery for emergency needs.</p>
       </div>
-    </div>
 
-    <div class="col-6 col-md-6 col-lg-3">
-      <div class="card service-card shadow h-100">
-        <div class="card-body text-center">
-          <div class="service-icon">📍</div>
-          <h5>Route Optimization</h5>
-          <p>AI selects the fastest delivery route.</p>
+      <div class="service-card">
+        <div class="service-icon-wrap route">
+          <i data-lucide="route" class="service-lucide-icon"></i>
         </div>
+        <h5>Route Optimization</h5>
+        <p>AI selects the fastest delivery route.</p>
       </div>
-    </div>
 
-    <div class="col-6 col-md-6 col-lg-3">
-      <div class="card service-card shadow h-100">
-        <div class="card-body text-center">
-          <div class="service-icon">🏤</div>
-          <h5>Postal Office Pickup</h5>
-          <p>Collect orders from nearby postal offices.</p>
+      <div class="service-card">
+        <div class="service-icon-wrap postal">
+          <i data-lucide="building-2" class="service-lucide-icon"></i>
         </div>
+        <h5>Postal Office Pickup</h5>
+        <p>Collect from nearby postal offices.</p>
       </div>
+
     </div>
 
   </div>
@@ -135,18 +138,18 @@
     [routerLinkActiveOptions]="{ exact: true }"
     class="nav-item">
 
-    <i class="bi bi-house-fill"></i>
+    <i data-lucide="home" class="nav-lucide-icon"></i>
     <span>Home</span>
 
   </a>
 
   <a class="nav-item">
-    <i class="bi bi-grid-fill"></i>
+    <i data-lucide="grid-2x2" class="nav-lucide-icon"></i>
     <span>Categories</span>
   </a>
 
   <a class="nav-item">
-    <i class="bi bi-box-seam-fill"></i>
+    <i data-lucide="package" class="nav-lucide-icon"></i>
     <span>Orders</span>
   </a>
 
@@ -155,10 +158,9 @@
     routerLinkActive="active-nav"
     class="nav-item">
 
-    <i class="bi bi-person-fill"></i>
+    <i data-lucide="user-circle" class="nav-lucide-icon"></i>
     <span>Account</span>
 
   </a>
 
 </div>
-

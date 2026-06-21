@@ -1,275 +1,338 @@
+<!-- FULL-HEIGHT WRAPPER (replaces body) -->
+<div class="bg-[#f3f4f6] h-screen overflow-hidden flex font-sans antialiased p-4 md:p-6 gap-6 text-gray-800">
 
-<!-- MOBILE HEADER -->
-<div class="mobile-header d-lg-none">
+  <!-- ==================== SIDEBAR ==================== -->
+  <aside class="w-72 bg-white rounded-3xl shadow-sm flex flex-col overflow-hidden shrink-0 transition-all duration-300 relative z-10">
 
-  <div class="mobile-logo">
-    RuralSwift
-  </div>
-
-  <button
-    class="menu-btn"
-    type="button"
-    data-bs-toggle="offcanvas"
-    data-bs-target="#mobileMenu">
-
-    <i class="bi bi-list"></i>
-
-  </button>
-
-</div>
-
-<!-- MOBILE MENU -->
-<div
-  class="offcanvas offcanvas-start"
-  tabindex="-1"
-  id="mobileMenu">
-
-  <div class="offcanvas-header">
-
-    <h5 class="offcanvas-title">RuralSwift</h5>
-
-    <button
-      type="button"
-      class="btn-close"
-      data-bs-dismiss="offcanvas">
-    </button>
-
-  </div>
-
-  <div class="offcanvas-body">
-
-    <div class="mobile-menu">
-
-      <a class="mobile-link active">
-        <i class="bi bi-grid-fill"></i>
-        <span>Dashboard</span>
+    <!-- Back Button -->
+    <div class="p-4 border-b border-gray-50">
+      <a routerLink="/" class="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition-colors w-full p-2 rounded-lg hover:bg-blue-50 cursor-pointer no-underline">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        Back to Home
       </a>
-
-      <a class="mobile-link">
-        <i class="bi bi-bag-fill"></i>
-        <span>My Orders</span>
-      </a>
-
-      <a class="mobile-link">
-        <i class="bi bi-truck"></i>
-        <span>Track Orders</span>
-      </a>
-
-      <a routerLink="/profile" class="mobile-link">
-        <i class="bi bi-person-fill"></i>
-        <span>Profile</span>
-      </a>
-
-      <a class="mobile-link">
-        <i class="bi bi-geo-alt-fill"></i>
-        <span>Address</span>
-      </a>
-
-      <a class="mobile-link">
-        <i class="bi bi-heart-fill"></i>
-        <span>Wishlist</span>
-      </a>
-
-      <a class="mobile-link">
-        <i class="bi bi-chat-left-text-fill"></i>
-        <span>Feedback</span>
-      </a>
-
-      <a class="mobile-link">
-        <i class="bi bi-gear-fill"></i>
-        <span>Settings</span>
-      </a>
-
-      <a class="mobile-link logout-link">
-        <i class="bi bi-box-arrow-right"></i>
-        <span>Logout</span>
-      </a>
-
     </div>
 
-  </div>
-
-</div>
-
-<!-- DASHBOARD -->
-<div class="container-fluid dashboard-wrapper">
-
-  <div class="row g-4">
-
-    <!-- SIDEBAR -->
-    <div class="col-lg-3 d-none d-lg-block">
-
-      <div class="sidebar-card">
-
-        <div class="profile-section">
-
-          <div class="avatar">
-            <i class="bi bi-person-fill"></i>
-          </div>
-
-          <h4>{{ customerName }}</h4>
-
-          <p>RuralSwift Customer</p>
-
-        </div>
-
-        <div class="menu-list">
-
-          <a class="menu-link active">
-            <i class="bi bi-grid-fill"></i>
-            Dashboard
-          </a>
-
-          <a class="menu-link">
-            <i class="bi bi-bag-fill"></i>
-            My Orders
-          </a>
-
-          <a class="menu-link">
-            <i class="bi bi-truck"></i>
-            Track Orders
-          </a>
-
-          <a routerLink="/profile" class="menu-link">
-            <i class="bi bi-person-fill"></i>
-            Profile
-          </a>
-
-          <a class="menu-link">
-            <i class="bi bi-geo-alt-fill"></i>
-            Address
-          </a>
-
-          <a class="menu-link">
-            <i class="bi bi-heart-fill"></i>
-            Wishlist
-          </a>
-
-          <a class="menu-link">
-            <i class="bi bi-chat-left-text-fill"></i>
-            Feedback
-          </a>
-
-          <a class="menu-link">
-            <i class="bi bi-gear-fill"></i>
-            Settings
-          </a>
-
-          <a class="menu-link logout-link">
-            <i class="bi bi-box-arrow-right"></i>
-            Logout
-          </a>
-
-        </div>
-
+    <!-- Profile Info -->
+    <div class="flex flex-col items-center pt-8 pb-6 px-4">
+      <div class="w-20 h-20 rounded-full bg-blue-500 text-white flex items-center justify-center mb-4 shadow-md shadow-blue-200">
+        <i data-lucide="user" class="w-10 h-10"></i>
       </div>
-
+      <h2 class="text-xl font-bold text-gray-900">{{ customerName }}</h2>
+      <p class="text-sm text-gray-400 mt-1">RuralSwift Customer</p>
     </div>
 
-    <!-- CONTENT -->
-    <div class="col-lg-9">
+    <!-- Navigation -->
+    <nav class="flex-1 overflow-y-auto px-4 pb-4 space-y-1">
 
-      <div class="welcome-card">
+      <button (click)="setSection('dashboard')"
+        [ngClass]="selectedSection === 'dashboard'
+          ? 'bg-blue-600 text-white shadow-sm shadow-blue-200'
+          : 'text-gray-600 hover:bg-gray-50'"
+        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors">
+        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+        Dashboard
+      </button>
 
-        <h2>
-          Welcome Back,
-          <span>{{ customerName }}</span>
-        </h2>
+      <button (click)="setSection('orders')"
+        [ngClass]="selectedSection === 'orders'
+          ? 'bg-blue-600 text-white shadow-sm shadow-blue-200'
+          : 'text-gray-600 hover:bg-gray-50'"
+        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors">
+        <i data-lucide="package" class="w-5 h-5"></i>
+        My Orders
+      </button>
 
-        <p>
-          Manage your orders, deliveries and account.
-        </p>
+      <button (click)="setSection('track')"
+        [ngClass]="selectedSection === 'track'
+          ? 'bg-blue-600 text-white shadow-sm shadow-blue-200'
+          : 'text-gray-600 hover:bg-gray-50'"
+        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors">
+        <i data-lucide="truck" class="w-5 h-5"></i>
+        Track Orders
+      </button>
+
+      <button (click)="setSection('profile')"
+        [ngClass]="selectedSection === 'profile'
+          ? 'bg-blue-600 text-white shadow-sm shadow-blue-200'
+          : 'text-gray-600 hover:bg-gray-50'"
+        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors">
+        <i data-lucide="user-circle" class="w-5 h-5"></i>
+        Profile
+      </button>
+
+      <button (click)="setSection('address')"
+        [ngClass]="selectedSection === 'address'
+          ? 'bg-blue-600 text-white shadow-sm shadow-blue-200'
+          : 'text-gray-600 hover:bg-gray-50'"
+        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors">
+        <i data-lucide="map-pin" class="w-5 h-5"></i>
+        Address
+      </button>
+
+      <button (click)="setSection('wishlist')"
+        [ngClass]="selectedSection === 'wishlist'
+          ? 'bg-blue-600 text-white shadow-sm shadow-blue-200'
+          : 'text-gray-600 hover:bg-gray-50'"
+        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors">
+        <i data-lucide="heart" class="w-5 h-5"></i>
+        Wishlist
+      </button>
+
+      <button (click)="setSection('feedback')"
+        [ngClass]="selectedSection === 'feedback'
+          ? 'bg-blue-600 text-white shadow-sm shadow-blue-200'
+          : 'text-gray-600 hover:bg-gray-50'"
+        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors">
+        <i data-lucide="message-square" class="w-5 h-5"></i>
+        Feedback
+      </button>
+
+      <button (click)="setSection('settings')"
+        [ngClass]="selectedSection === 'settings'
+          ? 'bg-blue-600 text-white shadow-sm shadow-blue-200'
+          : 'text-gray-600 hover:bg-gray-50'"
+        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors">
+        <i data-lucide="settings" class="w-5 h-5"></i>
+        Settings
+      </button>
+
+    </nav>
+
+    <!-- Logout -->
+    <div class="p-4 border-t border-gray-50">
+      <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
+        <i data-lucide="log-out" class="w-5 h-5"></i>
+        Logout
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <main class="flex-1 overflow-y-auto rounded-3xl relative">
+
+    <!-- ========== DASHBOARD VIEW ========== -->
+    <div id="section-dashboard" [style.display]="selectedSection === 'dashboard' ? 'block' : 'none'" class="pb-10">
+
+      <!-- Welcome Banner -->
+      <div class="bg-gradient-to-r from-[#0d6efd] to-[#0f9d58] rounded-3xl p-8 mb-6 shadow-sm text-white">
+        <h1 class="text-3xl font-bold mb-2">Welcome Back, <span class="text-yellow-400">{{ customerName }}</span></h1>
+        <p class="text-white/80">Manage your orders, deliveries and account.</p>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center transition-transform hover:-translate-y-1 duration-300 cursor-pointer">
+          <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center mb-3">
+            <i data-lucide="package" class="w-7 h-7"></i>
+          </div>
+          <h3 class="text-3xl font-bold text-gray-900 mb-1">0</h3>
+          <p class="text-sm text-gray-400">Total Orders</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center transition-transform hover:-translate-y-1 duration-300 cursor-pointer">
+          <div class="w-14 h-14 rounded-2xl bg-green-50 text-green-500 flex items-center justify-center mb-3">
+            <i data-lucide="truck" class="w-7 h-7"></i>
+          </div>
+          <h3 class="text-3xl font-bold text-gray-900 mb-1">0</h3>
+          <p class="text-sm text-gray-400">Active Orders</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center transition-transform hover:-translate-y-1 duration-300 cursor-pointer">
+          <div class="w-14 h-14 rounded-2xl bg-teal-50 text-teal-500 flex items-center justify-center mb-3">
+            <i data-lucide="check-circle" class="w-7 h-7"></i>
+          </div>
+          <h3 class="text-3xl font-bold text-gray-900 mb-1">0</h3>
+          <p class="text-sm text-gray-400">Delivered</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center transition-transform hover:-translate-y-1 duration-300 cursor-pointer">
+          <div class="w-14 h-14 rounded-2xl bg-red-50 text-red-400 flex items-center justify-center mb-3">
+            <i data-lucide="heart" class="w-7 h-7"></i>
+          </div>
+          <h3 class="text-3xl font-bold text-gray-900 mb-1">0</h3>
+          <p class="text-sm text-gray-400">Wishlist</p>
+        </div>
 
       </div>
 
-      <!-- STATS -->
-      <div class="row g-3">
-
-        <div class="col-6 col-md-6 col-lg-3">
-          <div class="stat-card">
-            <i class="bi bi-box-seam text-primary"></i>
-            <h3>0</h3>
-            <p>Total Orders</p>
-          </div>
-        </div>
-
-        <div class="col-6 col-md-6 col-lg-3">
-          <div class="stat-card">
-            <i class="bi bi-truck text-success"></i>
-            <h3>0</h3>
-            <p>Active Orders</p>
-          </div>
-        </div>
-
-        <div class="col-6 col-md-6 col-lg-3">
-          <div class="stat-card">
-            <i class="bi bi-check-circle text-info"></i>
-            <h3>0</h3>
-            <p>Delivered</p>
-          </div>
-        </div>
-
-        <div class="col-6 col-md-6 col-lg-3">
-          <div class="stat-card">
-            <i class="bi bi-heart-fill text-danger"></i>
-            <h3>0</h3>
-            <p>Wishlist</p>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- QUICK ACTIONS -->
-      <div class="section-card mt-4">
-
-        <h5>Quick Actions</h5>
-
-        <div class="quick-actions">
-
-          <button class="btn btn-shop">
-            <i class="bi bi-bag-fill me-2"></i>
+      <!-- Quick Actions -->
+      <div class="mb-8">
+        <h3 class="text-lg font-bold text-gray-900 mb-4 px-1">Quick Actions</h3>
+        <div class="flex flex-wrap gap-3">
+          <button class="bg-[#0f9d58] hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-colors shadow-sm">
+            <i data-lucide="shopping-bag" class="w-4 h-4"></i>
             Shop Now
           </button>
-
-          <button class="btn btn-track">
-            <i class="bi bi-truck me-2"></i>
+          <button class="bg-[#0d6efd] hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-colors shadow-sm">
+            <i data-lucide="truck" class="w-4 h-4"></i>
             Track Order
           </button>
-
-          <button class="btn btn-wishlist">
-            <i class="bi bi-heart-fill me-2"></i>
+          <button class="bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-colors shadow-sm">
+            <i data-lucide="heart" class="w-4 h-4"></i>
             Wishlist
           </button>
-
-          <button class="btn btn-support">
-            <i class="bi bi-headset me-2"></i>
+          <button class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-colors shadow-sm">
+            <i data-lucide="headphones" class="w-4 h-4"></i>
             Support
           </button>
-
         </div>
-
       </div>
 
-      <!-- RECENT ORDERS -->
-      <div class="section-card mt-4">
-
-        <h5>Recent Orders</h5>
-
-        <div class="empty-orders">
-
-          <i class="bi bi-box-seam"></i>
-
-          <h4>No Orders Yet</h4>
-
-          <p>Your recent orders will appear here.</p>
-
+      <!-- Recent Orders -->
+      <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+        <h3 class="text-lg font-bold text-gray-900 mb-6">Recent Orders</h3>
+        <div class="flex flex-col items-center justify-center pt-10 pb-10">
+          <div class="w-20 h-20 bg-blue-50 text-blue-500 rounded-3xl flex items-center justify-center mb-6">
+            <i data-lucide="package" class="w-10 h-10"></i>
+          </div>
+          <h4 class="text-xl font-bold text-gray-900 mb-2">No Orders Yet</h4>
+          <p class="text-gray-400 text-sm">Your recent orders will appear here.</p>
         </div>
-
       </div>
 
     </div>
 
-  </div>
+    <!-- ========== PROFILE VIEW ========== -->
+    <div id="section-profile" [style.display]="selectedSection === 'profile' ? 'block' : 'none'" class="pb-10">
+      <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+
+        <div class="flex items-center justify-between mb-8 border-b border-gray-100 pb-4">
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900">Personal Information</h2>
+            <p class="text-gray-500 text-sm mt-1">Update your personal details and how we can reach you.</p>
+          </div>
+        </div>
+
+        <form class="space-y-6 max-w-2xl" (ngSubmit)="onSaveProfile()">
+
+          <div class="flex items-center gap-6 mb-8">
+            <div class="relative">
+              <div class="w-24 h-24 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center border-4 border-white shadow-md">
+                <i data-lucide="user" class="w-10 h-10"></i>
+              </div>
+              <button type="button" class="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-md text-gray-600 hover:text-blue-600 border border-gray-100">
+                <i data-lucide="camera" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <div>
+              <button type="button" class="px-4 py-2 bg-gray-50 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 border border-gray-200 transition-colors">Change Avatar</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-700">First Name</label>
+              <input type="text" [value]="customerName" class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition-all" placeholder="Enter first name">
+            </div>
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-700">Last Name</label>
+              <input type="text" class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition-all" placeholder="Enter last name">
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700">Email Address</label>
+            <div class="relative">
+              <i data-lucide="mail" class="absolute left-4 top-3.5 w-5 h-5 text-gray-400"></i>
+              <input type="email" class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition-all" placeholder="Enter email address">
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-700">Phone Number</label>
+            <div class="relative">
+              <i data-lucide="phone" class="absolute left-4 top-3.5 w-5 h-5 text-gray-400"></i>
+              <input type="tel" class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition-all" placeholder="+91 00000 00000">
+            </div>
+          </div>
+
+          <div class="pt-6 border-t border-gray-100 flex justify-end gap-3">
+            <button type="button" class="px-6 py-3 rounded-xl text-gray-600 font-medium hover:bg-gray-100 transition-colors">Cancel</button>
+            <button type="submit" class="px-6 py-3 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors shadow-sm">Save Changes</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    <!-- ========== ORDERS VIEW ========== -->
+    <div id="section-orders" [style.display]="selectedSection === 'orders' ? 'block' : 'none'" class="pb-10">
+      <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+
+        <div class="flex flex-wrap items-center justify-between mb-8 gap-4 border-b border-gray-100 pb-4">
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900">Order History</h2>
+            <p class="text-gray-500 text-sm mt-1">Track, return or purchase items again.</p>
+          </div>
+          <div class="relative">
+            <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-gray-400"></i>
+            <input type="text" placeholder="Search orders..." class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 outline-none text-sm w-64">
+          </div>
+        </div>
+
+        <div class="space-y-4">
+
+          <div class="border border-gray-100 rounded-2xl p-5 hover:border-blue-200 hover:shadow-md transition-all bg-gray-50/50">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center">
+                  <i data-lucide="package" class="w-6 h-6"></i>
+                </div>
+                <div>
+                  <p class="font-bold text-gray-900">Order #RS-84729</p>
+                  <p class="text-sm text-gray-500">Placed on Oct 24, 2026</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-6">
+                <div class="text-right hidden sm:block">
+                  <p class="font-bold text-gray-900">₹1,240.00</p>
+                  <p class="text-sm text-green-600 font-medium">Delivered</p>
+                </div>
+                <button class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors">View Details</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="border border-gray-100 rounded-2xl p-5 hover:border-blue-200 hover:shadow-md transition-all bg-gray-50/50">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-xl flex items-center justify-center">
+                  <i data-lucide="truck" class="w-6 h-6"></i>
+                </div>
+                <div>
+                  <p class="font-bold text-gray-900">Order #RS-99210</p>
+                  <p class="text-sm text-gray-500">Placed on Nov 12, 2026</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-6">
+                <div class="text-right hidden sm:block">
+                  <p class="font-bold text-gray-900">₹850.00</p>
+                  <p class="text-sm text-yellow-600 font-medium">In Transit</p>
+                </div>
+                <button class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors">Track Order</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== BLANK / UNDER CONSTRUCTION VIEW ========== -->
+    <div id="section-blank"
+      [style.display]="(selectedSection !== 'dashboard' && selectedSection !== 'profile' && selectedSection !== 'orders') ? 'flex' : 'none'"
+      class="h-full pb-10 flex-col items-center justify-center">
+      <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 h-full flex flex-col items-center justify-center text-center min-h-96">
+        <div class="w-20 h-20 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mb-6">
+          <i data-lucide="construction" class="w-10 h-10"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Section Under Construction</h2>
+        <p class="text-gray-500 max-w-md">This section is currently being updated. Please check back later.</p>
+      </div>
+    </div>
+
+  </main>
 
 </div>
-```
