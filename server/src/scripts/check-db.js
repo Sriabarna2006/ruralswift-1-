@@ -1,6 +1,7 @@
-require('dotenv').config();
+// server/src/scripts/check-db.js
 const { Pool } = require('pg');
-const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: true });
+const env = require('../config/env');
+const pool = new Pool({ connectionString: env.dbUrl, ssl: true });
 
 async function check() {
   try {

@@ -1,6 +1,6 @@
-require('dotenv').config();
+// server/src/scripts/reset-password.js
 const bcrypt = require('bcrypt');
-const pool   = require('./db');
+const pool = require('../config/db');
 
 const EMAIL    = 'venkatw053@gmail.com';
 const NEW_PASS = 'RuralSwift@123';

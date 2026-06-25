@@ -59,14 +59,12 @@
         Track Orders
       </button>
 
-      <button (click)="setSection('profile')"
-        [ngClass]="selectedSection === 'profile'
-          ? 'bg-blue-600 text-white shadow-sm shadow-blue-200'
-          : 'text-gray-600 hover:bg-gray-50'"
-        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors">
+      <a routerLink="/profile"
+        routerLinkActive=""
+        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors no-underline">
         <i data-lucide="user-circle" class="w-5 h-5"></i>
         Profile
-      </button>
+      </a>
 
       <button (click)="setSection('address')"
         [ngClass]="selectedSection === 'address'

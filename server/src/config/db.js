@@ -1,11 +1,10 @@
-// server/db.js
-// NeonDB (PostgreSQL) connection using the pg Pool
-require('dotenv').config();
+// server/src/config/db.js
 const { Pool } = require('pg');
+const env = require('./env');
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: true  // NeonDB pooler requires SSL; channel_binding is handled via the connection string
+  connectionString: env.dbUrl,
+  ssl: true
 });
 
 // Test connection on startup

@@ -1,8 +1,4 @@
-// server/schema.js
-// RuralSwift — safe schema migration
-// Your NeonDB already has: users, orders, order_items, products,
-//   categories, cart, feedback, admin, delivery_partner, delivery_tracking
-// This only ADDS missing tables and missing columns safely.
+// server/src/config/schema.js
 const pool = require('./db');
 
 async function createTables() {
