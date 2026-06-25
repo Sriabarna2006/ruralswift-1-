@@ -42,7 +42,3 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
-
-# Environment variables (NEVER commit secrets!)
-.env
-.env.*

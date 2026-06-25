@@ -94,14 +94,6 @@ export class RegisterComponent {
 
     this.isLoading = true;
 
-    // Safety: stop spinner after 10s if no response
-    const timeout = setTimeout(() => {
-      if (this.isLoading) {
-        this.isLoading    = false;
-        this.errorMessage = 'Server is not responding. Please make sure the backend is running.';
-      }
-    }, 10000);
-
     this.api.register({
       first_name: this.firstName.trim(),
       last_name:  this.lastName.trim(),
@@ -110,13 +102,11 @@ export class RegisterComponent {
       password:   this.password
     }).subscribe({
       next: (res) => {
-        clearTimeout(timeout);
         this.api.saveSession(res.token, res.user);
         this.successMessage = 'Account created! Redirecting to dashboard...';
         setTimeout(() => this.router.navigate(['/dashboard']), 1200);
       },
       error: (err) => {
-        clearTimeout(timeout);
         this.isLoading    = false;
         this.errorMessage = err.error?.message || 'Registration failed. Please try again.';
       }

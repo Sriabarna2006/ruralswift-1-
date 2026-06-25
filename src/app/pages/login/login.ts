@@ -41,22 +41,12 @@ export class LoginComponent {
 
     this.isLoading = true;
 
-    // Safety: stop spinner after 10s if no response
-    const timeout = setTimeout(() => {
-      if (this.isLoading) {
-        this.isLoading    = false;
-        this.errorMessage = 'Server is not responding. Please make sure the backend is running.';
-      }
-    }, 10000);
-
     this.api.login(this.email.trim(), this.password).subscribe({
       next: (res) => {
-        clearTimeout(timeout);
         this.api.saveSession(res.token, res.user);
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
-        clearTimeout(timeout);
         this.isLoading    = false;
         this.errorMessage = err.error?.message || 'Login failed. Please check your credentials.';
       }
