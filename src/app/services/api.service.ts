@@ -21,13 +21,12 @@ export interface AuthResponse {
 })
 export class ApiService {
 
-  // Change this to your deployed backend URL in production
   private baseUrl = 'http://localhost:3000/api';
 
   constructor(private http: HttpClient) {}
 
   // ─────────────────────────────────────────────
-  // Auth helpers
+  // Session helpers (localStorage for token/user)
   // ─────────────────────────────────────────────
 
   /** Save JWT and user info to localStorage after login/register */
@@ -64,7 +63,7 @@ export class ApiService {
   }
 
   // ─────────────────────────────────────────────
-  // Auth API calls
+  // Auth API calls → Express → NeonDB
   // ─────────────────────────────────────────────
 
   /** POST /api/auth/login */
@@ -84,10 +83,10 @@ export class ApiService {
   }
 
   // ─────────────────────────────────────────────
-  // Profile API calls
+  // Profile API calls → Express → NeonDB
   // ─────────────────────────────────────────────
 
-  /** GET /api/profile — fetch logged-in user's profile from DB */
+  /** GET /api/profile */
   getProfile(): Observable<{ user: UserProfile }> {
     return this.http.get<{ user: UserProfile }>(
       `${this.baseUrl}/profile`,
@@ -95,7 +94,7 @@ export class ApiService {
     );
   }
 
-  /** PUT /api/profile — update logged-in user's profile in DB */
+  /** PUT /api/profile */
   updateProfile(data: Partial<UserProfile>): Observable<{ message: string; user: UserProfile }> {
     return this.http.put<{ message: string; user: UserProfile }>(
       `${this.baseUrl}/profile`,

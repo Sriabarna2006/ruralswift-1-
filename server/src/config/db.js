@@ -4,7 +4,7 @@ const env = require('./env');
 
 const pool = new Pool({
   connectionString: env.dbUrl,
-  ssl: true
+  ssl: { rejectUnauthorized: false }
 });
 
 // Test connection on startup

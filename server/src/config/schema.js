@@ -3,6 +3,45 @@ const pool = require('./db');
 
 async function createTables() {
   try {
+    // ── Base tables (safe to run every startup) ──────────────
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        user_id    SERIAL PRIMARY KEY,
+        name       VARCHAR(150) NOT NULL DEFAULT '',
+        email      VARCHAR(255) NOT NULL UNIQUE,
+        phone      VARCHAR(20)  NOT NULL DEFAULT '',
+        password   TEXT         NOT NULL,
+        address    TEXT         DEFAULT '',
+        gender     VARCHAR(20)  DEFAULT '',
+        avatar_url TEXT         DEFAULT '',
+        created_at TIMESTAMP    DEFAULT NOW(),
+        updated_at TIMESTAMP    DEFAULT NOW()
+      )
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS products (
+        product_id  SERIAL PRIMARY KEY,
+        name        VARCHAR(255) NOT NULL,
+        description TEXT         DEFAULT '',
+        price       NUMERIC(10,2) DEFAULT 0,
+        stock       INT           DEFAULT 0,
+        category    VARCHAR(100)  DEFAULT '',
+        image_url   TEXT          DEFAULT '',
+        created_at  TIMESTAMP     DEFAULT NOW()
+      )
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS orders (
+        order_id   SERIAL PRIMARY KEY,
+        user_id    INT          NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+        status     VARCHAR(50)  DEFAULT 'pending',
+        total      NUMERIC(10,2) DEFAULT 0,
+        created_at TIMESTAMP    DEFAULT NOW()
+      )
+    `);
+
     // ── Add missing columns to existing users table ──────────
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url    TEXT DEFAULT ''`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS gender        VARCHAR(20) DEFAULT ''`);

@@ -43,6 +43,7 @@ export class LoginComponent {
 
     this.api.login(this.email.trim(), this.password).subscribe({
       next: (res) => {
+        this.isLoading = false;
         this.api.saveSession(res.token, res.user);
         this.router.navigate(['/dashboard']);
       },
