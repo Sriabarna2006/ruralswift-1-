@@ -1,0 +1,105 @@
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
+body{
+    background:#f8fafc;
+    font-family:'Poppins',sans-serif;
+}
+
+/* Header */
+
+.product-header{
+    background:linear-gradient(135deg,#2563EB,#4F46E5,#7C3AED);
+    padding:15px 0;
+    box-shadow:0 8px 25px rgba(37,99,235,.18);
+}
+
+.product-header h4{
+    color:#fff;
+}
+
+/* Product Image */
+
+img{
+    border-radius:20px;
+    object-fit:cover;
+    max-height:520px;
+}
+
+/* Buttons */
+
+.btn-success,
+.btn-warning{
+
+    border-radius:14px;
+    font-size:18px;
+    font-weight:600;
+    transition:.3s;
+
+}
+
+.btn-success:hover{
+
+    transform:translateY(-3px);
+
+}
+
+.btn-warning:hover{
+
+    transform:translateY(-3px);
+
+}
+
+/* Card */
+
+.card{
+
+    border:none;
+    border-radius:20px;
+    overflow:hidden;
+
+}
+
+/* Rating */
+
+.text-warning{
+
+    font-size:20px;
+
+}
+
+/* Price */
+
+.text-success{
+
+    color:#16a34a!important;
+
+}
+
+/* Responsive */
+
+@media(max-width:992px){
+
+img{
+
+max-height:350px;
+
+}
+
+}
+
+@media(max-width:768px){
+
+.product-header h4{
+
+font-size:20px;
+
+}
+
+.btn-success,
+.btn-warning{
+
+font-size:16px;
+
+}
+
+}
