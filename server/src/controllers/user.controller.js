@@ -1,68 +1,164 @@
 // server/src/controllers/user.controller.js
+'use strict';
+
 const userService = require('../services/user.service');
-const { sendSuccess, sendError } = require('../utils/response');
+const { sendSuccess, sendError, ErrorCodes } = require('../utils/response');
+const { isValidEmail, isValidPassword, isValidPhone } = require('../middleware/validate.middleware');
+const logger = require('../utils/logger');
 
 class UserController {
-  async register(req, res) {
+
+  /**
+   * POST /api/auth/register
+   * Registers a new user account.
+   */
+  async register(req, res, next) {
     try {
       const { first_name, last_name, email, phone, password } = req.body;
-      if (!email || !password) {
-        return sendError(res, 400, 'Email and password are required.');
+
+      // ── Validation ────────────────────────────────────────────────────────
+      if (!first_name || String(first_name).trim() === '') {
+        return sendError(res, 400, 'First name is required.', ErrorCodes.VALIDATION_REQUIRED_FIELD);
       }
+      if (!email || String(email).trim() === '') {
+        return sendError(res, 400, 'Email address is required.', ErrorCodes.VALIDATION_REQUIRED_FIELD);
+      }
+      if (!isValidEmail(email)) {
+        return sendError(res, 400, 'Please provide a valid email address.', ErrorCodes.VALIDATION_INVALID_EMAIL);
+      }
+      if (!password) {
+        return sendError(res, 400, 'Password is required.', ErrorCodes.VALIDATION_REQUIRED_FIELD);
+      }
+      if (!isValidPassword(password)) {
+        return sendError(
+          res, 400,
+          'Password must be at least 6 characters long.',
+          ErrorCodes.VALIDATION_WEAK_PASSWORD
+        );
+      }
+      if (phone && !isValidPhone(phone)) {
+        return sendError(res, 400, 'Please provide a valid phone number.', 'VALIDATION_INVALID_PHONE');
+      }
+
       const result = await userService.registerUser({ first_name, last_name, email, phone, password });
       return sendSuccess(res, 201, 'Account created successfully.', result);
+
     } catch (err) {
-      console.error('Register error:', err);
-      const statusCode = err.message.includes('already exists') ? 409 : 500;
-      const message = statusCode === 500 ? 'Server error during registration.' : err.message;
-      return sendError(res, statusCode, message);
+      logger.error('Register controller error', {
+        requestId: req.id,
+        message:   err.message,
+        pgCode:    err.code,
+      });
+
+      // Duplicate email — do not reveal whether account exists (timing-safe message)
+      if (err.code === '23505' || err.message.includes('already exists')) {
+        return sendError(res, 409, 'An account with this email already exists.', ErrorCodes.AUTH_EMAIL_EXISTS);
+      }
+
+      next(err); // Delegate unexpected errors to global error handler
     }
   }
 
-  async login(req, res) {
+  /**
+   * POST /api/auth/login
+   * Authenticates a user and returns a JWT.
+   *
+   * Security: Returns the same generic error for invalid email OR password
+   * to prevent user enumeration attacks.
+   */
+  async login(req, res, next) {
     try {
       const { email, password } = req.body;
-      if (!email || !password) {
-        return sendError(res, 400, 'Email and password are required.');
+
+      // ── Validation ────────────────────────────────────────────────────────
+      if (!email || String(email).trim() === '') {
+        return sendError(res, 400, 'Email address is required.', ErrorCodes.VALIDATION_REQUIRED_FIELD);
       }
+      if (!password) {
+        return sendError(res, 400, 'Password is required.', ErrorCodes.VALIDATION_REQUIRED_FIELD);
+      }
+      if (!isValidEmail(email)) {
+        // Still return generic auth error — don't help enumerate accounts
+        return sendError(res, 401, 'Invalid email or password.', ErrorCodes.AUTH_INVALID_CREDENTIALS);
+      }
+
       const result = await userService.loginUser(email, password);
       return sendSuccess(res, 200, 'Login successful.', result);
+
     } catch (err) {
-      console.error('Login error:', err);
-      const statusCode = err.message.includes('Invalid') ? 401 : 500;
-      const message = statusCode === 500 ? 'Server error during login.' : err.message;
-      return sendError(res, statusCode, message);
+      logger.authFailure('Login failed', {
+        requestId: req.id,
+        message:   err.message,
+      });
+
+      // Always return a generic message — never reveal email vs. password specifics
+      if (
+        err.message.includes('Invalid') ||
+        err.message.includes('not found') ||
+        err.message.includes('password')
+      ) {
+        return sendError(res, 401, 'Invalid email or password.', ErrorCodes.AUTH_INVALID_CREDENTIALS);
+      }
+
+      next(err);
     }
   }
 
-  async getProfile(req, res) {
+  /**
+   * GET /api/profile
+   * Returns the authenticated user's profile.
+   */
+  async getProfile(req, res, next) {
     try {
       const user = await userService.getProfile(req.user.id);
       return sendSuccess(res, 200, 'Profile fetched successfully.', { user });
     } catch (err) {
-      console.error('Get profile error:', err);
-      const statusCode = err.message.includes('not found') ? 404 : 500;
-      const message = statusCode === 500 ? 'Server error fetching profile.' : err.message;
-      return sendError(res, statusCode, message);
+      logger.error('Get profile controller error', {
+        requestId: req.id,
+        userId:    req.user?.id,
+        message:   err.message,
+      });
+
+      if (err.message.includes('not found')) {
+        return sendError(res, 404, 'User profile not found.', ErrorCodes.USER_NOT_FOUND);
+      }
+      next(err);
     }
   }
 
-  async updateProfile(req, res) {
+  /**
+   * PUT /api/profile
+   * Updates the authenticated user's profile fields.
+   */
+  async updateProfile(req, res, next) {
     try {
+      // Validate email if provided
+      if (req.body.email !== undefined && req.body.email !== '' && !isValidEmail(req.body.email)) {
+        return sendError(res, 400, 'Please provide a valid email address.', ErrorCodes.VALIDATION_INVALID_EMAIL);
+      }
+      // Validate phone if provided
+      if (req.body.phone !== undefined && req.body.phone !== '' && !isValidPhone(req.body.phone)) {
+        return sendError(res, 400, 'Please provide a valid phone number.', 'VALIDATION_INVALID_PHONE');
+      }
+
       const result = await userService.updateProfile(req.user.id, req.body);
       return sendSuccess(res, 200, 'Profile updated successfully.', { user: result });
+
     } catch (err) {
-      console.error('Update profile error:', err);
-      let statusCode = 500;
-      let message = 'Server error updating profile.';
+      logger.error('Update profile controller error', {
+        requestId: req.id,
+        userId:    req.user?.id,
+        message:   err.message,
+        pgCode:    err.code,
+      });
+
       if (err.code === '23505' || err.message.includes('already in use')) {
-        statusCode = 409;
-        message = 'This email is already in use.';
-      } else if (err.message.includes('No fields provided')) {
-        statusCode = 400;
-        message = err.message;
+        return sendError(res, 409, 'This email is already in use.', 'EMAIL_IN_USE');
       }
-      return sendError(res, statusCode, message);
+      if (err.message.includes('No fields provided')) {
+        return sendError(res, 400, 'No fields provided to update.', ErrorCodes.VALIDATION_NO_FIELDS);
+      }
+      next(err);
     }
   }
 }
