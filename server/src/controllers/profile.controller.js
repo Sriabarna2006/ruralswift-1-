@@ -1,36 +1,68 @@
 // server/src/controllers/profile.controller.js
+'use strict';
+
 const profileService = require('../services/profile.service');
+const { sendSuccess, sendError, ErrorCodes } = require('../utils/response');
+const { isValidEmail, isValidPhone } = require('../middleware/validate.middleware');
+const logger = require('../utils/logger');
 
 class ProfileController {
-  async getProfile(req, res) {
+
+  /**
+   * GET /api/profile/
+   * Returns the authenticated user's full profile.
+   */
+  async getProfile(req, res, next) {
     try {
       const userProfile = await profileService.getProfile(req.user.id);
-      res.json({ user: userProfile });
+      return sendSuccess(res, 200, 'Profile fetched successfully.', { user: userProfile });
     } catch (err) {
-      console.error('Get profile error:', err);
-      if (err.status) {
-        return res.status(err.status).json({ message: err.message });
+      logger.error('Profile controller — getProfile error', {
+        requestId: req.id,
+        userId:    req.user?.id,
+        message:   err.message,
+      });
+
+      if (err.status === 404 || err.message.includes('not found')) {
+        return sendError(res, 404, 'User profile not found.', ErrorCodes.PROFILE_NOT_FOUND);
       }
-      res.status(500).json({ message: 'Server error fetching profile.' });
+      next(err);
     }
   }
 
-  async updateProfile(req, res) {
+  /**
+   * PUT /api/profile/
+   * Updates the authenticated user's profile fields.
+   */
+  async updateProfile(req, res, next) {
     try {
+      // Validate email if provided
+      if (req.body.email !== undefined && req.body.email !== '' && !isValidEmail(req.body.email)) {
+        return sendError(res, 400, 'Please provide a valid email address.', ErrorCodes.VALIDATION_INVALID_EMAIL);
+      }
+      // Validate phone if provided
+      if (req.body.phone !== undefined && req.body.phone !== '' && !isValidPhone(req.body.phone)) {
+        return sendError(res, 400, 'Please provide a valid phone number.', 'VALIDATION_INVALID_PHONE');
+      }
+
       const updatedProfile = await profileService.updateProfile(req.user.id, req.body);
-      res.json({
-        message: 'Profile updated successfully.',
-        user: updatedProfile
-      });
+      return sendSuccess(res, 200, 'Profile updated successfully.', { user: updatedProfile });
+
     } catch (err) {
-      console.error('Update profile error:', err);
-      if (err.status) {
-        return res.status(err.status).json({ message: err.message });
+      logger.error('Profile controller — updateProfile error', {
+        requestId: req.id,
+        userId:    req.user?.id,
+        message:   err.message,
+        pgCode:    err.code,
+      });
+
+      if (err.status === 400 || err.message.includes('No fields provided')) {
+        return sendError(res, 400, 'No fields provided to update.', ErrorCodes.VALIDATION_NO_FIELDS);
       }
-      if (err.code === '23505') {
-        return res.status(409).json({ message: 'This email is already in use.' });
+      if (err.code === '23505' || err.message.includes('already in use')) {
+        return sendError(res, 409, 'This email is already in use.', 'EMAIL_IN_USE');
       }
-      res.status(500).json({ message: 'Server error updating profile.' });
+      next(err);
     }
   }
 }

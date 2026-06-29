@@ -1,0 +1,109 @@
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
+body{
+    background:#f8fafc;
+    font-family:'Poppins',sans-serif;
+}
+
+/* Header */
+
+.product-header{
+
+    background:linear-gradient(135deg,#2563EB,#4F46E5,#7C3AED);
+    padding:15px 0;
+    box-shadow:0 8px 25px rgba(37,99,235,.18);
+
+}
+
+.product-header h4{
+
+    color:#fff;
+
+}
+
+/* Product Card */
+
+.product-card{
+
+    border:none;
+    border-radius:20px;
+    overflow:hidden;
+    transition:.35s;
+    cursor:pointer;
+
+}
+
+.product-card:hover{
+
+    transform:translateY(-8px);
+    box-shadow:0 18px 40px rgba(0,0,0,.18);
+
+}
+
+.product-card img{
+
+    height:240px;
+    object-fit:cover;
+
+}
+
+/* Offer Badge */
+
+.offer{
+
+    position:absolute;
+    top:12px;
+    left:12px;
+    z-index:2;
+    border-radius:30px;
+    padding:7px 14px;
+
+}
+
+/* Price */
+
+.text-success{
+
+    color:#16a34a!important;
+
+}
+
+/* Buttons */
+
+.btn-success{
+
+    border-radius:12px;
+    font-weight:600;
+
+}
+
+.btn-primary{
+
+    border-radius:25px;
+    padding:8px 18px;
+
+}
+
+.btn-outline-primary{
+
+    border-radius:25px;
+
+}
+
+/* Responsive */
+
+@media(max-width:768px){
+
+.product-card img{
+
+height:180px;
+
+}
+
+.product-header h4{
+
+font-size:20px;
+
+}
+
+}

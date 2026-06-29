@@ -102,6 +102,7 @@ export class RegisterComponent {
       password:   this.password
     }).subscribe({
       next: (res) => {
+        this.isLoading = false;
         this.api.saveSession(res.token, res.user);
         this.successMessage = 'Account created! Redirecting to dashboard...';
         setTimeout(() => this.router.navigate(['/dashboard']), 1200);
