@@ -1,477 +1,510 @@
 <app-navbar></app-navbar>
 
-<!-- Toast Notification -->
-<div *ngIf="showToast" [ngClass]="toastType === 'success' ? 'toast-success' : 'toast-error'" class="dash-toast">
-  ✔ {{ toastMessage }}
+<!-- Toast -->
+<div class="dash-toast" *ngIf="showToast" [class.toast-error]="toastType === 'error'">
+  {{ toastMessage }}
 </div>
 
-<!-- FULL-HEIGHT WRAPPER -->
+<!-- Full-height wrapper -->
 <div class="dash-wrapper">
 
-  <!-- Mobile backdrop -->
-  <div class="dash-sidebar-backdrop" *ngIf="sidebarOpen" (click)="closeSidebar()"></div>
+  <!-- Sidebar backdrop (mobile) -->
+  <div class="dash-backdrop" *ngIf="sidebarOpen" (click)="closeSidebar()"></div>
 
-  <!-- ==================== SIDEBAR ==================== -->
+  <!-- ══ SIDEBAR ══ -->
   <aside class="dash-sidebar" [class.sidebar-open]="sidebarOpen">
-    <!-- Mobile close -->
-    <div class="dash-sidebar-top">
-      <button class="dash-sidebar-close" (click)="closeSidebar()" aria-label="Close sidebar">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 6 6 18M6 6l12 12" />
+
+    <!-- Mobile close button -->
+    <button class="sidebar-close-btn" (click)="closeSidebar()" aria-label="Close">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6 6 18M6 6l12 12"/>
+      </svg>
+    </button>
+
+    <!-- Avatar + Name -->
+    <div class="sidebar-profile">
+      <div class="sidebar-avatar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/>
         </svg>
-      </button>
-    </div>
-
-    <!-- Back Button -->
-    <div class="p-4 border-b border-gray-50">
-      <a routerLink="/"
-        class="flex items-center gap-2 text-sm text-gray-500 hover:text-[#0B4A9E] transition-colors w-full p-2 rounded-lg hover:bg-blue-50/50 cursor-pointer no-underline">
-        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-        Back to Home
-      </a>
-    </div>
-
-    <!-- Profile Info -->
-    <div class="flex flex-col items-center pt-8 pb-6 px-4">
-      <div
-        class="w-20 h-20 rounded-full bg-[#0B4A9E] text-white flex items-center justify-center mb-4 shadow-md shadow-blue-100">
-        <i data-lucide="user" class="w-10 h-10"></i>
       </div>
-      <h2 class="text-xl font-bold text-gray-900">{{ customerName }}</h2>
-      <p class="text-sm text-gray-400 mt-1">RuralSwift Customer</p>
+      <div>
+        <p class="sidebar-name">{{ customerName }}</p>
+        <p class="sidebar-role">RuralSwift Customer</p>
+      </div>
     </div>
 
     <!-- Navigation -->
-    <nav class="flex-1 overflow-y-auto px-4 pb-4 space-y-1">
-
-      <button (click)="setSection('dashboard')" [ngClass]="selectedSection === 'dashboard'
-          ? 'bg-[#0B4A9E] text-white shadow-sm shadow-blue-100'
-          : 'text-gray-600 hover:bg-gray-50'"
-        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors">
-        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+    <nav class="sidebar-nav">
+      <button class="sidebar-nav-item" [class.active]="selectedSection === 'dashboard'" (click)="setSection('dashboard')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
         Dashboard
       </button>
-
-      <button (click)="setSection('orders')" [ngClass]="selectedSection === 'orders'
-          ? 'bg-[#0B4A9E] text-white shadow-sm shadow-blue-100'
-          : 'text-gray-600 hover:bg-gray-50'"
-        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors">
-        <i data-lucide="package" class="w-5 h-5"></i>
+      <button class="sidebar-nav-item" [class.active]="selectedSection === 'orders'" (click)="setSection('orders')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
         My Orders
       </button>
-
-      <button (click)="setSection('track')" [ngClass]="selectedSection === 'track'
-          ? 'bg-[#0B4A9E] text-white shadow-sm shadow-blue-100'
-          : 'text-gray-600 hover:bg-gray-50'"
-        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors">
-        <i data-lucide="truck" class="w-5 h-5"></i>
+      <button class="sidebar-nav-item" [class.active]="selectedSection === 'track'" (click)="setSection('track')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="13" x="1" y="3" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
         Track Orders
       </button>
-
-      <a routerLink="/profile" routerLinkActive=""
-        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors no-underline">
-        <i data-lucide="user-circle" class="w-5 h-5"></i>
+      <button class="sidebar-nav-item" [class.active]="selectedSection === 'profile'" (click)="setSection('profile')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
         Profile
-      </a>
-
-      <button (click)="setSection('address')" [ngClass]="selectedSection === 'address'
-          ? 'bg-[#0B4A9E] text-white shadow-sm shadow-blue-100'
-          : 'text-gray-600 hover:bg-gray-50'"
-        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors">
-        <i data-lucide="map-pin" class="w-5 h-5"></i>
-        Address
       </button>
-
-      <button (click)="setSection('wishlist')" [ngClass]="selectedSection === 'wishlist'
-          ? 'bg-[#0B4A9E] text-white shadow-sm shadow-blue-100'
-          : 'text-gray-600 hover:bg-gray-50'"
-        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors">
-        <i data-lucide="heart" class="w-5 h-5"></i>
+      <button class="sidebar-nav-item" [class.active]="selectedSection === 'address'" (click)="setSection('address')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        Addresses
+      </button>
+      <button class="sidebar-nav-item" [class.active]="selectedSection === 'wishlist'" (click)="setSection('wishlist')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         Wishlist
       </button>
-
-      <button (click)="setSection('feedback')" [ngClass]="selectedSection === 'feedback'
-          ? 'bg-[#0B4A9E] text-white shadow-sm shadow-blue-100'
-          : 'text-gray-600 hover:bg-gray-50'"
-        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors">
-        <i data-lucide="message-square" class="w-5 h-5"></i>
-        Feedback
+      <button class="sidebar-nav-item" [class.active]="selectedSection === 'notifications'" (click)="setSection('notifications')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        Notifications
+        <span class="sidebar-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
       </button>
-
-      <button (click)="setSection('settings')" [ngClass]="selectedSection === 'settings'
-          ? 'bg-[#0B4A9E] text-white shadow-sm shadow-blue-100'
-          : 'text-gray-600 hover:bg-gray-50'"
-        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors">
-        <i data-lucide="settings" class="w-5 h-5"></i>
-        Settings
-      </button>
-
     </nav>
 
     <!-- Logout -->
-    <div class="p-4 border-t border-gray-50">
-      <button (click)="logout()"
-        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
-        <i data-lucide="log-out" class="w-5 h-5"></i>
+    <div class="sidebar-logout-wrap">
+      <button class="sidebar-logout-btn" (click)="logout()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
         Logout
       </button>
     </div>
-
   </aside>
 
-  <!-- ==================== MAIN CONTENT ==================== -->
-  <main class="flex-1 overflow-y-auto rounded-3xl relative">
+  <!-- ══ MAIN CONTENT ══ -->
+  <main class="dash-main">
 
-    <!-- ========== DASHBOARD VIEW ========== -->
-    <div id="section-dashboard" [style.display]="selectedSection === 'dashboard' ? 'block' : 'none'" class="pb-10">
+    <!-- Mobile top bar with hamburger -->
+    <div class="dash-topbar">
+      <button class="dash-hamburger" (click)="toggleSidebar()" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+      <h2 class="dash-topbar-title">{{ selectedSection | titlecase }}</h2>
+    </div>
+
+    <!-- ══ DASHBOARD SECTION ══ -->
+    <section *ngIf="selectedSection === 'dashboard'" class="dash-section">
 
       <!-- Welcome Banner -->
-      <div class="bg-gradient-to-r from-[#0B4A9E] to-[#10B981] rounded-3xl p-8 mb-6 shadow-sm text-white">
-        <h1 class="text-3xl font-bold mb-2">Welcome Back, <span class="text-yellow-400">{{ customerName }}</span></h1>
-        <p class="text-white/80">Manage your orders, deliveries and account.</p>
+      <div class="dash-welcome-banner">
+        <div>
+          <h1 class="welcome-title">Welcome Back, <span class="welcome-name">{{ customerName }}</span> 👋</h1>
+          <p class="welcome-sub">Manage your orders, deliveries and account settings.</p>
+        </div>
+        <div class="welcome-icon-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
       </div>
 
       <!-- Stats Grid -->
-      <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-
-        <div
-          class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center transition-transform hover:-translate-y-1 duration-300 cursor-pointer">
-          <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center mb-3">
-            <i data-lucide="package" class="w-7 h-7"></i>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
           </div>
-          <h3 class="text-3xl font-bold text-gray-900 mb-1">0</h3>
-          <p class="text-sm text-gray-400">Total Orders</p>
+          <div class="stat-value">{{ totalOrders }}</div>
+          <div class="stat-label">Total Orders</div>
         </div>
-
-        <div
-          class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center transition-transform hover:-translate-y-1 duration-300 cursor-pointer">
-          <div class="w-14 h-14 rounded-2xl bg-green-50 text-green-500 flex items-center justify-center mb-3">
-            <i data-lucide="truck" class="w-7 h-7"></i>
+        <div class="stat-card">
+          <div class="stat-icon green">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="13" x="1" y="3" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
           </div>
-          <h3 class="text-3xl font-bold text-gray-900 mb-1">0</h3>
-          <p class="text-sm text-gray-400">Active Orders</p>
+          <div class="stat-value">{{ activeOrders }}</div>
+          <div class="stat-label">Active Orders</div>
         </div>
-
-        <div
-          class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center transition-transform hover:-translate-y-1 duration-300 cursor-pointer">
-          <div class="w-14 h-14 rounded-2xl bg-teal-50 text-teal-500 flex items-center justify-center mb-3">
-            <i data-lucide="check-circle" class="w-7 h-7"></i>
+        <div class="stat-card">
+          <div class="stat-icon teal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
-          <h3 class="text-3xl font-bold text-gray-900 mb-1">0</h3>
-          <p class="text-sm text-gray-400">Delivered</p>
+          <div class="stat-value">{{ deliveredOrders }}</div>
+          <div class="stat-label">Delivered</div>
         </div>
-
-        <div
-          class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center transition-transform hover:-translate-y-1 duration-300 cursor-pointer">
-          <div class="w-14 h-14 rounded-2xl bg-red-50 text-red-400 flex items-center justify-center mb-3">
-            <i data-lucide="heart" class="w-7 h-7"></i>
+        <div class="stat-card">
+          <div class="stat-icon red">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           </div>
-          <h3 class="text-3xl font-bold text-gray-900 mb-1">0</h3>
-          <p class="text-sm text-gray-400">Wishlist</p>
+          <div class="stat-value">{{ wishlistItems.length }}</div>
+          <div class="stat-label">Wishlist</div>
         </div>
-
       </div>
 
       <!-- Quick Actions -->
-      <div class="mb-8">
-        <h3 class="text-lg font-bold text-gray-900 mb-4 px-1">Quick Actions</h3>
-        <div class="flex flex-wrap gap-3">
-          <a routerLink="/products"
-            class="bg-[#10B981] hover:bg-[#059669] text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-colors shadow-sm no-underline">
-            <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+      <div class="dash-card">
+        <h3 class="card-title">Quick Actions</h3>
+        <div class="quick-actions">
+          <a routerLink="/products" class="qa-btn green">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 2 1.5 4.5"/><path d="M3.5 9H20l-1.3 7.5a2 2 0 0 1-2 1.5H7.8a2 2 0 0 1-2-1.5Z"/><path d="M11 13a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-2"/></svg>
             Shop Now
           </a>
-          <a routerLink="/order-tracking"
-            class="bg-[#0B4A9E] hover:bg-[#093B80] text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-colors shadow-sm no-underline">
-            <i data-lucide="truck" class="w-4 h-4"></i>
+          <a routerLink="/order-tracking" class="qa-btn blue">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="13" x="1" y="3" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
             Track Order
           </a>
-          <button (click)="setSection('wishlist')"
-            class="bg-[#10B981] hover:bg-[#059669] text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-colors shadow-sm">
-            <i data-lucide="heart" class="w-4 h-4"></i>
-            Wishlist
-          </button>
-          <button
-            class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-colors shadow-sm">
-            <i data-lucide="headphones" class="w-4 h-4"></i>
-            Support
+          <button class="qa-btn outline" (click)="setSection('profile')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+            My Profile
           </button>
         </div>
       </div>
 
       <!-- Recent Orders -->
-      <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
-        <h3 class="text-lg font-bold text-gray-900 mb-6">Recent Orders</h3>
-        <div class="flex flex-col items-center justify-center pt-10 pb-10">
-          <div class="w-20 h-20 bg-blue-50 text-blue-500 rounded-3xl flex items-center justify-center mb-6">
-            <i data-lucide="package" class="w-10 h-10"></i>
+      <div class="dash-card">
+        <h3 class="card-title">Recent Orders</h3>
+        <div *ngIf="ordersLoading" class="section-loading">
+          <div class="spinner spinner-primary"></div>
+          <p>Loading orders...</p>
+        </div>
+        <div *ngIf="!ordersLoading && ordersList.length === 0" class="section-empty">
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          <p>No orders yet. <a routerLink="/products">Shop now →</a></p>
+        </div>
+        <div class="order-mini-list" *ngIf="!ordersLoading && ordersList.length > 0">
+          <div class="order-mini-item" *ngFor="let order of ordersList.slice(0,3)">
+            <div class="omi-left">
+              <span class="omi-id">#{{ order.id }}</span>
+              <span class="omi-date">{{ order.date }}</span>
+            </div>
+            <span class="status-chip" [class]="'status-' + order.status.toLowerCase().replace(' ', '-')">{{ order.status }}</span>
+            <span class="omi-total">₹{{ order.total.toLocaleString('en-IN') }}</span>
           </div>
-          <h4 class="text-xl font-bold text-gray-900 mb-2">No Orders Yet</h4>
-          <p class="text-gray-400 text-sm">Your recent orders will appear here.</p>
+          <button class="view-all-btn" (click)="setSection('orders')">View All Orders →</button>
         </div>
       </div>
 
-    </div>
+    </section>
 
-    <!-- ========== PROFILE VIEW ========== -->
-    <div id="section-profile" [style.display]="selectedSection === 'profile' ? 'block' : 'none'" class="pb-10">
-      <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+    <!-- ══ ORDERS SECTION ══ -->
+    <section *ngIf="selectedSection === 'orders'" class="dash-section">
 
-        <div class="flex items-center justify-between mb-8 border-b border-gray-100 pb-4">
-          <div>
-            <h2 class="text-2xl font-bold text-gray-900">Personal Information</h2>
-            <p class="text-gray-500 text-sm mt-1">Update your personal details and how we can reach you.</p>
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">My Orders</h2>
+          <p class="section-sub">{{ ordersList.length }} orders placed</p>
+        </div>
+        <div class="search-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" [(ngModel)]="orderSearchQuery" name="orderSearch" placeholder="Search orders..." class="search-input"/>
+        </div>
+      </div>
+
+      <div *ngIf="ordersLoading" class="section-loading">
+        <div class="spinner spinner-primary"></div>
+        <p>Loading orders...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!ordersLoading && filteredOrders.length === 0" class="dash-card section-empty">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        <p class="empty-title">No Orders Found</p>
+        <p class="empty-sub">{{ orderSearchQuery ? 'Try a different search.' : 'Start shopping to see your orders here.' }}</p>
+        <a routerLink="/products" class="btn btn-primary btn-sm">Shop Now</a>
+      </div>
+
+      <!-- Order Cards -->
+      <div class="orders-list" *ngIf="!ordersLoading && filteredOrders.length > 0">
+        <div class="order-card" *ngFor="let order of filteredOrders">
+
+          <!-- Order Header -->
+          <div class="order-card-header">
+            <div class="order-header-left">
+              <span class="order-id"># {{ order.id }}</span>
+              <span class="order-date">{{ order.date }}</span>
+              <span class="status-chip" [class]="'status-' + order.status.toLowerCase().replace(' ', '-')">
+                {{ order.status }}
+              </span>
+            </div>
+            <div class="order-header-right">
+              <div class="delivery-info">
+                <span class="delivery-label">Est. Delivery</span>
+                <span class="delivery-val">{{ order.estimatedDelivery }}</span>
+              </div>
+              <span class="order-total">₹{{ order.total.toLocaleString('en-IN') }}</span>
+            </div>
+          </div>
+
+          <!-- Order Items -->
+          <div class="order-card-items">
+            <div class="order-item-chip" *ngFor="let item of order.items">
+              <img [src]="item.image" [alt]="item.name" class="item-chip-img" />
+              <div class="item-chip-info">
+                <p class="item-chip-name">{{ item.name }}</p>
+                <p class="item-chip-qty">Qty: {{ item.qty }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Actions -->
+          <div class="order-card-actions">
+            <a *ngIf="order.status === 'Shipped' || order.status === 'Out for Delivery'"
+              routerLink="/order-tracking"
+              [queryParams]="{ orderId: order.id }"
+              class="btn btn-primary btn-sm">
+              Track Order
+            </a>
+            <button *ngIf="order.status !== 'Delivered' && order.status !== 'Cancelled'"
+              class="btn btn-danger-outline btn-sm"
+              (click)="cancelOrder(order.id)">
+              Cancel Order
+            </button>
+            <button *ngIf="order.status === 'Delivered'" class="btn btn-outline btn-sm">
+              Buy Again
+            </button>
           </div>
         </div>
+      </div>
 
-        <!-- Loading spinner -->
-        <div *ngIf="profileLoading" class="flex items-center justify-center py-20">
-          <div class="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+    </section>
+
+    <!-- ══ TRACK SECTION ══ -->
+    <section *ngIf="selectedSection === 'track'" class="dash-section">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Track Orders</h2>
+          <p class="section-sub">See live status of your active deliveries.</p>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <p class="card-hint">Select an active order below or go to the dedicated tracking page.</p>
+        <div class="orders-list">
+          <ng-container *ngFor="let order of ordersList">
+            <div class="order-card"
+              *ngIf="order.status === 'Shipped' || order.status === 'Out for Delivery' || order.status === 'Packed' || order.status === 'Confirmed'">
+              <div class="order-card-header">
+                <div class="order-header-left">
+                  <span class="order-id"># {{ order.id }}</span>
+                  <span class="status-chip" [class]="'status-' + order.status.toLowerCase().replace(' ', '-')">{{ order.status }}</span>
+                </div>
+                <a routerLink="/order-tracking" [queryParams]="{ orderId: order.id }" class="btn btn-primary btn-sm">
+                  Live Track
+                </a>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+        <div class="track-info-box">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          <p>Visit the <a routerLink="/order-tracking">Order Tracking page</a> to enter any Order ID for full timeline.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ PROFILE SECTION ══ -->
+    <section *ngIf="selectedSection === 'profile'" class="dash-section">
+
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Personal Information</h2>
+          <p class="section-sub">Update your personal details below.</p>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <!-- Loading -->
+        <div *ngIf="profileLoading" class="section-loading">
+          <div class="spinner spinner-primary"></div>
+          <p>Loading profile...</p>
         </div>
 
-        <form *ngIf="!profileLoading" class="space-y-6 max-w-2xl" (ngSubmit)="onSaveProfile()">
+        <form *ngIf="!profileLoading" (ngSubmit)="onSaveProfile()" class="profile-form">
 
-          <div class="flex items-center gap-6 mb-8">
-            <div class="relative">
-              <div
-                class="w-24 h-24 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center border-4 border-white shadow-md">
-                <i data-lucide="user" class="w-10 h-10"></i>
-              </div>
-              <button type="button"
-                class="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-md text-gray-600 hover:text-blue-600 border border-gray-100">
-                <i data-lucide="camera" class="w-4 h-4"></i>
-              </button>
+          <!-- Avatar row -->
+          <div class="profile-avatar-row">
+            <div class="profile-avatar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/>
+              </svg>
             </div>
             <div>
-              <button type="button"
-                class="px-4 py-2 bg-gray-50 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 border border-gray-200 transition-colors">Change
-                Avatar</button>
+              <p class="profile-avatar-name">{{ customerName }}</p>
+              <p class="profile-avatar-email">{{ profileForm.email }}</p>
             </div>
           </div>
 
-          <!-- First Name + Last Name -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-2">
-              <label class="text-sm font-medium text-gray-700">First Name</label>
+          <hr class="form-divider">
+
+          <!-- Name row -->
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
               <input type="text" [(ngModel)]="profileForm.first_name" name="first_name"
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition-all"
-                placeholder="Enter first name">
+                class="form-input" placeholder="Enter first name">
             </div>
-            <div class="space-y-2">
-              <label class="text-sm font-medium text-gray-700">Last Name</label>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
               <input type="text" [(ngModel)]="profileForm.last_name" name="last_name"
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition-all"
-                placeholder="Enter last name">
+                class="form-input" placeholder="Enter last name">
             </div>
           </div>
 
           <!-- Email -->
-          <div class="space-y-2">
-            <label class="text-sm font-medium text-gray-700">Email Address</label>
-            <div class="relative">
-              <i data-lucide="mail" class="absolute left-4 top-3.5 w-5 h-5 text-gray-400"></i>
-              <input type="email" [(ngModel)]="profileForm.email" name="email"
-                class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition-all"
-                placeholder="Enter email address">
-            </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" [(ngModel)]="profileForm.email" name="email"
+              class="form-input" placeholder="you@example.com">
           </div>
 
           <!-- Phone -->
-          <div class="space-y-2">
-            <label class="text-sm font-medium text-gray-700">Phone Number</label>
-            <div class="relative">
-              <i data-lucide="phone" class="absolute left-4 top-3.5 w-5 h-5 text-gray-400"></i>
-              <input type="tel" [(ngModel)]="profileForm.phone" name="phone"
-                class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition-all"
-                placeholder="+91 00000 00000">
-            </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" [(ngModel)]="profileForm.phone" name="phone"
+              class="form-input" placeholder="+91 00000 00000">
           </div>
 
           <!-- Actions -->
-          <div class="pt-6 border-t border-gray-100 flex justify-end gap-3">
-            <button type="button" (click)="loadProfile()"
-              class="px-6 py-3 rounded-xl text-gray-600 font-medium hover:bg-gray-100 transition-colors">
-              Cancel
-            </button>
-            <button type="submit" [disabled]="profileSaving"
-              class="px-6 py-3 rounded-xl bg-[#0B4A9E] hover:bg-[#093B80] text-white font-medium transition-colors shadow-sm disabled:opacity-60 flex items-center gap-2">
-              <span *ngIf="profileSaving"
-                class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block"></span>
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline" (click)="loadProfile()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="profileSaving">
+              <div *ngIf="profileSaving" class="spinner"></div>
               {{ profileSaving ? 'Saving...' : 'Save Changes' }}
             </button>
           </div>
-
         </form>
       </div>
-    </div>
+    </section>
 
-    <!-- ========== ORDERS VIEW ========== -->
-    <div id="section-orders" [style.display]="selectedSection === 'orders' ? 'block' : 'none'" class="pb-10">
-
-      <!-- Header -->
-      <div class="bg-white rounded-3xl px-8 py-6 shadow-sm border border-gray-100 mb-6">
-        <div class="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h2 class="text-2xl font-bold text-gray-900">My Orders</h2>
-            <p class="text-gray-500 text-sm mt-1">{{ ordersList.length }} orders placed · Track, return, or buy again.
-            </p>
-          </div>
-          <div class="relative">
-            <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-gray-400"></i>
-            <input type="text" [(ngModel)]="orderSearchQuery" name="orderSearch"
-              placeholder="Search by order ID, item or status..."
-              class="pl-10 pr-4 py-2 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 outline-none text-sm w-72">
-          </div>
-        </div>
-      </div>
-
-      <!-- Empty State -->
-      <div *ngIf="filteredOrders.length === 0"
-        class="bg-white rounded-3xl p-12 shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
-        <div class="w-20 h-20 bg-blue-50 text-blue-400 rounded-3xl flex items-center justify-center mb-5">
-          <i data-lucide="package" class="w-10 h-10"></i>
-        </div>
-        <h4 class="text-xl font-bold text-gray-800 mb-2">No Orders Found</h4>
-        <p class="text-gray-400 text-sm mb-6">Try a different search, or shop for something new.</p>
-        <a routerLink="/products"
-          class="bg-[#10B981] hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-medium no-underline transition-colors">Shop
-          Now</a>
-      </div>
-
-      <!-- Order Cards -->
-      <div class="space-y-4" *ngIf="filteredOrders.length > 0">
-        <div *ngFor="let order of filteredOrders"
-          class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:border-blue-200 hover:shadow-md transition-all">
-
-          <!-- Order Header Bar -->
-          <div
-            class="flex flex-wrap items-center justify-between gap-3 px-6 py-4 bg-gray-50/70 border-b border-gray-100">
-            <div class="flex items-center gap-6 flex-wrap">
-              <!-- Status Icon + Chip -->
-              <div [ngClass]="getStatusColor(order.status)" class="order-status-chip flex items-center gap-1.5">
-                <i [attr.data-lucide]="getStatusIcon(order.status)" class="w-3.5 h-3.5"></i>
-                {{ order.status }}
-              </div>
-              <span class="text-sm font-bold text-gray-800"># {{ order.id }}</span>
-              <span class="text-sm text-gray-400">Placed: {{ order.date }}</span>
-            </div>
-            <div class="flex items-center gap-6">
-              <div class="text-right">
-                <p class="text-xs text-gray-400">Est. Delivery</p>
-                <p class="text-sm font-semibold text-gray-700">{{ order.estimatedDelivery }}</p>
-              </div>
-              <p class="text-lg font-bold text-gray-900">₹{{ order.total.toLocaleString('en-IN') }}</p>
-            </div>
-          </div>
-
-          <!-- Items Row -->
-          <div class="px-6 py-5">
-            <div class="flex items-center gap-4 mb-5 overflow-x-auto pb-1">
-              <div *ngFor="let item of order.items"
-                class="flex items-center gap-3 shrink-0 bg-gray-50 rounded-2xl px-4 py-3 border border-gray-100">
-                <img [src]="item.image" [alt]="item.name"
-                  class="w-12 h-12 rounded-xl object-cover border border-gray-200" />
-                <div>
-                  <p class="text-sm font-semibold text-gray-800 whitespace-nowrap">{{ item.name }}</p>
-                  <p class="text-xs text-gray-400 mt-0.5">Qty: {{ item.qty }}</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="flex items-center gap-3 flex-wrap">
-              <button
-                class="px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1.5">
-                <i data-lucide="receipt-text" class="w-4 h-4"></i> View Invoice
-              </button>
-              <a *ngIf="order.status === 'Shipped' || order.status === 'Out for Delivery'" routerLink="/order-tracking"
-                class="px-5 py-2.5 bg-[#0B4A9E] hover:bg-blue-800 text-white rounded-xl text-sm font-semibold no-underline transition-colors flex items-center gap-1.5">
-                <i data-lucide="truck" class="w-4 h-4"></i> Track Order
-              </a>
-              <button *ngIf="order.status === 'Delivered'"
-                class="px-5 py-2.5 bg-[#10B981] hover:bg-emerald-600 text-white rounded-xl text-sm font-semibold transition-colors flex items-center gap-1.5">
-                <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Buy Again
-              </button>
-              <button *ngIf="order.status === 'Delivered'"
-                class="px-5 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors flex items-center gap-1.5">
-                <i data-lucide="undo-2" class="w-4 h-4"></i> Return / Refund
-              </button>
-              <button *ngIf="order.status !== 'Delivered' && order.status !== 'Cancelled'"
-                class="px-5 py-2.5 bg-white border border-red-200 text-red-500 rounded-xl text-sm font-semibold hover:bg-red-50 transition-colors flex items-center gap-1.5">
-                <i data-lucide="x-circle" class="w-4 h-4"></i> Cancel Order
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ========== TRACK ORDERS VIEW ========== -->
-    <div id="section-track" [style.display]="selectedSection === 'track' ? 'block' : 'none'" class="pb-10">
-      <div class="bg-white rounded-3xl px-8 py-6 shadow-sm border border-gray-100 mb-6">
-        <h2 class="text-2xl font-bold text-gray-900">Track Orders</h2>
-        <p class="text-gray-500 text-sm mt-1">Enter your Order ID below or pick an active order to track live status.
-        </p>
-      </div>
-
-      <!-- Quick track from active orders -->
-      <div class="space-y-4 mb-8">
-        <ng-container *ngFor="let order of ordersList">
-          <div
-            *ngIf="order.status === 'Shipped' || order.status === 'Out for Delivery' || order.status === 'Packed' || order.status === 'Confirmed'"
-            class="bg-white rounded-3xl shadow-sm border border-gray-100 px-6 py-5 flex flex-wrap items-center justify-between gap-4 hover:border-blue-200 hover:shadow-md transition-all">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <i data-lucide="truck" class="w-6 h-6"></i>
-              </div>
-              <div>
-                <p class="font-bold text-gray-900"># {{ order.id }}</p>
-                <p class="text-sm text-gray-500">{{ order.items.length }} item(s) · Placed {{ order.date }}</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-4">
-              <div [ngClass]="getStatusColor(order.status)" class="order-status-chip flex items-center gap-1.5">
-                <i [attr.data-lucide]="getStatusIcon(order.status)" class="w-3.5 h-3.5"></i>
-                {{ order.status }}
-              </div>
-              <a routerLink="/order-tracking"
-                class="px-5 py-2.5 bg-[#0B4A9E] hover:bg-blue-800 text-white rounded-xl text-sm font-bold no-underline transition-colors flex items-center gap-1.5">
-                <i data-lucide="map-pin" class="w-4 h-4"></i> Live Track
-              </a>
-            </div>
-          </div>
-        </ng-container>
-      </div>
-
-      <!-- No active orders message -->
-      <div class="bg-blue-50 border border-blue-100 rounded-2xl p-6 flex items-start gap-4">
-        <i data-lucide="info" class="w-5 h-5 text-blue-500 shrink-0 mt-0.5"></i>
+    <!-- ══ ADDRESS SECTION ══ -->
+    <section *ngIf="selectedSection === 'address'" class="dash-section">
+      <div class="section-header">
         <div>
-          <p class="text-sm font-semibold text-blue-800">Need detailed tracking?</p>
-          <p class="text-sm text-blue-600 mt-1">Visit the <a routerLink="/order-tracking"
-              class="font-bold underline">Order Tracking page</a> to enter any Order ID and see the full delivery
-            timeline.</p>
+          <h2 class="section-title">My Addresses</h2>
+          <p class="section-sub">Manage your saved delivery addresses.</p>
+        </div>
+        <button class="btn btn-primary btn-sm" (click)="showAddressForm = !showAddressForm">+ Add Address</button>
+      </div>
+
+      <div *ngIf="addressesLoading" class="section-loading">
+        <div class="spinner spinner-primary"></div>
+      </div>
+
+      <!-- Add Address Form -->
+      <div class="dash-card" *ngIf="showAddressForm">
+        <h3 class="card-title">New Address</h3>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" [(ngModel)]="newAddress.full_name" name="full_name" class="form-input" placeholder="Full name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="tel" [(ngModel)]="newAddress.phone" name="address_phone" class="form-input" placeholder="+91 XXXXX XXXXX">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Address Line 1</label>
+          <input type="text" [(ngModel)]="newAddress.address_line1" name="address_line1" class="form-input" placeholder="House No, Street, Village">
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <input type="text" [(ngModel)]="newAddress.city" name="city" class="form-input" placeholder="City">
+          </div>
+          <div class="form-group">
+            <label class="form-label">State</label>
+            <input type="text" [(ngModel)]="newAddress.state" name="state" class="form-input" placeholder="State">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Pincode</label>
+            <input type="text" [(ngModel)]="newAddress.pincode" name="pincode" class="form-input" placeholder="6-digit PIN">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" (click)="showAddressForm = false">Cancel</button>
+          <button type="button" class="btn btn-primary" (click)="saveAddress()" [disabled]="savingAddress">
+            <div *ngIf="savingAddress" class="spinner"></div>
+            Save Address
+          </button>
         </div>
       </div>
 
-    </div>
-
-    <!-- ========== BLANK / UNDER CONSTRUCTION VIEW ========== -->
-    <div id="section-blank"
-      [style.display]="(selectedSection !== 'dashboard' && selectedSection !== 'profile' && selectedSection !== 'orders' && selectedSection !== 'track') ? 'flex' : 'none'"
-      class="h-full pb-10 flex-col items-center justify-center">
-      <div
-        class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 h-full flex flex-col items-center justify-center text-center min-h-96">
-        <div class="w-20 h-20 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mb-6">
-          <i data-lucide="construction" class="w-10 h-10"></i>
-        </div>
-        <h2 class="text-2xl font-bold text-gray-900 mb-2">Section Under Construction</h2>
-        <p class="text-gray-500 max-w-md">This section is currently being updated. Please check back later.</p>
+      <!-- Address List -->
+      <div *ngIf="!addressesLoading && addressList.length === 0 && !showAddressForm" class="dash-card section-empty">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        <p class="empty-title">No Addresses Saved</p>
+        <p class="empty-sub">Add a delivery address to speed up checkout.</p>
       </div>
-    </div>
+      <div class="address-grid" *ngIf="!addressesLoading && addressList.length > 0">
+        <div class="address-card" *ngFor="let addr of addressList" [class.default-address]="addr.is_default">
+          <div class="address-card-header">
+            <span class="address-label">{{ addr.label }}</span>
+            <span class="default-badge" *ngIf="addr.is_default">Default</span>
+          </div>
+          <p class="address-name">{{ addr.full_name }}</p>
+          <p class="address-line">{{ addr.address_line1 }}, {{ addr.city }}, {{ addr.state }} - {{ addr.pincode }}</p>
+          <p class="address-phone">{{ addr.phone }}</p>
+          <div class="address-actions">
+            <button class="btn btn-outline btn-xs" *ngIf="!addr.is_default" (click)="setDefaultAddress(addr.id)">Set Default</button>
+            <button class="btn btn-danger-outline btn-xs" (click)="deleteAddress(addr.id)">Remove</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ WISHLIST SECTION ══ -->
+    <section *ngIf="selectedSection === 'wishlist'" class="dash-section">
+      <div class="section-header">
+        <h2 class="section-title">My Wishlist</h2>
+      </div>
+      <div *ngIf="wishlistLoading" class="section-loading">
+        <div class="spinner spinner-primary"></div>
+      </div>
+      <div *ngIf="!wishlistLoading && wishlistItems.length === 0" class="dash-card section-empty">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <p class="empty-title">Your Wishlist is Empty</p>
+        <a routerLink="/products" class="btn btn-primary btn-sm">Browse Products</a>
+      </div>
+      <div class="wishlist-grid" *ngIf="!wishlistLoading && wishlistItems.length > 0">
+        <div class="wishlist-card" *ngFor="let item of wishlistItems">
+          <img [src]="item.image_url || 'https://placehold.co/100x100/f1f5f9/475569?text=Product'" [alt]="item.name" class="wishlist-img">
+          <div class="wishlist-info">
+            <p class="wishlist-name">{{ item.name }}</p>
+            <p class="wishlist-price">₹{{ item.price }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ NOTIFICATIONS SECTION ══ -->
+    <section *ngIf="selectedSection === 'notifications'" class="dash-section">
+      <div class="section-header">
+        <h2 class="section-title">Notifications</h2>
+        <button class="btn btn-outline btn-sm" (click)="markAllRead()" *ngIf="unreadCount > 0">Mark All Read</button>
+      </div>
+      <div *ngIf="notificationsLoading" class="section-loading">
+        <div class="spinner spinner-primary"></div>
+      </div>
+      <div *ngIf="!notificationsLoading && notificationList.length === 0" class="dash-card section-empty">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <p class="empty-title">No Notifications</p>
+      </div>
+      <div class="notif-list" *ngIf="!notificationsLoading && notificationList.length > 0">
+        <div class="notif-item" *ngFor="let n of notificationList" [class.unread]="!n.is_read" (click)="markRead(n.id)">
+          <div class="notif-dot" *ngIf="!n.is_read"></div>
+          <div class="notif-content">
+            <p class="notif-title">{{ n.title }}</p>
+            <p class="notif-msg">{{ n.message }}</p>
+            <p class="notif-time">{{ n.created_at | date: 'dd MMM yyyy, h:mm a' }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ FALLBACK ══ -->
+    <section *ngIf="selectedSection !== 'dashboard' && selectedSection !== 'orders' && selectedSection !== 'track' && selectedSection !== 'profile' && selectedSection !== 'address' && selectedSection !== 'wishlist' && selectedSection !== 'notifications'" class="dash-section">
+      <div class="dash-card section-empty">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <p class="empty-title">Coming Soon</p>
+        <p class="empty-sub">This section is under construction.</p>
+      </div>
+    </section>
 
   </main>
-
 </div>

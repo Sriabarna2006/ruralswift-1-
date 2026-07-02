@@ -29,12 +29,25 @@ class ProductService {
   }
 
   async createProduct(sellerId, data) {
-    if (!data.name || !data.name.trim()) throw new Error('Product name is required.');
-    if (!data.category || !data.category.trim()) throw new Error('Product category is required.');
+    if (!data.name?.trim())          throw new Error('Product name is required.');
+    if (!data.category?.trim())      throw new Error('Product category is required.');
     if (data.price === undefined || data.price < 0) throw new Error('Valid price is required.');
     if (data.stock === undefined || data.stock < 0) throw new Error('Valid stock quantity is required.');
 
-    return productRepo.create({ sellerId, ...data });
+    return productRepo.create({
+      sellerId,
+      name:         data.name.trim(),
+      description:  data.description?.trim() ?? '',
+      price:        Number(data.price),
+      mrp:          Number(data.mrp) || Number(data.price),
+      stock:        Number(data.stock),
+      unit:         data.unit ?? 'piece',
+      category:     data.category.trim(),
+      brand:        data.brand?.trim() ?? '',
+      weight_grams: Number(data.weight_grams) || 0,
+      image_url:    data.image_url ?? '',
+      images:       data.images ?? [],
+    });
   }
 
   async updateProduct(productId, sellerId, data) {

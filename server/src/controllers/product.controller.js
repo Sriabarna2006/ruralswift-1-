@@ -50,7 +50,7 @@ class ProductController {
   async create(req, res, next) {
     try {
       const product = await productService.createProduct(req.user.id, req.body);
-      return sendSuccess(res, 201, 'Product submitted for review.', { product });
+      return sendSuccess(res, 201, 'Product listed successfully and is now live!', { product });
     } catch (err) {
       if (err.message.includes('required')) return sendError(res, 400, err.message, 'VALIDATION_ERROR');
       next(err);

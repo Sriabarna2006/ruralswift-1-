@@ -84,12 +84,14 @@ class ProductRepository {
     return rows[0] || null;
   }
 
-  async create({ sellerId, name, description, price, mrp, stock, unit, category, brand, weightGrams, imageUrl, images }) {
+  async create({ sellerId, name, description, price, mrp, stock, unit, category, brand, weight_grams, image_url, images }) {
     const { rows } = await pool.query(
-      `INSERT INTO products (seller_id, name, description, price, mrp, stock, unit, category, brand, weight_grams, image_url, images, is_approved)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12, FALSE)
+      `INSERT INTO products (seller_id, name, description, price, mrp, stock, unit, category, brand, weight_grams, image_url, images, is_approved, is_active)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12, TRUE, TRUE)
        RETURNING *`,
-      [sellerId, name, description, price || 0, mrp || price || 0, stock || 0, unit || 'piece', category, brand || '', weightGrams || 0, imageUrl || '', images || []]
+      [sellerId, name, description ?? '', price ?? 0, mrp ?? price ?? 0,
+       stock ?? 0, unit ?? 'piece', category ?? '', brand ?? '',
+       weight_grams ?? 0, image_url ?? '', images ?? []]
     );
     return rows[0];
   }

@@ -1,6 +1,5 @@
-// src/app/pages/product-details/product-details.ts
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { ApiService, Product } from '../../services/api.service';
 import { CartService } from '../../services/cart.service';
@@ -9,7 +8,7 @@ import { NavbarComponent } from '../../components/navbar/navbar';
 @Component({
   selector: 'app-product-details',
   standalone: true,
-  imports: [CommonModule, RouterLink, NavbarComponent],
+  imports: [CommonModule, RouterLink, NavbarComponent, DecimalPipe],
   templateUrl: './product-details.html',
   styleUrls: ['./product-details.css']
 })

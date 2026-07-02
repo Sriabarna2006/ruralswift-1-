@@ -67,7 +67,7 @@ export class SellerService {
 
   /** Get seller dashboard stats */
   getDashboard(): Observable<ApiResponse<SellerDashboard>> {
-    return this.api.getSellerDashboard() as unknown as Observable<ApiResponse<SellerDashboard>>;
+    return this.api.getSellerDashboard() as unknown as Observable<ApiResponse<SellerDashboard>>; // safe cast
   }
 
   /** Get seller's own products */

@@ -1,5 +1,5 @@
 // src/app/pages/cart/cart.ts
-import { Component, OnInit, computed, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { NavbarComponent } from '../../components/navbar/navbar';
@@ -15,18 +15,16 @@ import { ApiService } from '../../services/api.service';
 })
 export class CartComponent implements OnInit {
 
-  public cart = inject(CartService);
+  private cart = inject(CartService);
 
-  // Expose reactive signals from CartService
-  readonly items   = this.cart.items;
-  readonly loading = this.cart.loading;
+  // Expose reactive signals from CartService via getters
+  get items()     { return this.cart.items; }
+  get loading()   { return this.cart.loading; }
+  get subtotal()  { return this.cart.total; }
+  get itemCount() { return this.cart.itemCount; }
 
-  // Computed totals
-  readonly subtotal = this.cart.total;
-  readonly itemCount = this.cart.itemCount;
-
-  get shipping(): number { return this.subtotal() > 0 ? 40 : 0; }
-  get total(): number    { return this.subtotal() + this.shipping; }
+  get shipping(): number { return this.cart.total() > 0 ? 40 : 0; }
+  get total(): number    { return this.cart.total() + this.shipping; }
 
   toastMsg  = '';
   showToast = false;

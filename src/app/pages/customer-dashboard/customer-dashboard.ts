@@ -1,13 +1,11 @@
 // src/app/pages/customer-dashboard/customer-dashboard.ts
-import { Component, OnInit, AfterViewInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
-import { NgClass, CommonModule } from '@angular/common';
+import { NgClass, CommonModule, TitleCasePipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, UserProfile, Order as ApiOrder, Address, Notification } from '../../services/api.service';
 import { NavbarComponent } from '../../components/navbar/navbar';
 
-declare const lucide: any;
-declare const gsap: any;
 
 export interface OrderItem {
   name:  string;
@@ -27,11 +25,11 @@ export interface Order {
 @Component({
   selector: 'app-customer-dashboard',
   standalone: true,
-  imports: [RouterLink, NgClass, CommonModule, FormsModule, NavbarComponent],
+  imports: [RouterLink, NgClass, CommonModule, FormsModule, NavbarComponent, TitleCasePipe, DatePipe],
   templateUrl: './customer-dashboard.html',
   styleUrls: ['./customer-dashboard.css']
 })
-export class CustomerDashboardComponent implements OnInit, AfterViewInit {
+export class CustomerDashboardComponent implements OnInit {
 
   customerName     = '';
   selectedSection  = 'dashboard';
@@ -117,14 +115,6 @@ export class CustomerDashboardComponent implements OnInit, AfterViewInit {
     this.loadNotifications();
   }
 
-  ngAfterViewInit(): void {
-    setTimeout(() => {
-      if (typeof lucide !== 'undefined') lucide.createIcons();
-      if (typeof gsap !== 'undefined') {
-        gsap.from('#section-dashboard', { opacity: 0, y: 20, duration: 0.6, ease: 'power3.out' });
-      }
-    }, 50);
-  }
 
   setSection(section: string): void {
     this.selectedSection = section;
@@ -135,10 +125,6 @@ export class CustomerDashboardComponent implements OnInit, AfterViewInit {
     if (section === 'address')       this.loadAddresses();
     if (section === 'wishlist')      this.loadWishlist();
     if (section === 'notifications') this.loadNotifications();
-
-    setTimeout(() => {
-      if (typeof lucide !== 'undefined') lucide.createIcons();
-    }, 20);
   }
 
   // ── Orders ────────────────────────────────────────────────────

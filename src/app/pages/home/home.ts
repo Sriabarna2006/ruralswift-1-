@@ -1,12 +1,14 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
-import { NgFor, NgClass } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { NgFor, NgClass, NgIf, DecimalPipe } from '@angular/common';
 import { NavbarComponent } from '../../components/navbar/navbar';
+import { ApiService, Product } from '../../services/api.service';
+import { CartService } from '../../services/cart.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, NgFor, NgClass, NavbarComponent],
+  imports: [RouterLink, NgFor, NgClass, NgIf, NavbarComponent, DecimalPipe],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
@@ -14,6 +16,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   currentSlide = 0;
   private carouselTimer: any;
+
+  // Live products from DB
+  featuredProducts: Product[] = [];
+  productsLoading = false;
 
   heroSlides = [
     {
@@ -34,77 +40,69 @@ export class HomeComponent implements OnInit, OnDestroy {
   ];
 
   categoryCards = [
-    {
-      title: 'Farming Tools & Machinery',
-      img: 'https://images.unsplash.com/photo-1592982537447-6f29efeb063b?w=500&q=80',
-      link: 'Shop tools'
-    },
-    {
-      title: 'Seeds & Fertilizers',
-      img: 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=500&q=80',
-      link: 'See all supplies'
-    },
-    {
-      title: 'Fresh Local Produce',
-      img: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=500&q=80',
-      link: 'Shop fresh'
-    },
-    {
-      title: 'Livestock Care',
-      img: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=500&q=80',
-      link: 'View products'
-    }
+    { title: 'Farming Tools & Machinery', img: 'https://images.unsplash.com/photo-1592982537447-6f29efeb063b?w=500&q=80', link: '/products?category=Farming+Equipment' },
+    { title: 'Seeds & Fertilizers',       img: 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=500&q=80', link: '/products?category=Seeds+%26+Fertilizers' },
+    { title: 'Fresh Local Produce',       img: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=500&q=80', link: '/products?category=Groceries' },
+    { title: 'Livestock Care',            img: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=500&q=80', link: '/products?category=Livestock+Care' }
   ];
 
-  productImages = [
-    'https://images.unsplash.com/photo-1586771107445-d3af9e150123?auto=format&fit=crop&q=60&w=300',
-    'https://images.unsplash.com/photo-1592982537447-6f29efeb063b?auto=format&fit=crop&q=60&w=300',
-    'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=60&w=300',
-    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&q=60&w=300',
-    'https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&q=60&w=300',
-    'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=60&w=300',
-    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=60&w=300',
-    'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?auto=format&fit=crop&q=60&w=300'
-  ];
+  constructor(private api: ApiService, private cart: CartService) {}
 
   ngOnInit(): void {
     this.startCarousel();
+    this.loadFeaturedProducts();
+    // Load cart if logged in
+    this.cart.load();
   }
 
   ngOnDestroy(): void {
     this.stopCarousel();
   }
 
-  private startCarousel(): void {
-    this.carouselTimer = setInterval(() => {
-      this.nextSlide();
-    }, 5000);
+  loadFeaturedProducts(): void {
+    this.productsLoading = true;
+    this.api.getProducts({ limit: 12, page: 1 }).subscribe({
+      next: (res) => {
+        this.featuredProducts = (res as any).data?.products ?? [];
+        this.productsLoading  = false;
+      },
+      error: () => {
+        this.featuredProducts = [];
+        this.productsLoading  = false;
+      }
+    });
   }
 
-  private stopCarousel(): void {
-    if (this.carouselTimer) {
-      clearInterval(this.carouselTimer);
-    }
+  addToCart(product: Product): void {
+    this.cart.addItem(product.product_id, 1);
   }
 
-  nextSlide(): void {
-    this.currentSlide = (this.currentSlide === this.heroSlides.length - 1)
-      ? 0
-      : this.currentSlide + 1;
-  }
-
-  prevSlide(): void {
-    this.currentSlide = (this.currentSlide === 0)
-      ? this.heroSlides.length - 1
-      : this.currentSlide - 1;
-  }
-
-  goToSlide(index: number): void {
-    this.currentSlide = index;
+  getDiscount(price: number, mrp: number): number {
+    if (!mrp || mrp <= price) return 0;
+    return Math.round(((mrp - price) / mrp) * 100);
   }
 
   fallbackImg(event: Event): void {
-    (event.target as HTMLImageElement).src =
-      'https://images.unsplash.com/photo-1592982537447-6f29efeb063b?w=300&q=80';
+    (event.target as HTMLImageElement).src = 'https://placehold.co/300x300/f1f5f9/475569?text=Product';
+  }
+
+  private startCarousel(): void {
+    this.carouselTimer = setInterval(() => { this.nextSlide(); }, 4000);
+  }
+
+  private stopCarousel(): void {
+    if (this.carouselTimer) clearInterval(this.carouselTimer);
+  }
+
+  nextSlide(): void {
+    this.currentSlide = (this.currentSlide + 1) % this.heroSlides.length;
+  }
+
+  prevSlide(): void {
+    this.currentSlide = (this.currentSlide - 1 + this.heroSlides.length) % this.heroSlides.length;
+  }
+
+  goToSlide(i: number): void {
+    this.currentSlide = i;
   }
 }

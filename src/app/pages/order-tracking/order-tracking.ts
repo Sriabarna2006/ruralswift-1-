@@ -1,7 +1,7 @@
 // src/app/pages/order-tracking/order-tracking.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../components/navbar/navbar';
 import { ApiService } from '../../services/api.service';
@@ -31,7 +31,7 @@ interface OrderDetails {
 @Component({
   selector: 'app-order-tracking',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent],
   templateUrl: './order-tracking.html',
   styleUrl: './order-tracking.css'
 })
@@ -40,7 +40,7 @@ export class OrderTrackingComponent implements OnInit {
   searchId      = '';
   loading       = false;
   error         = '';
-  orderDetails: OrderDetails | null = null;
+  orderDetails!: OrderDetails;
 
   readonly statuses = ['Order Placed', 'Confirmed', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered'];
 
@@ -62,7 +62,6 @@ export class OrderTrackingComponent implements OnInit {
 
     this.loading      = true;
     this.error        = '';
-    this.orderDetails = null;
 
     this.api.getOrder(id).subscribe({
       next: (res) => {
@@ -135,7 +134,7 @@ export class OrderTrackingComponent implements OnInit {
   }
 
   get currentStepIndex(): number {
-    if (!this.orderDetails) return -1;
+    if (!this.orderDetails?.status) return -1;
     return this.statuses.indexOf(this.orderDetails.status);
   }
 

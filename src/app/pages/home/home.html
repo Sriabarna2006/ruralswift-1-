@@ -57,33 +57,69 @@
     </div>
   </div>
 
-  <!-- HORIZONTAL SCROLL PRODUCT ROW -->
+  <!-- FEATURED PRODUCTS (from DB — sellers add these) -->
   <div class="product-row-section">
     <div class="product-row-card">
       <div class="product-row-header">
-        <h2 class="product-row-title">Related to items you've viewed</h2>
-        <a routerLink="/products" class="product-row-see-more">See more</a>
+        <h2 class="product-row-title">Featured Products</h2>
+        <a routerLink="/products" class="product-row-see-more">View all →</a>
       </div>
-      <div class="product-scroll-track">
+
+      <!-- Loading -->
+      <div class="home-loading" *ngIf="productsLoading">
+        <div class="home-spinner"></div>
+        <p>Loading products...</p>
+      </div>
+
+      <!-- Empty state — no products in DB yet -->
+      <div class="home-empty" *ngIf="!productsLoading && featuredProducts.length === 0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none"
+          stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m6 2 1.5 4.5"/><path d="M3.5 9H20l-1.3 7.5a2 2 0 0 1-2 1.5H7.8a2 2 0 0 1-2-1.5Z"/>
+          <path d="M11 13a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-2"/>
+        </svg>
+        <p>No products listed yet.</p>
+        <a routerLink="/seller-hub" class="home-empty-link">Are you a seller? Add your products →</a>
+      </div>
+
+      <!-- Real product cards from DB -->
+      <div class="product-scroll-track" *ngIf="!productsLoading && featuredProducts.length > 0">
         <div
-          *ngFor="let imgUrl of productImages; let i = index"
           class="product-scroll-item"
-          [routerLink]="['/products']"
+          *ngFor="let product of featuredProducts"
+          [routerLink]="['/products', product.product_id]"
         >
+          <!-- Discount badge -->
+          <div class="product-badge" *ngIf="getDiscount(product.price, product.mrp) > 0">
+            {{ getDiscount(product.price, product.mrp) }}% OFF
+          </div>
           <div class="product-img-wrap">
             <img
-              [src]="imgUrl"
-              [alt]="'Product ' + (i + 1)"
+              [src]="product.image_url || 'https://placehold.co/300x300/f1f5f9/475569?text=Product'"
+              [alt]="product.name"
               class="product-scroll-img"
               (error)="fallbackImg($event)"
             />
           </div>
-          <div class="product-badge">Up to 30% off</div>
-          <div class="product-label">RuralSwift Deals</div>
+          <div class="product-scroll-info">
+            <p class="product-scroll-name">{{ product.name }}</p>
+            <div class="product-scroll-price-row">
+              <span class="product-scroll-price">₹{{ product.price | number:'1.0-0' }}</span>
+              <span class="product-scroll-mrp" *ngIf="product.mrp > product.price">₹{{ product.mrp | number:'1.0-0' }}</span>
+            </div>
+            <button
+              class="product-scroll-add-btn"
+              (click)="addToCart(product); $event.stopPropagation()"
+              [disabled]="product.stock === 0"
+            >
+              {{ product.stock === 0 ? 'Out of Stock' : '+ Add to Cart' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
 
   <!-- SERVICES SECTION -->
   <section class="services-section">

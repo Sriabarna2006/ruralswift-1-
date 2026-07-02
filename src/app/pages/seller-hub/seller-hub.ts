@@ -11,7 +11,7 @@ import { Product } from '../../services/api.service';
 @Component({
   selector: 'app-seller-hub',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, NavbarComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NavbarComponent],
   templateUrl: './seller-hub.html',
   styleUrl: './seller-hub.css'
 })

@@ -21,24 +21,25 @@ export interface UserProfile {
 }
 
 export interface Product {
-  product_id:   number;
-  name:         string;
-  description:  string;
-  price:        number;
-  mrp:          number;
-  stock:        number;
-  unit:         string;
-  category:     string;
-  brand:        string;
-  image_url:    string;
-  images:       string[];
-  rating:       number;
-  review_count: number;
-  seller_id?:   number;
-  seller_name?: string;
-  is_active:    boolean;
-  is_approved:  boolean;
-  created_at:   string;
+  product_id:    number;
+  name:          string;
+  description:   string;
+  price:         number;
+  mrp:           number;
+  stock:         number;
+  unit:          string;
+  category:      string;
+  brand:         string;
+  image_url:     string;
+  images:        string[];
+  rating:        number;
+  review_count:  number;
+  weight_grams?: number;
+  seller_id?:    number;
+  seller_name?:  string;
+  is_active:     boolean;
+  is_approved:   boolean;
+  created_at:    string;
 }
 
 export interface CartItem {
@@ -186,7 +187,7 @@ export class ApiService {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('customerName');
-    localStorage.removeItem('cart');
+    // cart is now server-side only — no localStorage to clear
   }
 
   // ── Auth ──────────────────────────────────────────────────────────────────
@@ -366,8 +367,8 @@ export class ApiService {
 
   // ── Seller Hub ─────────────────────────────────────────────────────────────
 
-  getSellerDashboard(): Observable<ApiResponse> {
-    return this.http.get<ApiResponse>(`${this.baseUrl}/seller/dashboard`);
+  getSellerDashboard(): Observable<ApiResponse<Record<string, unknown>>> {
+    return this.http.get<ApiResponse<Record<string, unknown>>>(`${this.baseUrl}/seller/dashboard`);
   }
 
   getSellerOrders(filters: { status?: string; page?: number; limit?: number } = {}): Observable<ApiResponse<{ orders: any[] }>> {
