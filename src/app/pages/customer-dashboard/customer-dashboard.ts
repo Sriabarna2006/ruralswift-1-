@@ -8,45 +8,45 @@ import { NavbarComponent } from '../../components/navbar/navbar';
 
 
 export interface OrderItem {
-  name:  string;
-  qty:   number;
+  name: string;
+  qty: number;
   image: string;
 }
 
 export interface Order {
-  id:                string;
-  date:              string;
-  total:             number;
-  status:            'Placed' | 'Confirmed' | 'Packed' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled';
+  id: string;
+  date: string;
+  total: number;
+  status: 'Placed' | 'Confirmed' | 'Packed' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled';
   estimatedDelivery: string;
-  items:             OrderItem[];
+  items: OrderItem[];
 }
 
 @Component({
   selector: 'app-customer-dashboard',
   standalone: true,
-  imports: [RouterLink, NgClass, CommonModule, FormsModule, NavbarComponent, TitleCasePipe, DatePipe],
+  imports: [RouterLink, CommonModule, FormsModule, NavbarComponent, TitleCasePipe, DatePipe],
   templateUrl: './customer-dashboard.html',
   styleUrls: ['./customer-dashboard.css']
 })
 export class CustomerDashboardComponent implements OnInit {
 
-  customerName     = '';
-  selectedSection  = 'dashboard';
+  customerName = '';
+  selectedSection = 'dashboard';
   orderSearchQuery = '';
-  sidebarOpen      = false;
+  sidebarOpen = false;
 
   // UI state
-  profileLoading  = false;
-  profileSaving   = false;
-  toastMessage    = '';
+  profileLoading = false;
+  profileSaving = false;
+  toastMessage = '';
   toastType: 'success' | 'error' = 'success';
-  showToast       = false;
+  showToast = false;
 
   // Section loading states
-  ordersLoading       = false;
-  addressesLoading    = false;
-  wishlistLoading     = false;
+  ordersLoading = false;
+  addressesLoading = false;
+  wishlistLoading = false;
   notificationsLoading = false;
 
   // Profile form model
@@ -58,7 +58,7 @@ export class CustomerDashboardComponent implements OnInit {
   // Addresses
   addressList: Address[] = [];
   showAddressForm = false;
-  savingAddress   = false;
+  savingAddress = false;
   newAddress: Partial<Address> = { label: 'Home', full_name: '', phone: '', address_line1: '', city: '', state: '', pincode: '', is_default: false };
 
   // Wishlist
@@ -69,15 +69,15 @@ export class CustomerDashboardComponent implements OnInit {
   unreadCount = 0;
 
   // Stats (derived from loaded data)
-  totalOrders    = 0;
-  activeOrders   = 0;
+  totalOrders = 0;
+  activeOrders = 0;
   deliveredOrders = 0;
 
   constructor(
-    private api:    ApiService,
+    private api: ApiService,
     private router: Router,
-    private route:  ActivatedRoute
-  ) {}
+    private route: ActivatedRoute
+  ) { }
 
   // ── Sidebar ───────────────────────────────────────────────────
   toggleSidebar(): void {
@@ -100,7 +100,7 @@ export class CustomerDashboardComponent implements OnInit {
     const stored = this.api.getStoredUser();
     if (stored) {
       this.customerName = stored.first_name || stored.email || 'Customer';
-      this.profileForm  = { ...stored };
+      this.profileForm = { ...stored };
     } else {
       this.customerName = localStorage.getItem('customerName') || 'Customer';
     }
@@ -120,10 +120,10 @@ export class CustomerDashboardComponent implements OnInit {
     this.selectedSection = section;
     this.closeSidebar();
 
-    if (section === 'profile')       this.loadProfile();
-    if (section === 'orders')        this.loadOrders();
-    if (section === 'address')       this.loadAddresses();
-    if (section === 'wishlist')      this.loadWishlist();
+    if (section === 'profile') this.loadProfile();
+    if (section === 'orders') this.loadOrders();
+    if (section === 'address') this.loadAddresses();
+    if (section === 'wishlist') this.loadWishlist();
     if (section === 'notifications') this.loadNotifications();
   }
 
@@ -135,24 +135,24 @@ export class CustomerDashboardComponent implements OnInit {
       next: (res) => {
         const raw: ApiOrder[] = (res as any).data?.orders ?? [];
         this.ordersList = raw.map(o => ({
-          id:                String(o.order_id),
-          date:              new Date(o.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
-          total:             o.total,
-          status:            this._mapStatus(o.status),
+          id: String(o.order_id),
+          date: new Date(o.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+          total: o.total,
+          status: this._mapStatus(o.status),
           estimatedDelivery: o.delivered_at
             ? new Date(o.delivered_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
             : 'Pending',
           items: (o.items || []).map((i: any) => ({
-            name:  i.name || 'Item',
-            qty:   i.quantity,
+            name: i.name || 'Item',
+            qty: i.quantity,
             image: i.image_url || 'https://placehold.co/64x64/e2e8f0/475569?text=Item'
           }))
         }));
 
-        this.totalOrders     = this.ordersList.length;
-        this.activeOrders    = this.ordersList.filter(o => !['Delivered','Cancelled'].includes(o.status)).length;
+        this.totalOrders = this.ordersList.length;
+        this.activeOrders = this.ordersList.filter(o => !['Delivered', 'Cancelled'].includes(o.status)).length;
         this.deliveredOrders = this.ordersList.filter(o => o.status === 'Delivered').length;
-        this.ordersLoading   = false;
+        this.ordersLoading = false;
       },
       error: () => { this.ordersLoading = false; }
     });
@@ -160,13 +160,13 @@ export class CustomerDashboardComponent implements OnInit {
 
   private _mapStatus(raw: string): Order['status'] {
     switch (raw?.toLowerCase()) {
-      case 'confirmed':         return 'Confirmed';
-      case 'packed':            return 'Packed';
-      case 'shipped':           return 'Shipped';
-      case 'out_for_delivery':  return 'Out for Delivery';
-      case 'delivered':         return 'Delivered';
-      case 'cancelled':         return 'Cancelled';
-      default:                  return 'Placed';
+      case 'confirmed': return 'Confirmed';
+      case 'packed': return 'Packed';
+      case 'shipped': return 'Shipped';
+      case 'out_for_delivery': return 'Out for Delivery';
+      case 'delivered': return 'Delivered';
+      case 'cancelled': return 'Cancelled';
+      default: return 'Placed';
     }
   }
 
@@ -194,7 +194,7 @@ export class CustomerDashboardComponent implements OnInit {
     this.profileLoading = true;
     this.api.getProfile().subscribe({
       next: (res) => {
-        this.profileForm  = { ...res.user };
+        this.profileForm = { ...res.user };
         this.customerName = res.user.first_name || res.user.email || 'Customer';
         this.profileLoading = false;
       },
@@ -215,7 +215,7 @@ export class CustomerDashboardComponent implements OnInit {
     this.api.updateProfile(this.profileForm).subscribe({
       next: (res) => {
         this.profileSaving = false;
-        this.customerName  = res.user.first_name || res.user.email || 'Customer';
+        this.customerName = res.user.first_name || res.user.email || 'Customer';
         this.api.saveSession(this.api.getToken()!, res.user);
         this.showToastMessage('Profile updated successfully! ✓', 'success');
       },
@@ -297,7 +297,7 @@ export class CustomerDashboardComponent implements OnInit {
     this.api.getNotifications().subscribe({
       next: (res) => {
         this.notificationList = (res as any).data?.notifications ?? [];
-        this.unreadCount      = (res as any).data?.unreadCount ?? 0;
+        this.unreadCount = (res as any).data?.unreadCount ?? 0;
         this.notificationsLoading = false;
       },
       error: () => { this.notificationsLoading = false; }
@@ -312,7 +312,7 @@ export class CustomerDashboardComponent implements OnInit {
         );
         this.unreadCount = Math.max(0, this.unreadCount - 1);
       },
-      error: () => {}
+      error: () => { }
     });
   }
 
@@ -323,7 +323,7 @@ export class CustomerDashboardComponent implements OnInit {
         this.unreadCount = 0;
         this.showToastMessage('All notifications marked as read.', 'success');
       },
-      error: () => {}
+      error: () => { }
     });
   }
 
@@ -332,31 +332,31 @@ export class CustomerDashboardComponent implements OnInit {
 
   getStatusColor(status: string): string {
     switch (status) {
-      case 'Delivered':        return 'status-delivered';
-      case 'Shipped':          return 'status-shipped';
+      case 'Delivered': return 'status-delivered';
+      case 'Shipped': return 'status-shipped';
       case 'Out for Delivery': return 'status-out';
       case 'Packed':
       case 'Confirmed':
-      case 'Placed':           return 'status-processing';
-      case 'Cancelled':        return 'status-cancelled';
-      default:                 return 'status-processing';
+      case 'Placed': return 'status-processing';
+      case 'Cancelled': return 'status-cancelled';
+      default: return 'status-processing';
     }
   }
 
   getStatusIcon(status: string): string {
     switch (status) {
-      case 'Delivered':        return 'check-circle';
-      case 'Shipped':          return 'truck';
+      case 'Delivered': return 'check-circle';
+      case 'Shipped': return 'truck';
       case 'Out for Delivery': return 'map-pin';
-      case 'Cancelled':        return 'x-circle';
-      default:                 return 'package';
+      case 'Cancelled': return 'x-circle';
+      default: return 'package';
     }
   }
 
   private showToastMessage(msg: string, type: 'success' | 'error'): void {
     this.toastMessage = msg;
-    this.toastType    = type;
-    this.showToast    = true;
+    this.toastType = type;
+    this.showToast = true;
     setTimeout(() => { this.showToast = false; }, 3500);
   }
 }
