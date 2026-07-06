@@ -2,6 +2,7 @@
 'use strict';
 
 const jwt = require('jsonwebtoken');
+const { query } = require('../config/db');
 const { sendError } = require('../utils/response');
 const logger = require('../utils/logger');
 
@@ -9,7 +10,7 @@ const logger = require('../utils/logger');
  * authenticateToken — verifies the Bearer JWT on every protected route.
  * Attaches req.user = { id, email, role } on success.
  */
-function authenticateToken(req, res, next) {
+async function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // "Bearer <token>"
 
@@ -20,7 +21,24 @@ function authenticateToken(req, res, next) {
   try {
     const secret = process.env.JWT_SECRET || 'ruralswift_jwt_secret_2024_change_in_production';
     const decoded = jwt.verify(token, secret);
-    req.user = { id: decoded.id, email: decoded.email, role: decoded.role || 'customer' };
+    const { rows } = await query(
+      `SELECT u.role,
+              CASE WHEN sp.user_id IS NOT NULL THEN TRUE ELSE FALSE END AS has_seller_profile
+       FROM users u
+       LEFT JOIN seller_profiles sp ON sp.user_id = u.user_id
+       WHERE u.user_id = $1
+       LIMIT 1`,
+      [decoded.id]
+    );
+    const row = rows[0];
+    const dbRole = (row?.role || decoded.role || 'customer').toLowerCase();
+    const isSeller = dbRole === 'seller' || row?.has_seller_profile === true;
+
+    req.user = {
+      id:    decoded.id,
+      email: decoded.email,
+      role:  isSeller ? 'seller' : dbRole,
+    };
     next();
   } catch (err) {
     logger.warn('JWT verification failed', { requestId: req.id, error: err.message });

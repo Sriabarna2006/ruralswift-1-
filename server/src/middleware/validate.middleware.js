@@ -57,7 +57,8 @@ function isValidEmail(email) {
 function isValidPhone(phone) {
   if (!phone) return true; // phone is optional
   const digits = phone.replace(/[\s\-\+\(\)]/g, '');
-  return /^\d{7,15}$/.test(digits);
+  const localNumber = digits.replace(/^(91|0)/, '');
+  return /^[6-9]\d{9}$/.test(localNumber);
 }
 
 /**

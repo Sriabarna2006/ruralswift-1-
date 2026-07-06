@@ -108,6 +108,7 @@
         <div class="product-card-body">
           <span class="product-category-tag">{{ product.category }}</span>
           <h3 class="product-name">{{ product.name }}</h3>
+          <p class="product-seller" *ngIf="product.seller_name">By {{ product.seller_name }}</p>
 
           <!-- Rating -->
           <div class="product-rating" *ngIf="product.rating > 0">

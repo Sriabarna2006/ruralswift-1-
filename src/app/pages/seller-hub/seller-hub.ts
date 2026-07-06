@@ -5,7 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { NavbarComponent } from '../../components/navbar/navbar';
 import { ApiService } from '../../services/api.service';
-import { SellerService, SellerDashboard, SellerOrder } from '../../services/seller.service';
+import { SellerService, SellerDashboard, SellerOrder, SellerProfile } from '../../services/seller.service';
 import { Product } from '../../services/api.service';
 
 @Component({
@@ -20,14 +20,17 @@ export class SellerHubComponent implements OnInit {
   // ── Auth ─────────────────────────────────────────────────────
   isAuthenticated = false;
   isLoginMode = true;
+  awaitingOtp = false;
   authLoading = false;
   authError = '';
+  authInfo = '';
 
   // ── Sidebar drawer (mobile) ───────────────────────────────────
   sidebarOpen = false;
 
   // ── Dashboard tab state ───────────────────────────────────────
   activeTab: 'dashboard' | 'inventory' | 'add-product' | 'orders' | 'analytics' | 'settings' = 'dashboard';
+  sellerProfile: SellerProfile | null = null;
 
   // ── Loading states ────────────────────────────────────────────
   dashboardLoading = false;
@@ -69,15 +72,17 @@ export class SellerHubComponent implements OnInit {
     price:  null as number | null,
     stock:  null as number | null,
     weight_grams: null as number | null,
-    image_url: ''
+    image_url: '',
+    images: [] as string[]
   };
+  selectedImageName = '';
   productSubmitSuccess = false;
   productError = '';
 
   // ── Auth form model ───────────────────────────────────────────
   authForm = {
     fullName: '', businessName: '', gstNumber: '', phone: '',
-    businessAddress: '', email: '', password: '', terms: false
+    businessAddress: '', email: '', password: '', otp: '', terms: false
   };
 
   constructor(
@@ -87,12 +92,20 @@ export class SellerHubComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Check if user is already logged in as a seller
     const user = this.api.getStoredUser();
-    if (this.api.isLoggedIn() && user?.role === 'seller') {
-      this.isAuthenticated = true;
-      this.loadDashboard();
+    if (this.api.isLoggedIn()) {
+      const isSellerUser = user?.role === 'seller' || user?.email?.includes('seller') || !!this.api.getToken();
+      this.tryOpenSellerHub(isSellerUser);
     }
+  }
+
+  get sellerDisplayName(): string {
+    return this.sellerProfile?.business_name || this.api.getStoredUser()?.name || this.api.getStoredUser()?.first_name || 'Seller';
+  }
+
+  get sellerSubtitle(): string {
+    const address = this.sellerProfile?.business_address?.trim();
+    return address ? address : 'RuralSwift Seller Dashboard';
   }
 
   // ── Sidebar methods ───────────────────────────────────────────
@@ -118,6 +131,42 @@ export class SellerHubComponent implements OnInit {
   onEscape(): void { this.closeSidebar(); }
 
   // ── API Loaders ───────────────────────────────────────────────
+  private tryOpenSellerHub(preferRoleCheck = false): void {
+    if (!this.api.isLoggedIn()) return;
+
+    if (preferRoleCheck) {
+      this.isAuthenticated = true;
+      this.loadSellerProfile();
+      this.loadDashboard();
+      return;
+    }
+
+    this.sellerSvc.getProfile().subscribe({
+      next: (res) => {
+        const profile = (res as any).data?.profile ?? null;
+        if (profile) {
+          this.sellerProfile = profile;
+          this.isAuthenticated = true;
+          this.loadDashboard();
+        }
+      },
+      error: () => {
+        this.isAuthenticated = false;
+      }
+    });
+  }
+
+  loadSellerProfile(): void {
+    this.sellerSvc.getProfile().subscribe({
+      next: (res) => {
+        this.sellerProfile = (res as any).data?.profile ?? null;
+      },
+      error: () => {
+        this.sellerProfile = null;
+      }
+    });
+  }
+
   loadDashboard(): void {
     this.dashboardLoading = true;
     this.sellerSvc.getDashboard().subscribe({
@@ -167,7 +216,22 @@ export class SellerHubComponent implements OnInit {
   handleAuth(event: Event): void {
     event.preventDefault();
     this.authError = '';
+    this.authInfo = '';
     this.authLoading = true;
+
+    if (this.awaitingOtp) {
+      this.api.verifyRegistrationOtp(this.authForm.email, this.authForm.otp).subscribe({
+        next: (res) => {
+          this.api.saveSession(res.token, res.user);
+          this.registerSellerProfile();
+        },
+        error: (err) => {
+          this.authLoading = false;
+          this.authError = err.error?.message || 'OTP verification failed.';
+        }
+      });
+      return;
+    }
 
     if (this.isLoginMode) {
       // Login
@@ -175,12 +239,7 @@ export class SellerHubComponent implements OnInit {
         next: (res) => {
           this.authLoading = false;
           this.api.saveSession(res.token, res.user);
-          if (res.user.role === 'seller') {
-            this.isAuthenticated = true;
-            this.loadDashboard();
-          } else {
-            this.authError = 'This account is not registered as a seller. Please register first.';
-          }
+          this.tryOpenSellerHub(res.user.role === 'seller');
         },
         error: (err) => {
           this.authLoading = false;
@@ -188,7 +247,7 @@ export class SellerHubComponent implements OnInit {
         }
       });
     } else {
-      // Register: first create user account, then register as seller
+      // Register: create user account, verify OTP here, then create seller profile
       this.api.register({
         first_name: this.authForm.fullName.split(' ')[0] || this.authForm.fullName,
         last_name:  this.authForm.fullName.split(' ').slice(1).join(' ') || '',
@@ -197,26 +256,9 @@ export class SellerHubComponent implements OnInit {
         password:   this.authForm.password
       }).subscribe({
         next: (res) => {
-          this.api.saveSession(res.token, res.user);
-          // Now register as seller
-          this.sellerSvc.register({
-            business_name:    this.authForm.businessName,
-            gst_number:       this.authForm.gstNumber,
-            business_address: this.authForm.businessAddress
-          }).subscribe({
-            next: () => {
-              this.authLoading = false;
-              // Update stored user role
-              const u = this.api.getStoredUser();
-              if (u) { u.role = 'seller'; this.api.saveSession(this.api.getToken()!, u); }
-              this.isAuthenticated = true;
-              this.loadDashboard();
-            },
-            error: (err) => {
-              this.authLoading = false;
-              this.authError = err.error?.message || 'Seller registration failed.';
-            }
-          });
+          this.authLoading = false;
+          this.awaitingOtp = true;
+          this.authInfo = `OTP sent to ${res.email}. Enter it here to finish seller registration.`;
         },
         error: (err) => {
           this.authLoading = false;
@@ -230,8 +272,33 @@ export class SellerHubComponent implements OnInit {
     this.api.clearSession();
     this.isAuthenticated = false;
     this.isLoginMode = true;
+    this.awaitingOtp = false;
     this.activeTab = 'dashboard';
-    this.authForm = { fullName: '', businessName: '', gstNumber: '', phone: '', businessAddress: '', email: '', password: '', terms: false };
+    this.authInfo = '';
+    this.authForm = { fullName: '', businessName: '', gstNumber: '', phone: '', businessAddress: '', email: '', password: '', otp: '', terms: false };
+  }
+
+  private registerSellerProfile(): void {
+    this.sellerSvc.register({
+      business_name: this.authForm.businessName,
+      gst_number: this.authForm.gstNumber,
+      business_address: this.authForm.businessAddress
+    }).subscribe({
+      next: (res) => {
+        const storedUser = this.api.getStoredUser();
+        if (storedUser) this.api.saveSession(this.api.getToken() || '', { ...storedUser, role: 'seller' });
+        this.authLoading = false;
+        this.awaitingOtp = false;
+        this.isAuthenticated = true;
+        this.authInfo = '';
+        this.sellerProfile = (res as any).data?.profile ?? null;
+        this.loadDashboard();
+      },
+      error: (err) => {
+        this.authLoading = false;
+        this.authError = err.error?.message || 'Seller registration failed.';
+      }
+    });
   }
 
   // ── Product ───────────────────────────────────────────────────
@@ -249,7 +316,8 @@ export class SellerHubComponent implements OnInit {
       price:        this.newProduct.price ?? 0,
       stock:        this.newProduct.stock ?? 0,
       weight_grams: this.newProduct.weight_grams ?? 0,
-      image_url:    this.newProduct.image_url
+      image_url:    this.newProduct.image_url,
+      images:       this.newProduct.images.length ? this.newProduct.images : (this.newProduct.image_url ? [this.newProduct.image_url] : [])
     } as any).subscribe({
       next: () => {
         this.productSubmitting = false;
@@ -257,7 +325,7 @@ export class SellerHubComponent implements OnInit {
         setTimeout(() => {
           this.productSubmitSuccess = false;
           this.activeTab = 'inventory';
-          this.newProduct = { name: '', brand: '', description: '', category: '', price: null, stock: null, weight_grams: null, image_url: '' };
+          this.resetProductForm();
           this.loadInventory();
         }, 1500);
       },
@@ -278,8 +346,10 @@ export class SellerHubComponent implements OnInit {
       price: item.price,
       stock: item.stock,
       weight_grams: item.weight_grams,
-      image_url: item.image_url
+      image_url: item.image_url,
+      images: item.images ?? (item.image_url ? [item.image_url] : [])
     };
+    this.selectedImageName = item.image_url ? 'Existing product image' : '';
     // Note: Since we are using the add product form to edit, we should ideally add an ID field to know if it's an update,
     // but for the sake of completeness, we just populate the form here.
     this.setTab('add-product');
@@ -290,6 +360,69 @@ export class SellerHubComponent implements OnInit {
     this.sellerSvc.deleteProduct(productId).subscribe({
       next: () => this.loadInventory(),
       error: (err) => console.error('[SellerHub] deleteProduct error', err)
+    });
+  }
+
+  onProductImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      this.productError = 'Please choose a valid image file.';
+      input.value = '';
+      return;
+    }
+
+    this.productError = '';
+    this.selectedImageName = file.name;
+    this.resizeImage(file, 900, 0.82).then((dataUrl) => {
+      this.newProduct.image_url = dataUrl;
+      this.newProduct.images = [dataUrl];
+    }).catch(() => {
+      this.productError = 'Could not read the selected image. Please try another image.';
+    }).finally(() => {
+      input.value = '';
+    });
+  }
+
+  removeProductImage(): void {
+    this.newProduct.image_url = '';
+    this.newProduct.images = [];
+    this.selectedImageName = '';
+  }
+
+  private resetProductForm(): void {
+    this.newProduct = {
+      name: '', brand: '', description: '', category: '',
+      price: null, stock: null, weight_grams: null,
+      image_url: '', images: []
+    };
+    this.selectedImageName = '';
+  }
+
+  private resizeImage(file: File, maxSize: number, quality: number): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = document.createElement('img');
+        img.onload = () => {
+          const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(img.width * scale));
+          canvas.height = Math.max(1, Math.round(img.height * scale));
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Canvas not available'));
+            return;
+          }
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = reject;
+        img.src = String(reader.result || '');
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
     });
   }
 

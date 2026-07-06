@@ -60,9 +60,11 @@ export const authInterceptor: HttpInterceptorFn = (
         localStorage.removeItem('user');
         localStorage.removeItem('customerName');
 
-        // Avoid redirect loop when already on an auth page
         const url = router.url;
-        if (!url.startsWith('/login') && !url.startsWith('/register')) {
+        const isSellerRoute = url.startsWith('/seller-hub');
+
+        // Keep seller users on the dedicated dashboard instead of bouncing to the generic login screen.
+        if (!url.startsWith('/login') && !url.startsWith('/register') && !isSellerRoute) {
           router.navigate(['/login']);
         }
       }

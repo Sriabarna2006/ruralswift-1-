@@ -32,6 +32,14 @@ try {
     jwtSecret:  requireEnv('JWT_SECRET'),
     nodeEnv:    process.env.NODE_ENV || 'development',
     isProduction: (process.env.NODE_ENV || 'development') === 'production',
+    smtp: {
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT || '587', 10),
+      secure: process.env.SMTP_SECURE === 'true',
+      user: process.env.SMTP_USER || '',
+      pass: (process.env.SMTP_PASS || '').replace(/\s+/g, ''),
+      from: process.env.SMTP_FROM || process.env.SMTP_USER || '',
+    },
   };
 } catch (err) {
   // Fatal — log and exit immediately so the developer sees the problem

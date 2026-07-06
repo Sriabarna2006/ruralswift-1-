@@ -27,6 +27,7 @@ async function createTables() {
         gender        VARCHAR(20)  DEFAULT '',
         avatar_url    TEXT         DEFAULT '',
         role          VARCHAR(20)  DEFAULT 'customer',
+        is_email_verified BOOLEAN  DEFAULT TRUE,
         date_of_birth DATE,
         created_at    TIMESTAMP    DEFAULT NOW(),
         updated_at    TIMESTAMP    DEFAULT NOW()
@@ -39,6 +40,21 @@ async function createTables() {
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS date_of_birth DATE`);
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at   TIMESTAMP   DEFAULT NOW()`);
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS role         VARCHAR(20) DEFAULT 'customer'`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_email_verified BOOLEAN DEFAULT TRUE`);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS pending_user_registrations (
+        email          VARCHAR(255) PRIMARY KEY,
+        first_name     VARCHAR(100) NOT NULL DEFAULT '',
+        last_name      VARCHAR(100) NOT NULL DEFAULT '',
+        phone          VARCHAR(20)  NOT NULL DEFAULT '',
+        password_hash  TEXT         NOT NULL,
+        otp_hash       TEXT         NOT NULL,
+        otp_expires_at TIMESTAMP    NOT NULL,
+        created_at     TIMESTAMP    DEFAULT NOW(),
+        updated_at     TIMESTAMP    DEFAULT NOW()
+      )
+    `);
 
     // ── 2. seller_profiles ─────────────────────────────────────────────────────
     await client.query(`
@@ -192,6 +208,7 @@ async function createTables() {
     const indexes = [
       `CREATE INDEX IF NOT EXISTS idx_users_email             ON users(email)`,
       `CREATE INDEX IF NOT EXISTS idx_users_role              ON users(role)`,
+      `CREATE INDEX IF NOT EXISTS idx_pending_users_expires   ON pending_user_registrations(otp_expires_at)`,
       `CREATE INDEX IF NOT EXISTS idx_products_category       ON products(category)`,
       `CREATE INDEX IF NOT EXISTS idx_products_active         ON products(is_active)`,
       `CREATE INDEX IF NOT EXISTS idx_products_seller         ON products(seller_id)`,

@@ -247,6 +247,12 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+.product-seller {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+  font-weight: 600;
+}
 .product-rating {
   display: flex;
   align-items: center;

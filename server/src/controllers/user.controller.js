@@ -36,12 +36,15 @@ class UserController {
           ErrorCodes.VALIDATION_WEAK_PASSWORD
         );
       }
-      if (phone && !isValidPhone(phone)) {
+      if (!phone || String(phone).trim() === '') {
+        return sendError(res, 400, 'Phone number is required.', ErrorCodes.VALIDATION_REQUIRED_FIELD);
+      }
+      if (!isValidPhone(phone)) {
         return sendError(res, 400, 'Please provide a valid phone number.', 'VALIDATION_INVALID_PHONE');
       }
 
       const result = await userService.registerUser({ first_name, last_name, email, phone, password });
-      return sendSuccess(res, 201, 'Account created successfully.', result);
+      return sendSuccess(res, 201, 'Registration OTP sent. Please verify your email.', result);
 
     } catch (err) {
       logger.error('Register controller error', {
@@ -56,6 +59,51 @@ class UserController {
       }
 
       next(err); // Delegate unexpected errors to global error handler
+    }
+  }
+
+  /**
+   * POST /api/auth/verify-otp
+   * Verifies the registration OTP and creates the user account.
+   */
+  async verifyOtp(req, res, next) {
+    try {
+      const { email, otp } = req.body;
+
+      if (!email || String(email).trim() === '') {
+        return sendError(res, 400, 'Email address is required.', ErrorCodes.VALIDATION_REQUIRED_FIELD);
+      }
+      if (!isValidEmail(email)) {
+        return sendError(res, 400, 'Please provide a valid email address.', ErrorCodes.VALIDATION_INVALID_EMAIL);
+      }
+      if (!otp || !/^\d{6}$/.test(String(otp).trim())) {
+        return sendError(res, 400, 'Please provide the 6-digit OTP.', 'VALIDATION_INVALID_OTP');
+      }
+
+      const result = await userService.verifyRegistrationOtp(email, otp);
+      return sendSuccess(res, 201, 'Email verified. Account created successfully.', result);
+
+    } catch (err) {
+      logger.error('Verify OTP controller error', {
+        requestId: req.id,
+        message:   err.message,
+        pgCode:    err.code,
+      });
+
+      if (err.code === '23505' || err.message.includes('already exists')) {
+        return sendError(res, 409, 'An account with this email already exists.', ErrorCodes.AUTH_EMAIL_EXISTS);
+      }
+      if (err.message.includes('Invalid OTP')) {
+        return sendError(res, 401, 'Invalid OTP.', 'AUTH_INVALID_OTP');
+      }
+      if (err.message.includes('expired')) {
+        return sendError(res, 410, 'OTP has expired. Please register again.', 'AUTH_OTP_EXPIRED');
+      }
+      if (err.message.includes('pending registration')) {
+        return sendError(res, 404, 'No pending registration found for this email.', 'AUTH_PENDING_REGISTRATION_NOT_FOUND');
+      }
+
+      next(err);
     }
   }
 
@@ -95,7 +143,8 @@ class UserController {
       if (
         err.message.includes('Invalid') ||
         err.message.includes('not found') ||
-        err.message.includes('password')
+        err.message.includes('password') ||
+        err.message.includes('verify your email')
       ) {
         return sendError(res, 401, 'Invalid email or password.', ErrorCodes.AUTH_INVALID_CREDENTIALS);
       }

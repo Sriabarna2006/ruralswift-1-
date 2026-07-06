@@ -45,8 +45,11 @@ class ProductRepository {
     const { rows } = await pool.query(
       `SELECT p.product_id, p.name, p.description, p.price, p.mrp, p.stock, p.unit,
               p.category, p.brand, p.image_url, p.images, p.rating, p.review_count,
-              p.is_active, p.is_approved, p.seller_id, p.created_at
+              p.is_active, p.is_approved, p.seller_id, p.created_at,
+              COALESCE(sp.business_name, u.name) AS seller_name
        FROM products p
+       LEFT JOIN users u ON u.user_id = p.seller_id
+       LEFT JOIN seller_profiles sp ON sp.user_id = p.seller_id
        ${where}
        ORDER BY p.created_at DESC
        LIMIT $${idx++} OFFSET $${idx++}`,
@@ -75,9 +78,10 @@ class ProductRepository {
 
   async findById(productId) {
     const { rows } = await pool.query(
-      `SELECT p.*, u.name AS seller_name
+      `SELECT p.*, COALESCE(sp.business_name, u.name) AS seller_name
        FROM products p
        LEFT JOIN users u ON u.user_id = p.seller_id
+       LEFT JOIN seller_profiles sp ON sp.user_id = p.seller_id
        WHERE p.product_id = $1 AND p.is_active = TRUE`,
       [productId]
     );

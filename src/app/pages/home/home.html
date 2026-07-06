@@ -79,7 +79,7 @@
           <path d="M11 13a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-2"/>
         </svg>
         <p>No products listed yet.</p>
-        <a routerLink="/seller-hub" class="home-empty-link">Are you a seller? Add your products →</a>
+        <a routerLink="/seller-hub" class="home-empty-link">Open Seller Dashboard →</a>
       </div>
 
       <!-- Real product cards from DB -->
@@ -87,7 +87,7 @@
         <div
           class="product-scroll-item"
           *ngFor="let product of featuredProducts"
-          [routerLink]="['/products', product.product_id]"
+          [routerLink]="['/product-details', product.product_id]"
         >
           <!-- Discount badge -->
           <div class="product-badge" *ngIf="getDiscount(product.price, product.mrp) > 0">
@@ -103,6 +103,7 @@
           </div>
           <div class="product-scroll-info">
             <p class="product-scroll-name">{{ product.name }}</p>
+            <p class="product-scroll-seller" *ngIf="product.seller_name">By {{ product.seller_name }}</p>
             <div class="product-scroll-price-row">
               <span class="product-scroll-price">₹{{ product.price | number:'1.0-0' }}</span>
               <span class="product-scroll-mrp" *ngIf="product.mrp > product.price">₹{{ product.mrp | number:'1.0-0' }}</span>

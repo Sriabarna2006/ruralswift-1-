@@ -41,7 +41,7 @@ exports.addProduct = async (req, res, next) => {
     if (!req.body.price) return sendError(res, 400, 'price is required.', 'VALIDATION_ERROR');
     
     const product = await sellerService.addProduct(req.user.id, req.body);
-    sendSuccess(res, 201, 'Product submitted for review.', { product });
+    sendSuccess(res, 201, 'Product listed successfully.', { product });
   } catch (err) { next(err); }
 };
 

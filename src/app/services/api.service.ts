@@ -119,6 +119,16 @@ export interface AuthResponse {
   requestId?: string;
 }
 
+export interface RegisterOtpResponse {
+  success: boolean;
+  message: string;
+  verificationRequired: boolean;
+  email: string;
+  expiresInMinutes: number;
+  timestamp?: string;
+  requestId?: string;
+}
+
 export interface ProfileResponse {
   success:  boolean;
   message:  string;
@@ -205,10 +215,17 @@ export class ApiService {
     email:      string;
     phone:      string;
     password:   string;
-  }): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(
+  }): Observable<RegisterOtpResponse> {
+    return this.http.post<RegisterOtpResponse>(
       `${this.baseUrl}/auth/register`,
       { ...data, email: data.email.trim().toLowerCase() }
+    );
+  }
+
+  verifyRegistrationOtp(email: string, otp: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(
+      `${this.baseUrl}/auth/verify-otp`,
+      { email: email.trim().toLowerCase(), otp: otp.trim() }
     );
   }
 

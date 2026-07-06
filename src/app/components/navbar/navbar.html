@@ -217,13 +217,15 @@
     </svg>
     <span>Orders</span>
   </a>
-  <a [routerLink]="isLoggedIn ? '/dashboard' : '/login'" routerLinkActive="active-nav" class="bottom-nav-item">
+  <a routerLink="/seller-hub" routerLinkActive="active-nav" class="bottom-nav-item">
     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
       stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="8" r="4"/>
-      <path d="M20 21a8 8 0 1 0-16 0"/>
+      <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
+      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+      <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
+      <path d="M2 7h20"/>
     </svg>
-    <span>{{ isLoggedIn ? userName : 'Sign In' }}</span>
+    <span>Seller</span>
   </a>
 </nav>
 

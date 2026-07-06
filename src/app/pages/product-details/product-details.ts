@@ -71,6 +71,20 @@ export class ProductDetailsComponent implements OnInit {
     }, 600);
   }
 
+  buyNow(): void {
+    if (!this.product) return;
+    if (!this.api.isLoggedIn()) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: `/product-details/${this.product.product_id}` } });
+      return;
+    }
+    this.addingToCart = true;
+    this.cart.addItem(this.product.product_id, this.quantity);
+    setTimeout(() => {
+      this.addingToCart = false;
+      this.router.navigate(['/cart']);
+    }, 500);
+  }
+
   toggleWishlist(): void {
     if (!this.api.isLoggedIn()) { this.router.navigate(['/login']); return; }
     if (!this.product) return;

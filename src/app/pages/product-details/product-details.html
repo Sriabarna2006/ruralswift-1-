@@ -74,6 +74,7 @@
 
       <!-- Brand -->
       <p class="pd-brand" *ngIf="product.brand">By <strong>{{ product.brand }}</strong></p>
+      <p class="pd-seller" *ngIf="product.seller_name">Sold by <strong>{{ product.seller_name }}</strong></p>
 
       <!-- Rating -->
       <div class="pd-rating-row">
@@ -130,6 +131,14 @@
           </svg>
           <div *ngIf="addingToCart" class="spinner"></div>
           {{ addingToCart ? 'Adding...' : 'Add to Cart' }}
+        </button>
+
+        <button
+          class="pd-btn-buy"
+          (click)="buyNow()"
+          [disabled]="addingToCart || product.stock === 0"
+        >
+          Buy Now
         </button>
 
         <button

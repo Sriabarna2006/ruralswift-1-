@@ -74,6 +74,7 @@ async function start() {
         env:  env.nodeEnv,
         routes: [
           'POST  /api/auth/register',
+          'POST  /api/auth/verify-otp',
           'POST  /api/auth/login',
           'GET   /api/profile',
           'PUT   /api/profile',
@@ -83,6 +84,7 @@ async function start() {
       console.log(`\n🚀  RuralSwift API running at http://localhost:${env.port}`);
       console.log(`📋  Endpoints:`);
       console.log(`    POST  /api/auth/register`);
+      console.log(`    POST  /api/auth/verify-otp`);
       console.log(`    POST  /api/auth/login`);
       console.log(`    GET   /api/profile`);
       console.log(`    PUT   /api/profile`);

@@ -99,17 +99,18 @@ class SellerService {
   }
 
   async addProduct(sellerId, data) {
-    const { name, description, price, mrp, stock, unit, category, brand, weight_grams, image_url } = data;
+    const { name, description, price, mrp, stock, unit, category, brand, weight_grams, image_url, images } = data;
     const { rows } = await pool.query(
       `INSERT INTO products
-         (seller_id, name, description, price, mrp, stock, unit, category, brand, weight_grams, image_url, is_active, is_approved)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, TRUE, FALSE)
+         (seller_id, name, description, price, mrp, stock, unit, category, brand, weight_grams, image_url, images, is_active, is_approved)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12, TRUE, TRUE)
        RETURNING *`,
       [
         sellerId, name, description || '', parseFloat(price),
         parseFloat(mrp || price), parseInt(stock || 0),
         unit || 'piece', category || '', brand || '',
-        parseInt(weight_grams || 0), image_url || ''
+        parseInt(weight_grams || 0), image_url || '',
+        Array.isArray(images) ? images : (image_url ? [image_url] : [])
       ]
     );
     return rows[0];

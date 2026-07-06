@@ -20,10 +20,13 @@ export class RegisterComponent {
   phone           = '';
   password        = '';
   confirmPassword = '';
+  otp             = '';
+  pendingEmail    = '';
 
   // UI state
   showPassword     = false;
   showConfirm      = false;
+  otpStep          = false;
   isLoading        = false;
   errorMessage     = '';
   successMessage   = '';
@@ -79,6 +82,14 @@ export class RegisterComponent {
       this.errorMessage = 'Email address is required.';
       return;
     }
+    if (!this.phone.trim()) {
+      this.errorMessage = 'Mobile number is required.';
+      return;
+    }
+    if (!this.isValidIndianMobile(this.phone)) {
+      this.errorMessage = 'Please enter a valid 10-digit Indian mobile number.';
+      return;
+    }
     if (!this.password) {
       this.errorMessage = 'Password is required.';
       return;
@@ -103,15 +114,50 @@ export class RegisterComponent {
     }).subscribe({
       next: (res) => {
         this.isLoading = false;
-        this.api.saveSession(res.token, res.user);
-        this.successMessage = 'Account created! Redirecting to dashboard...';
-        setTimeout(() => this.router.navigate(['/dashboard']), 1200);
+        this.pendingEmail = res.email;
+        this.otpStep = true;
+        this.successMessage = `OTP sent to ${res.email}. Please verify to create your account.`;
       },
       error: (err) => {
         this.isLoading    = false;
         this.errorMessage = err.error?.message || 'Registration failed. Please try again.';
       }
     });
+  }
+
+  verifyOtp() {
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    if (!this.pendingEmail) {
+      this.errorMessage = 'Please register again to receive an OTP.';
+      return;
+    }
+    if (!/^\d{6}$/.test(this.otp.trim())) {
+      this.errorMessage = 'Please enter the 6-digit OTP.';
+      return;
+    }
+
+    this.isLoading = true;
+
+    this.api.verifyRegistrationOtp(this.pendingEmail, this.otp).subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        this.api.saveSession(res.token, res.user);
+        this.successMessage = 'Email verified! Redirecting to dashboard...';
+        setTimeout(() => this.router.navigate(['/dashboard']), 1200);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage = err.error?.message || 'OTP verification failed. Please try again.';
+      }
+    });
+  }
+
+  private isValidIndianMobile(phone: string): boolean {
+    const digits = phone.replace(/[\s\-\+\(\)]/g, '');
+    const localNumber = digits.replace(/^(91|0)/, '');
+    return /^[6-9]\d{9}$/.test(localNumber);
   }
 
 }

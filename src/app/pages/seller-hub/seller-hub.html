@@ -71,8 +71,8 @@
         <div class="auth-form-header">
           <h3>{{ isLoginMode ? 'Welcome Back' : 'Create Seller Account' }}</h3>
           <div class="auth-toggle">
-            <button [class.active-tab]="isLoginMode"  (click)="isLoginMode = true">Login</button>
-            <button [class.active-tab]="!isLoginMode" (click)="isLoginMode = false">Register</button>
+            <button [class.active-tab]="isLoginMode"  (click)="isLoginMode = true; awaitingOtp = false; authError = ''; authInfo = ''">Login</button>
+            <button [class.active-tab]="!isLoginMode" (click)="isLoginMode = false; awaitingOtp = false; authError = ''; authInfo = ''">Register</button>
           </div>
         </div>
 
@@ -80,11 +80,14 @@
         <div class="alert alert-error" *ngIf="authError" style="margin-bottom:14px;">
           {{ authError }}
         </div>
+        <div class="alert alert-success" *ngIf="authInfo" style="margin-bottom:14px;">
+          {{ authInfo }}
+        </div>
 
         <form (ngSubmit)="handleAuth($event)" class="auth-form">
 
           <!-- Register-only fields -->
-          <div class="form-row" *ngIf="!isLoginMode">
+          <div class="form-row" *ngIf="!isLoginMode && !awaitingOtp">
             <div class="form-group">
               <label class="form-label">Full Name <span class="req">*</span></label>
               <input class="form-control" type="text" required placeholder="Ramesh Kumar"
@@ -97,7 +100,7 @@
             </div>
           </div>
 
-          <div class="form-row" *ngIf="!isLoginMode">
+          <div class="form-row" *ngIf="!isLoginMode && !awaitingOtp">
             <div class="form-group">
               <label class="form-label">GST Number <span class="req">*</span></label>
               <input class="form-control" type="text" required placeholder="22AAAAA0000A1Z5"
@@ -110,32 +113,38 @@
             </div>
           </div>
 
-          <div class="form-group form-full" *ngIf="!isLoginMode">
+          <div class="form-group form-full" *ngIf="!isLoginMode && !awaitingOtp">
             <label class="form-label">Business Address <span class="req">*</span></label>
             <textarea class="form-control" required rows="2" placeholder="Village, District, State, PIN..."
               [(ngModel)]="authForm.businessAddress" name="businessAddress"></textarea>
           </div>
 
           <!-- Shared fields -->
-          <div class="form-group form-full">
+          <div class="form-group form-full" *ngIf="!awaitingOtp">
             <label class="form-label">Email Address <span class="req">*</span></label>
             <input class="form-control" type="email" required placeholder="seller@example.com"
               [(ngModel)]="authForm.email" name="email" />
           </div>
 
-          <div class="form-group form-full">
+          <div class="form-group form-full" *ngIf="!awaitingOtp">
             <label class="form-label">Password <span class="req">*</span></label>
             <input class="form-control" type="password" required placeholder="••••••••"
               [(ngModel)]="authForm.password" name="password" />
           </div>
 
-          <div class="form-checkbox" *ngIf="!isLoginMode">
+          <div class="form-group form-full" *ngIf="awaitingOtp">
+            <label class="form-label">Email OTP <span class="req">*</span></label>
+            <input class="form-control" type="text" required maxlength="6" inputmode="numeric" placeholder="Enter 6-digit OTP"
+              [(ngModel)]="authForm.otp" name="otp" />
+          </div>
+
+          <div class="form-checkbox" *ngIf="!isLoginMode && !awaitingOtp">
             <input type="checkbox" id="terms" [(ngModel)]="authForm.terms" name="terms" required />
             <label for="terms">I agree to the <a href="#">Seller Agreement</a> and consent to bank/tax verification.</label>
           </div>
 
           <button type="submit" class="btn-submit" [disabled]="authLoading">
-            <span *ngIf="!authLoading">{{ isLoginMode ? 'Login to Dashboard' : 'Register & Verify' }}</span>
+            <span *ngIf="!authLoading">{{ awaitingOtp ? 'Verify OTP & Open Dashboard' : (isLoginMode ? 'Login to Dashboard' : 'Register & Send OTP') }}</span>
             <span *ngIf="authLoading" class="spinner"></span>
             <svg *ngIf="!authLoading" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
               fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -178,7 +187,7 @@
             </svg>
             Seller Central
           </h1>
-          <p class="seller-topbar-sub">Kisan Traders — Kothavalasa, Vizianagaram</p>
+          <p class="seller-topbar-sub">{{ sellerDisplayName }} - {{ sellerSubtitle }}</p>
         </div>
       </div>
       <div class="seller-topbar-actions">
@@ -280,6 +289,21 @@
 
       <!-- ============ DASHBOARD TAB ============ -->
       <div *ngIf="activeTab === 'dashboard'">
+
+        <div class="seller-welcome-card">
+          <div class="seller-welcome-main">
+            <div class="seller-avatar-badge">{{ sellerDisplayName.charAt(0).toUpperCase() }}</div>
+            <div>
+              <p class="seller-welcome-eyebrow">Welcome back</p>
+              <h2>{{ sellerDisplayName }}</h2>
+              <p class="seller-welcome-sub">{{ sellerSubtitle }}</p>
+            </div>
+          </div>
+          <div class="seller-welcome-meta">
+            <span class="seller-pill">{{ sellerProfile?.gst_number ? 'GST ready' : 'Seller account ready' }}</span>
+            <p>Upload products with gallery or camera, then publish them to the home and product pages.</p>
+          </div>
+        </div>
 
         <!-- Stats Grid -->
         <div class="stats-grid">
@@ -488,7 +512,7 @@
       <div *ngIf="activeTab === 'add-product'" class="add-product-card">
         <div class="add-product-header">
           <h2>Add New Product to Catalog</h2>
-          <p>Upload product details to be indexed in the RuralSwift search engine.</p>
+          <p>Upload product details to publish them on RuralSwift.</p>
         </div>
 
         <div *ngIf="productSubmitSuccess" class="alert alert-success" style="margin-bottom:16px;">
@@ -560,15 +584,50 @@
             <!-- Section 3 -->
             <div class="form-section">
               <h3 class="form-section-title">3. Product Images</h3>
-              <div class="upload-zone">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                  stroke="var(--primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="17 8 12 3 7 8"/>
-                  <line x1="12" x2="12" y1="3" y2="15"/>
-                </svg>
-                <p class="upload-title">Click to upload images</p>
-                <p class="upload-sub">Upload Front, Back and Side images. (JPG, PNG up to 5MB)</p>
+              <input #galleryInput type="file" accept="image/*" hidden (change)="onProductImageSelected($event)" />
+              <input #cameraInput type="file" accept="image/*" capture="environment" hidden (change)="onProductImageSelected($event)" />
+
+              <div class="product-image-uploader">
+                <div class="product-image-preview" [class.empty-preview]="!newProduct.image_url">
+                  <img *ngIf="newProduct.image_url" [src]="newProduct.image_url" alt="Product preview" />
+                  <div *ngIf="!newProduct.image_url" class="preview-placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none"
+                      stroke="var(--primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                      <circle cx="9" cy="9" r="2"/>
+                      <path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/>
+                    </svg>
+                    <span>No image selected</span>
+                  </div>
+                </div>
+
+                <div class="image-upload-controls">
+                  <p class="upload-title">{{ selectedImageName || 'Add a clear cover image' }}</p>
+                  <p class="upload-sub">Choose from gallery or take a photo using camera. This image appears on home, listing and details pages.</p>
+                  <div class="upload-actions">
+                    <button type="button" class="btn-upload" (click)="galleryInput.click()">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" x2="12" y1="3" y2="15"/>
+                      </svg>
+                      Upload Image
+                    </button>
+                    <button type="button" class="btn-upload btn-camera" (click)="cameraInput.click()">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                        <circle cx="12" cy="13" r="3"/>
+                      </svg>
+                      Camera
+                    </button>
+                    <button type="button" class="btn-remove-image" *ngIf="newProduct.image_url" (click)="removeProductImage()">Remove</button>
+                  </div>
+                  <label class="form-label image-url-label">Or paste image URL</label>
+                  <input class="form-control" type="url" placeholder="https://example.com/product.jpg"
+                    [(ngModel)]="newProduct.image_url" name="imageUrl" />
+                </div>
               </div>
             </div>
 
@@ -576,14 +635,14 @@
             <div class="form-actions">
               <button type="button" class="btn-cancel" (click)="setTab('inventory')">Cancel</button>
               <button type="submit" class="btn-submit-product">
-                Submit for Review
+                Publish Product
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="m9 18 6-6-6-6"/>
                 </svg>
               </button>
             </div>
-            <p class="form-note">Products undergo a review process before appearing on the website.</p>
+            <p class="form-note">Published products appear on the product listing and details pages.</p>
           </form>
         </div>
       </div>

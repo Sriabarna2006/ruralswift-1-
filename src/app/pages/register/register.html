@@ -51,7 +51,7 @@
       {{ successMessage }}
     </div>
 
-    <form (ngSubmit)="register()" #registerForm="ngForm">
+    <form *ngIf="!otpStep" (ngSubmit)="register()" #registerForm="ngForm">
 
       <!-- First & Last Name -->
       <div class="name-row">
@@ -169,6 +169,37 @@
         <div *ngIf="isLoading" class="spinner"></div>
         <span>{{ isLoading ? 'Creating account...' : 'Create Account' }}</span>
         <i *ngIf="!isLoading" class="bi bi-arrow-right"></i>
+      </button>
+
+    </form>
+
+    <form *ngIf="otpStep" (ngSubmit)="verifyOtp()" #otpForm="ngForm">
+
+      <div class="form-group">
+        <label for="otp">Email OTP</label>
+        <div class="input-wrap">
+          <input
+            id="otp"
+            type="text"
+            name="otp"
+            [(ngModel)]="otp"
+            placeholder="Enter 6-digit OTP"
+            autocomplete="one-time-code"
+            inputmode="numeric"
+            maxlength="6"
+            required>
+          <i class="bi bi-shield-lock-fill"></i>
+        </div>
+      </div>
+
+      <button type="submit" class="auth-btn" [disabled]="isLoading">
+        <div *ngIf="isLoading" class="spinner"></div>
+        <span>{{ isLoading ? 'Verifying...' : 'Verify OTP & Create Account' }}</span>
+        <i *ngIf="!isLoading" class="bi bi-check2-circle"></i>
+      </button>
+
+      <button type="button" class="auth-btn secondary" [disabled]="isLoading" (click)="otpStep = false; otp = ''">
+        Change details
       </button>
 
     </form>
