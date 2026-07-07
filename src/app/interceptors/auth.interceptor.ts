@@ -54,8 +54,7 @@ export const authInterceptor: HttpInterceptorFn = (
       }
 
       // ── 401 — Token expired or missing → force re-login ──────────────────
-      // ── 403 — Token tampered / invalid signature ──────────────────────────
-      if (error.status === 401 || error.status === 403) {
+      if (error.status === 401) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('customerName');
