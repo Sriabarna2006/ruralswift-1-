@@ -1,0 +1,138 @@
+<main class="home-page has-bottom-nav" id="page-home">
+
+  <!-- ══ HERO CAROUSEL ══════════════════════════════════════════ -->
+  <section class="hero-section" aria-label="Promotional banners">
+    <div class="hero-slider">
+      @if (activeHeroSlide(); as slide) {
+        <div
+          class="hero-slide"
+          aria-hidden="false"
+          (click)="shopCategory(slide.link)"
+        >
+          <img
+            [src]="slide.image"
+            class="hero-image"
+            alt="Promotional banner"
+            width="1600"
+            height="640"
+            loading="eager"
+            fetchpriority="high"
+            [attr.decoding]="'async'"
+          />
+        </div>
+      }
+    </div>
+
+    <!-- Dots -->
+    <div class="hero-dots" role="tablist" aria-label="Slide navigation">
+      @for (slide of heroSlides; track $index) {
+        <button
+          class="hero-dot"
+          [class.active]="currentSlide() === $index"
+          (click)="goToSlide($index)"
+          type="button"
+          role="tab"
+          [attr.aria-selected]="currentSlide() === $index"
+          [attr.aria-label]="'Slide ' + ($index + 1)"
+        ></button>
+      }
+    </div>
+  </section>
+
+  <!-- ══ DASHBOARD CONTENT ══════════════════════════════════ -->
+  <div class="dashboard-content">
+
+    <!-- QUAD CARDS ROW -->
+    <div class="quad-row">
+      @for (card of quadCards; track card.title) {
+        <div class="amazon-card">
+          <h2 class="amazon-card-title">{{ card.title }}</h2>
+          <div class="amazon-card-grid" (click)="shopCategory(card.category)">
+            @for (img of card.images; track img) {
+              <div class="amazon-quad-item">
+                <img [src]="img" alt="Category Image" width="320" height="320" loading="eager" fetchpriority="high" [attr.decoding]="'async'" />
+              </div>
+            }
+          </div>
+          <a class="amazon-card-link" (click)="shopCategory(card.category)">{{ card.linkText }}</a>
+        </div>
+      }
+    </div>
+
+    <!-- HORIZONTAL ROW 1: COMPUTERS -->
+    <section class="amazon-row">
+      <div class="amazon-row-header">
+        <h2 class="amazon-row-title">Best Sellers in Computers & Accessories</h2>
+        <a class="amazon-row-link" (click)="shopCategory('Electronics')">See all</a>
+      </div>
+      <div class="amazon-horizontal-scroll no-scrollbar">
+        @if (isLoading()) {
+          @for (i of [1,2,3,4,5,6]; track i) {
+            <div class="amazon-h-item skeleton">
+              <div class="amazon-h-img-wrap"></div>
+            </div>
+          }
+        } @else {
+          @for (product of computersProducts(); track product.product_id) {
+            <div class="amazon-h-item" (click)="goToProduct(product.product_id)">
+              <div class="amazon-h-img-wrap">
+                <img [src]="product.image_url || placeholderImage" [alt]="product.name" width="320" height="320" loading="lazy" [attr.decoding]="'async'" />
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </section>
+
+    <!-- HORIZONTAL ROW 2: KITCHEN -->
+    <section class="amazon-row">
+      <div class="amazon-row-header">
+        <h2 class="amazon-row-title">Up to 40% off | Must-have kitchen appliances</h2>
+        <a class="amazon-row-link" (click)="shopCategory('Home & Kitchen')">See all offers</a>
+      </div>
+      <div class="amazon-horizontal-scroll no-scrollbar">
+        @if (isLoading()) {
+          @for (i of [1,2,3,4,5,6]; track i) {
+            <div class="amazon-h-item skeleton">
+              <div class="amazon-h-img-wrap"></div>
+            </div>
+          }
+        } @else {
+          @for (product of kitchenProducts(); track product.product_id) {
+            <div class="amazon-h-item" (click)="goToProduct(product.product_id)">
+              <div class="amazon-h-img-wrap">
+                <img [src]="product.image_url || placeholderImage" [alt]="product.name" width="320" height="320" loading="lazy" [attr.decoding]="'async'" />
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </section>
+
+    <!-- HORIZONTAL ROW 3: SMALL BIZ -->
+    <section class="amazon-row">
+      <div class="amazon-row-header">
+        <h2 class="amazon-row-title">Min. 30% off | Curated collections from Small Businesses</h2>
+        <a class="amazon-row-link" (click)="shopCategory('Farming Equipment')">See more</a>
+      </div>
+      <div class="amazon-horizontal-scroll no-scrollbar">
+        @if (isLoading()) {
+          @for (i of [1,2,3,4,5,6]; track i) {
+            <div class="amazon-h-item skeleton">
+              <div class="amazon-h-img-wrap"></div>
+            </div>
+          }
+        } @else {
+          @for (product of smallBizProducts(); track product.product_id) {
+            <div class="amazon-h-item" (click)="goToProduct(product.product_id)">
+              <div class="amazon-h-img-wrap">
+                <img [src]="product.image_url || placeholderImage" [alt]="product.name" width="320" height="320" loading="lazy" [attr.decoding]="'async'" />
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </section>
+
+  </div>
+</main>

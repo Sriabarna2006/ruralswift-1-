@@ -1,0 +1,352 @@
+<div class="account-page has-bottom-nav" id="page-account">
+
+  <!-- Desktop: sidebar + content | Mobile: tabs on top -->
+  <div class="account-layout">
+
+    <!-- ── Sidebar (desktop) ── -->
+    <aside id="account-sidebar" class="account-sidebar" aria-label="Account navigation">
+      <!-- User card -->
+      <div class="sidebar-user-card">
+        <div class="sidebar-avatar">{{ userInitials }}</div>
+        <div class="sidebar-user-info">
+          <h2 class="sidebar-user-name">{{ user()?.first_name }} {{ user()?.last_name }}</h2>
+          <p class="sidebar-user-email">{{ user()?.email }}</p>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <nav class="sidebar-nav" aria-label="Account sections">
+        @for (tab of tabs; track tab.id) {
+          <button
+            class="sidebar-tab"
+            [class.active]="activeTab() === tab.id"
+            (click)="setTab(tab.id)"
+            [attr.aria-current]="activeTab() === tab.id ? 'page' : null"
+          >
+            <span class="sidebar-tab-icon" aria-hidden="true">{{ tab.icon }}</span>
+            {{ tab.label }}
+            <svg class="sidebar-tab-arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </button>
+        }
+        <div class="sidebar-divider"></div>
+        <button class="sidebar-tab sidebar-tab--danger" (click)="handleLogout()">
+          <span class="sidebar-tab-icon">🚪</span>
+          Sign Out
+        </button>
+      </nav>
+    </aside>
+
+    <!-- ── Content ── -->
+    <main class="account-content">
+
+      <!-- Mobile Tab Bar -->
+      <div class="mobile-tab-bar no-scrollbar" role="tablist">
+        @for (tab of tabs; track tab.id) {
+          <button
+            class="mobile-tab"
+            [class.active]="activeTab() === tab.id"
+            (click)="setTab(tab.id)"
+            role="tab"
+            [attr.aria-selected]="activeTab() === tab.id"
+          >
+            <span aria-hidden="true">{{ tab.icon }}</span>
+            {{ tab.label }}
+          </button>
+        }
+      </div>
+
+      <!-- ── PROFILE TAB ── -->
+      @if (activeTab() === 'profile') {
+        <section class="tab-content" id="tab-profile" aria-label="Profile" role="tabpanel">
+          <div class="content-card">
+            <div class="content-card-header">
+              <h2 class="content-card-title">Personal Information</h2>
+              @if (!isEditingProfile()) {
+                <button class="btn-edit" (click)="startEditProfile()" id="btn-edit-profile">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                  Edit Profile
+                </button>
+              }
+            </div>
+
+            @if (isEditingProfile()) {
+              <!-- Edit Mode -->
+              <form (ngSubmit)="saveProfile()" class="profile-form" id="profile-edit-mode">
+                <div class="form-grid">
+                  <div class="form-field">
+                    <label for="edit-fname">First Name</label>
+                    <input id="edit-fname" type="text" [(ngModel)]="editForm.first_name" name="firstName" required class="form-input" />
+                  </div>
+                  <div class="form-field">
+                    <label for="edit-lname">Last Name</label>
+                    <input id="edit-lname" type="text" [(ngModel)]="editForm.last_name" name="lastName" required class="form-input" />
+                  </div>
+                  <div class="form-field">
+                    <label for="edit-email">Email</label>
+                    <input id="edit-email" type="email" [(ngModel)]="editForm.email" name="email" required class="form-input" />
+                  </div>
+                  <div class="form-field">
+                    <label for="edit-phone">Phone</label>
+                    <input id="edit-phone" type="tel" [(ngModel)]="editForm.phone" name="phone" class="form-input" />
+                  </div>
+                  <div class="form-field">
+                    <label for="edit-gender">Gender</label>
+                    <select id="edit-gender" [(ngModel)]="editForm.gender" name="gender" class="form-input">
+                      <option value="">Prefer not to say</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div class="form-field">
+                    <label for="edit-dob">Date of Birth</label>
+                    <input id="edit-dob" type="date" [(ngModel)]="editForm.date_of_birth" name="dob" class="form-input" />
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" class="btn-save">Save Changes</button>
+                  <button type="button" class="btn-cancel" (click)="cancelEditProfile()">Cancel</button>
+                </div>
+              </form>
+            } @else {
+              <!-- View Mode -->
+              <div class="profile-info" id="profile-view-mode">
+                <div class="profile-avatar-large">{{ userInitials }}</div>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <span class="info-label">Full Name</span>
+                    <span class="info-value">{{ user()?.first_name }} {{ user()?.last_name }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">{{ user()?.email }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Phone</span>
+                    <span class="info-value">{{ user()?.phone || '—' }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Gender</span>
+                    <span class="info-value">{{ user()?.gender || '—' }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Date of Birth</span>
+                    <span class="info-value">{{ user()?.date_of_birth || '—' }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Member Since</span>
+                    <span class="info-value">{{ user()?.created_at ? formatDate(user()!.created_at!) : '—' }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- ── ORDERS TAB ── -->
+      @if (activeTab() === 'orders') {
+        <section class="tab-content" id="tab-orders" aria-label="My Orders" role="tabpanel">
+          <h2 class="tab-heading">My Orders</h2>
+          @if (isLoading()) {
+            <div class="skeleton-list">
+              @for (i of [1,2,3]; track i) {
+                <div class="order-skeleton skeleton"></div>
+              }
+            </div>
+          } @else if (orders().length === 0) {
+            <div class="empty-state">
+              <div class="empty-icon">📦</div>
+              <h3>No orders yet</h3>
+              <p>Your orders will appear here once you make a purchase</p>
+              <button class="btn-primary-action" routerLink="/products">Start Shopping</button>
+            </div>
+          } @else {
+            <div class="orders-list">
+              @for (order of orders(); track order.order_id) {
+                <div class="order-card">
+                  <div class="order-card-header">
+                    <div>
+                      <p class="order-id">Order #{{ order.order_id }}</p>
+                      <p class="order-date">{{ formatDate(order.created_at) }}</p>
+                    </div>
+                    <span class="order-status" [ngClass]="getStatusClass(order.status)">
+                      {{ order.status | titlecase }}
+                    </span>
+                  </div>
+                  <div class="order-items-preview">
+                    @for (item of order.items.slice(0, 2); track item.product_id) {
+                      <div class="order-item-row">
+                        <img [src]="item.image_url || placeholderImage"
+                             [alt]="item.name"
+                             class="order-item-img"
+                             [attr.decoding]="'async'" />
+                        <span class="order-item-name">{{ item.name }}</span>
+                        <span class="order-item-qty">x{{ item.quantity }}</span>
+                      </div>
+                    }
+                    @if (order.items.length > 2) {
+                      <p class="order-more-items">+{{ order.items.length - 2 }} more items</p>
+                    }
+                  </div>
+                  <div class="order-card-footer">
+                    <span class="order-total">{{ fmt(order.total) }}</span>
+                    <div class="order-actions">
+                      <button class="order-action-btn">Track Order</button>
+                      @if (order.status === 'pending') {
+                        <button class="order-action-btn order-action-btn--danger">Cancel</button>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </section>
+      }
+
+      <!-- ── WISHLIST TAB ── -->
+      @if (activeTab() === 'wishlist') {
+        <section class="tab-content" id="tab-wishlist" aria-label="Wishlist" role="tabpanel">
+          <h2 class="tab-heading">Wishlist</h2>
+          @if (wishlist().length === 0) {
+            <div class="empty-state">
+              <div class="empty-icon">❤️</div>
+              <h3>Your wishlist is empty</h3>
+              <p>Save items you love and come back to purchase them anytime</p>
+              <button class="btn-primary-action" routerLink="/products">Browse Products</button>
+            </div>
+          } @else {
+            <div class="wishlist-grid">
+              @for (item of wishlist(); track item.product_id) {
+                <div class="wishlist-card">
+                  <img [src]="item.image_url || placeholderImage" [alt]="item.name" class="wishlist-img" [attr.decoding]="'async'" />
+                  <div class="wishlist-body">
+                    <h3 class="wishlist-name">{{ item.name }}</h3>
+                    <p class="wishlist-price">{{ fmt(item.price) }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </section>
+      }
+
+      <!-- ── ADDRESSES TAB ── -->
+      @if (activeTab() === 'addresses') {
+        <section class="tab-content" id="tab-addresses" aria-label="Addresses" role="tabpanel">
+          <div class="tab-header-row">
+            <h2 class="tab-heading">Saved Addresses</h2>
+            <button class="btn-add" (click)="openAddressModal('Add New Address')">
+              + Add Address
+            </button>
+          </div>
+          @if (addresses().length === 0) {
+            <div class="empty-state">
+              <div class="empty-icon">📍</div>
+              <h3>No addresses saved</h3>
+              <p>Add your delivery addresses for faster checkout</p>
+              <button class="btn-primary-action" (click)="openAddressModal()">Add Address</button>
+            </div>
+          } @else {
+            <div class="addresses-grid">
+              @for (addr of addresses(); track addr.id) {
+                <div class="address-card" [class.address-card--default]="addr.is_default">
+                  @if (addr.is_default) {
+                    <span class="default-badge">Default</span>
+                  }
+                  <p class="addr-label">{{ addr.label || 'Home' }}</p>
+                  <p class="addr-name">{{ addr.full_name }}</p>
+                  <p class="addr-text">
+                    {{ addr.address_line1 }}<br>
+                    @if (addr.address_line2) { {{ addr.address_line2 }}<br> }
+                    {{ addr.city }}, {{ addr.state }} {{ addr.pincode }}
+                  </p>
+                  <p class="addr-phone">{{ addr.phone }}</p>
+                  <div class="addr-actions">
+                    <button class="addr-btn" (click)="openAddressModal('Edit Address')">Edit</button>
+                    @if (!addr.is_default) {
+                      <button class="addr-btn">Set Default</button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </section>
+      }
+
+      <!-- ── PAYMENTS TAB ── -->
+      @if (activeTab() === 'payments') {
+        <section class="tab-content" id="tab-payments" aria-label="Payment Methods" role="tabpanel">
+          <h2 class="tab-heading">Payment Methods</h2>
+          <div class="empty-state">
+            <div class="empty-icon">💳</div>
+            <h3>No payment methods saved</h3>
+            <p>Add a card or UPI ID for one-tap checkout</p>
+            <button class="btn-primary-action">Add Payment Method</button>
+          </div>
+        </section>
+      }
+
+      <!-- ── PREFERENCES TAB ── -->
+      @if (activeTab() === 'preferences') {
+        <section class="tab-content" id="tab-preferences" aria-label="Preferences" role="tabpanel">
+          <h2 class="tab-heading">Notification Preferences</h2>
+          <div class="content-card">
+            <div class="pref-list">
+              @for (pref of [
+                {key:'order_updates', label:'Order Updates', desc:'Track your orders in real time'},
+                {key:'offers', label:'Offers & Deals', desc:'Get notified about the best deals'},
+                {key:'new_arrivals', label:'New Arrivals', desc:'Be first to know about new products'},
+                {key:'sms', label:'SMS Notifications', desc:'Receive updates via SMS'},
+              ]; track pref.key) {
+                <div class="pref-row">
+                  <div>
+                    <p class="pref-label">{{ pref.label }}</p>
+                    <p class="pref-desc">{{ pref.desc }}</p>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" class="toggle-input" [id]="'pref-' + pref.key" checked />
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              }
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- ── HELP TAB ── -->
+      @if (activeTab() === 'help') {
+        <section class="tab-content" id="tab-help" aria-label="Help Center" role="tabpanel">
+          <h2 class="tab-heading">Help Center</h2>
+          <div class="help-grid">
+            @for (item of [
+              {icon:'📞', title:'Call Support', desc:'Mon–Sat, 9AM–6PM', action:'Call us'},
+              {icon:'💬', title:'Live Chat', desc:'Instant help from our team', action:'Start Chat'},
+              {icon:'📧', title:'Email Support', desc:'We reply within 24 hours', action:'Send Email'},
+              {icon:'❓', title:'FAQs', desc:'Answers to common questions', action:'View FAQs'},
+            ]; track item.title) {
+              <div class="help-card">
+                <span class="help-icon">{{ item.icon }}</span>
+                <h3 class="help-title">{{ item.title }}</h3>
+                <p class="help-desc">{{ item.desc }}</p>
+                <button class="help-action-btn">{{ item.action }}</button>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+    </main>
+  </div>
+</div>

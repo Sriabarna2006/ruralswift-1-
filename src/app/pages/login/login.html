@@ -1,0 +1,110 @@
+<!-- LOGIN PAGE -->
+<div class="auth-page">
+
+  <!-- ═══ LEFT PANEL ═══ -->
+  <div class="auth-panel">
+
+    <div class="panel-logo">
+      <i class="bi bi-truck"></i>
+      <span>RuralSwift</span>
+    </div>
+
+    <div class="panel-content">
+      <h1>Deliver to Every <span>Village</span></h1>
+      <p>Fast, reliable deliveries connecting rural India with everything they need.</p>
+
+      <div class="panel-badges">
+        <div class="badge-item">
+          <i class="bi bi-shield-check-fill"></i>
+          <span>100% Secure Payments</span>
+        </div>
+        <div class="badge-item">
+          <i class="bi bi-truck"></i>
+          <span>Same-Day Delivery Available</span>
+        </div>
+        <div class="badge-item">
+          <i class="bi bi-headset"></i>
+          <span>24/7 Customer Support</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ RIGHT FORM ═══ -->
+  <div class="auth-form-side">
+
+    <div class="form-header">
+      <h2>Welcome back 👋</h2>
+      <p>Sign in to your RuralSwift account</p>
+    </div>
+
+    <!-- Alert -->
+    <div *ngIf="errorMessage" class="auth-alert error">
+      <i class="bi bi-exclamation-circle-fill"></i>
+      {{ errorMessage }}
+    </div>
+
+    <form (ngSubmit)="login()" #loginForm="ngForm">
+
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <div class="input-wrap">
+          <input
+            id="email"
+            type="email"
+            name="email"
+            [(ngModel)]="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+            required>
+          <i class="bi bi-envelope-fill"></i>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-wrap">
+          <input
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            name="password"
+            [(ngModel)]="password"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+            required>
+          <i class="bi bi-lock-fill"></i>
+          <button type="button" class="pwd-toggle" (click)="showPassword = !showPassword">
+            <i [class]="showPassword ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Remember & Forgot -->
+      <div class="auth-options">
+        <label class="remember-wrap">
+          <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe">
+          <span>Remember me</span>
+        </label>
+        <a routerLink="/forgot-password" class="forgot-link">Forgot Password?</a>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="auth-btn" [disabled]="isLoading">
+        <div *ngIf="isLoading" class="spinner"></div>
+        <span>{{ isLoading ? 'Signing in...' : 'Sign In' }}</span>
+        <i *ngIf="!isLoading" class="bi bi-arrow-right"></i>
+      </button>
+
+    </form>
+
+    <div class="auth-footer">
+      Don't have an account?
+      <a routerLink="/register">Create one free</a>
+    </div>
+
+  </div>
+
+</div>

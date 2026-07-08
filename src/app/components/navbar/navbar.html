@@ -1,0 +1,110 @@
+<header class="desktop-header" id="global-desktop-header">
+  <!-- Main navigation row -->
+  <div class="main-nav">
+    <!-- Logo -->
+    <button class="logo-wrap" routerLink="/home" aria-label="Home">
+      <img
+        [src]="brandLogo"
+        alt="RuralSwift"
+        class="brand-logo-img brand-logo-img--nav"
+        (error)="handleImageError($event, brandLogoFallback)"
+        [attr.decoding]="'async'"
+      />
+    </button>
+
+    <!-- Location -->
+    <button class="location-wrap" (click)="openLocationModal()" aria-label="Select delivery location">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+        <circle cx="12" cy="10" r="3"/>
+      </svg>
+      <div class="location-text">
+        <span class="deliver-label">Deliver to</span>
+        <span class="deliver-village">Select your village</span>
+      </div>
+    </button>
+
+    <!-- Search bar -->
+    <div class="search-bar">
+      <button class="search-cat-btn" type="button">
+        All
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      <input
+        type="text"
+        placeholder="Search RuralSwift"
+        class="search-input"
+        aria-label="Search products"
+        id="desktop-search-input"
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="onSearch()"
+      />
+      <button class="search-submit-btn" (click)="onSearch()" aria-label="Search">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Account -->
+    <button class="nav-action-item" (click)="handleAccountClick()" id="nav-account-btn" aria-label="Account">
+      <span class="nav-action-top" id="nav-user-greeting">{{ userGreeting() }}</span>
+      <span class="nav-action-bottom">
+        Account &amp; Lists
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </span>
+    </button>
+
+    <!-- Orders -->
+    <button class="nav-action-item" routerLink="/account" [queryParams]="{tab:'orders'}" aria-label="Orders">
+      <span class="nav-action-top">Returns</span>
+      <span class="nav-action-bottom">&amp; Orders</span>
+    </button>
+
+    <!-- Cart -->
+    <button class="cart-btn" routerLink="/cart" aria-label="Cart">
+      <div class="cart-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+        <span class="cart-count" id="desktop-cart-count">{{ cart.itemCount() }}</span>
+      </div>
+      <span class="cart-label">Cart</span>
+    </button>
+  </div>
+
+  <!-- Sub navigation row -->
+  <div class="sub-nav">
+    <button class="sub-nav-all">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+      All
+    </button>
+    <button class="sub-nav-link" routerLink="/home">Today's Deals</button>
+    <button class="sub-nav-link" routerLink="/products">Shop All</button>
+    <button class="sub-nav-link" routerLink="/products" [queryParams]="{category:'farming'}">Farming</button>
+    <button class="sub-nav-link" routerLink="/products" [queryParams]="{category:'groceries'}">Groceries</button>
+    <button class="sub-nav-link" routerLink="/products" [queryParams]="{category:'electronics'}">Electronics</button>
+    <button class="sub-nav-link seller-hub-link" routerLink="/seller-hub">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      Seller Hub
+    </button>
+  </div>
+</header>

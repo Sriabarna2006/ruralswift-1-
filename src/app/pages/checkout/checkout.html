@@ -1,0 +1,276 @@
+<div class="checkout-page has-bottom-nav" id="page-checkout">
+
+  @if (step() === 'success') {
+    <!-- ── ORDER SUCCESS ── -->
+    <div class="success-screen" id="checkout-success">
+      <div class="success-icon-wrap">
+        <div class="success-circle">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+            fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+      </div>
+      <h1 class="success-heading">Order Placed! 🎉</h1>
+      <p class="success-sub">
+        @if (placedOrder()?.order_id) {
+          Your order #{{ placedOrder()!.order_id }} has been confirmed.
+        } @else {
+          Your order has been confirmed.
+        }
+      </p>
+      <p class="success-desc">You'll receive an SMS and email confirmation shortly. Thank you for shopping with RuralSwift!</p>
+      <div class="success-actions">
+        <a routerLink="/account" [queryParams]="{tab:'orders'}" class="success-btn success-btn--primary">Track Order</a>
+        <a routerLink="/home" class="success-btn success-btn--ghost">Continue Shopping</a>
+      </div>
+    </div>
+
+  } @else {
+
+    <div class="checkout-layout">
+      <!-- ── Left: Steps ── -->
+      <div class="checkout-main">
+        <!-- Step Indicator -->
+        <nav class="step-indicator" aria-label="Checkout steps">
+          @for (s of steps; track s.id; let i = $index) {
+            <div class="step-item" [class.active]="step() === s.id" [class.done]="currentStepIndex() > i">
+              <div class="step-circle">
+                @if (currentStepIndex() > i) {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                } @else {
+                  {{ i + 1 }}
+                }
+              </div>
+              <span class="step-label">{{ s.label }}</span>
+            </div>
+            @if (i < steps.length - 1) {
+              <div class="step-connector" [class.done]="currentStepIndex() > i"></div>
+            }
+          }
+        </nav>
+
+        <!-- ── STEP 1: Address ── -->
+        @if (step() === 'address') {
+          <div class="checkout-step" id="step-address">
+            <h2 class="step-heading">Delivery Address</h2>
+            @if (addresses().length === 0) {
+              <div class="no-address">
+                <p>No saved addresses. Please add one in your <a routerLink="/account" [queryParams]="{tab:'addresses'}">account settings</a>.</p>
+              </div>
+            } @else {
+              <div class="addr-list">
+                @for (addr of addresses(); track addr.id) {
+                  <label class="addr-option" [class.selected]="selectedAddr()?.id === addr.id">
+                    <input
+                      type="radio"
+                      name="address"
+                      class="addr-radio"
+                      [checked]="selectedAddr()?.id === addr.id"
+                      (change)="selectedAddr.set(addr)"
+                    />
+                    <div class="addr-option-body">
+                      <div class="addr-option-top">
+                        <span class="addr-label-tag">{{ addr.label || 'Home' }}</span>
+                        @if (addr.is_default) {
+                          <span class="addr-default-tag">Default</span>
+                        }
+                      </div>
+                      <p class="addr-name-text"><strong>{{ addr.full_name }}</strong> · {{ addr.phone }}</p>
+                      <p class="addr-text-line">{{ addr.address_line1 }}, {{ addr.city }}, {{ addr.state }} {{ addr.pincode }}</p>
+                    </div>
+                  </label>
+                }
+              </div>
+            }
+            <button class="step-next-btn" (click)="nextStep()" [disabled]="!selectedAddr()">
+              Continue to Payment
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </button>
+          </div>
+        }
+
+        <!-- ── STEP 2: Payment ── -->
+        @if (step() === 'payment') {
+          <div class="checkout-step" id="step-payment">
+            <h2 class="step-heading">Payment Method</h2>
+            <div class="payment-options">
+              @for (method of [
+                {id:'cod', label:'Cash on Delivery', icon:'💵', desc:'Pay when your order arrives'},
+                {id:'upi', label:'UPI Payment', icon:'📱', desc:'Google Pay, PhonePe, Paytm'},
+                {id:'card', label:'Credit / Debit Card', icon:'💳', desc:'Visa, Mastercard, RuPay'},
+              ]; track method.id) {
+                <label class="payment-option" [class.selected]="paymentMethod() === method.id">
+                  <input
+                    type="radio"
+                    name="payment"
+                    class="pay-radio"
+                    [value]="method.id"
+                    [checked]="paymentMethod() === method.id"
+                    (change)="paymentMethod.set($any(method.id))"
+                  />
+                  <span class="pay-icon-big">{{ method.icon }}</span>
+                  <div class="pay-label-wrap">
+                    <span class="pay-label-text">{{ method.label }}</span>
+                    <span class="pay-label-desc">{{ method.desc }}</span>
+                  </div>
+                </label>
+              }
+            </div>
+
+            @if (paymentMethod() === 'upi') {
+              <div class="upi-input-wrap">
+                <label class="upi-label" for="upi-id">Enter UPI ID</label>
+                <input
+                  id="upi-id"
+                  type="text"
+                  class="upi-input"
+                  placeholder="yourname@upi"
+                  [value]="upiId()"
+                  (input)="upiId.set($any($event.target).value)"
+                />
+              </div>
+            }
+
+            <div class="payment-nav">
+              <button class="step-back-btn" (click)="goToStep('address')">← Back</button>
+              <button class="step-next-btn" (click)="nextStep()">
+                Review Order
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- ── STEP 3: Review ── -->
+        @if (step() === 'review') {
+          <div class="checkout-step" id="step-review">
+            <h2 class="step-heading">Review Your Order</h2>
+
+            <!-- Address summary -->
+            <div class="review-section">
+              <div class="review-section-header">
+                <span class="review-section-title">Delivering to</span>
+                <button class="review-edit-btn" (click)="goToStep('address')">Edit</button>
+              </div>
+              @if (selectedAddr()) {
+                <p class="review-addr-name"><strong>{{ selectedAddr()!.full_name }}</strong></p>
+                <p class="review-addr-text">{{ selectedAddr()!.address_line1 }}, {{ selectedAddr()!.city }}, {{ selectedAddr()!.state }} {{ selectedAddr()!.pincode }}</p>
+                <p class="review-addr-phone">📞 {{ selectedAddr()!.phone }}</p>
+              }
+            </div>
+
+            <!-- Payment summary -->
+            <div class="review-section">
+              <div class="review-section-header">
+                <span class="review-section-title">Payment</span>
+                <button class="review-edit-btn" (click)="goToStep('payment')">Edit</button>
+              </div>
+              <p class="review-payment-val">
+                @if (paymentMethod() === 'cod')  { 💵 Cash on Delivery }
+                @if (paymentMethod() === 'upi')  { 📱 UPI · {{ upiId() }} }
+                @if (paymentMethod() === 'card') { 💳 Card Payment }
+              </p>
+            </div>
+
+            <!-- Items -->
+            <div class="review-section">
+              <span class="review-section-title">Items ({{ cart.itemCount() }})</span>
+              <div class="review-items">
+                @for (item of cart.items(); track item.product_id) {
+                  <div class="review-item">
+                    <img [src]="item.image_url || placeholderImage"
+                         [alt]="item.name"
+                         class="review-item-img"
+                         [attr.decoding]="'async'" />
+                    <div class="review-item-info">
+                      <p class="review-item-name">{{ item.name }}</p>
+                      <p class="review-item-qty">Qty: {{ item.quantity }}</p>
+                    </div>
+                    <span class="review-item-price">{{ fmt(item.price * item.quantity) }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="review-notes">
+              <label class="notes-label" for="order-notes">Delivery Instructions (optional)</label>
+              <textarea
+                id="order-notes"
+                class="notes-input"
+                rows="3"
+                placeholder="e.g. Leave at gate, call before delivery..."
+                [value]="notes()"
+                (input)="notes.set($any($event.target).value)"
+              ></textarea>
+            </div>
+
+            <div class="payment-nav">
+              <button class="step-back-btn" (click)="goToStep('payment')">← Back</button>
+              <button
+                class="place-order-btn"
+                (click)="placeOrder()"
+                [disabled]="placingOrder()"
+                id="btn-place-order"
+              >
+                @if (placingOrder()) {
+                  Placing Order...
+                } @else {
+                  Place Order · {{ fmt(total()) }}
+                }
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- ── Right: Summary ── -->
+      <aside class="checkout-summary">
+        <h3 class="checkout-summary-title">Order Summary</h3>
+        <div class="checkout-summary-items">
+          @for (item of cart.items(); track item.product_id) {
+            <div class="cs-item">
+              <img [src]="item.image_url || placeholderImage"
+                   [alt]="item.name"
+                   class="cs-item-img"
+                   [attr.decoding]="'async'" />
+              <div class="cs-item-info">
+                <p class="cs-item-name line-clamp-2">{{ item.name }}</p>
+                <p class="cs-item-qty">× {{ item.quantity }}</p>
+              </div>
+              <span class="cs-item-price">{{ fmt(item.price * item.quantity) }}</span>
+            </div>
+          }
+        </div>
+        <div class="cs-divider"></div>
+        <div class="cs-line">
+          <span>Subtotal</span>
+          <span>{{ fmt(subtotal()) }}</span>
+        </div>
+        <div class="cs-line">
+          <span>Delivery</span>
+          @if (delivery() === 0) {
+            <span class="cs-free">FREE</span>
+          } @else {
+            <span>{{ fmt(delivery()) }}</span>
+          }
+        </div>
+        <div class="cs-divider"></div>
+        <div class="cs-total">
+          <span>Total</span>
+          <span>{{ fmt(total()) }}</span>
+        </div>
+      </aside>
+    </div>
+  }
+</div>

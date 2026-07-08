@@ -1,0 +1,193 @@
+<app-navbar></app-navbar>
+
+<!-- Toast -->
+<div class="profile-toast" [class.toast-success]="toastType==='success'" [class.toast-error]="toastType==='error'" *ngIf="showToast">
+  {{ toastMsg }}
+</div>
+
+<div class="profile-page">
+
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar">
+
+    <div class="profile-top">
+      <div class="avatar">
+        <i class="bi bi-person-fill"></i>
+      </div>
+      <h3>{{ profileForm.first_name || 'My Profile' }}</h3>
+      <p class="profile-email">{{ profileForm.email }}</p>
+    </div>
+
+    <!-- MENU -->
+    <div class="menu">
+      <div class="menu-item" [class.active]="selectedTab === 'personal'" (click)="setTab('personal')">
+        <i class="bi bi-person-circle"></i><span>Personal Information</span>
+      </div>
+      <div class="menu-item" [class.active]="selectedTab === 'address'" (click)="setTab('address')">
+        <i class="bi bi-geo-alt-fill"></i><span>Delivery Address</span>
+      </div>
+      <div class="menu-item" [class.active]="selectedTab === 'payment'" (click)="setTab('payment')">
+        <i class="bi bi-credit-card-fill"></i><span>My Payments</span>
+      </div>
+      <div class="menu-item" [class.active]="selectedTab === 'account'" (click)="setTab('account')">
+        <i class="bi bi-gear-fill"></i><span>Account Options</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT CONTENT -->
+  <div class="content">
+
+    <!-- PERSONAL INFO -->
+    <div *ngIf="selectedTab==='personal'" class="content-card">
+      <h2>Personal Information</h2>
+
+      <div *ngIf="profileLoading" class="profile-loading">
+        <div class="spinner spinner-primary"></div>
+      </div>
+
+      <form class="profile-form" *ngIf="!profileLoading" (ngSubmit)="saveProfile()">
+
+        <div class="form-row-two">
+          <div class="form-group">
+            <label class="form-label">First Name *</label>
+            <input type="text" class="form-control" placeholder="First Name"
+                   [(ngModel)]="profileForm.first_name" name="first_name" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input type="text" class="form-control" placeholder="Last Name"
+                   [(ngModel)]="profileForm.last_name" name="last_name" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Phone Number *</label>
+          <input type="tel" class="form-control" placeholder="+91 XXXXXXXXXX"
+                 [(ngModel)]="profileForm.phone" name="phone" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email ID *</label>
+          <input type="email" class="form-control" placeholder="Enter Email"
+                 [(ngModel)]="profileForm.email" name="email" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Gender</label>
+          <select class="form-control" [(ngModel)]="profileForm.gender" name="gender">
+            <option value="">Select Gender</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <button type="submit" class="save-btn" [disabled]="profileSaving">
+          <span *ngIf="!profileSaving">Save Changes</span>
+          <span *ngIf="profileSaving" class="spinner"></span>
+        </button>
+
+      </form>
+    </div>
+
+    <!-- ADDRESS -->
+    <div *ngIf="selectedTab==='address'" class="content-card">
+      <div class="address-header">
+        <h2>Delivery Addresses</h2>
+        <button class="btn btn-primary btn-sm" (click)="showAddressForm = !showAddressForm">
+          + Add Address
+        </button>
+      </div>
+
+      <!-- Add form -->
+      <div class="address-form-card" *ngIf="showAddressForm">
+        <div class="form-row-two">
+          <div class="form-group">
+            <label class="form-label">Label</label>
+            <select class="form-control" [(ngModel)]="newAddress.label" name="label">
+              <option>Home</option><option>Work</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-control" [(ngModel)]="newAddress.full_name" name="full_name" placeholder="Recipient name" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Address Line 1 *</label>
+          <input type="text" class="form-control" [(ngModel)]="newAddress.address_line1" name="address_line1" placeholder="Street / Village" required />
+        </div>
+        <div class="form-row-two">
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <input type="text" class="form-control" [(ngModel)]="newAddress.city" name="city" placeholder="City" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Pincode</label>
+            <input type="text" class="form-control" [(ngModel)]="newAddress.pincode" name="pincode" placeholder="PIN Code" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">State</label>
+          <input type="text" class="form-control" [(ngModel)]="newAddress.state" name="state" placeholder="State" />
+        </div>
+        <div class="address-form-actions">
+          <button class="btn btn-outline btn-sm" (click)="showAddressForm = false">Cancel</button>
+          <button class="btn btn-primary btn-sm" (click)="saveAddress()" [disabled]="savingAddress">
+            <span *ngIf="!savingAddress">Save Address</span>
+            <span *ngIf="savingAddress" class="spinner"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="addressLoading" class="profile-loading"><div class="spinner spinner-primary"></div></div>
+
+      <!-- Empty -->
+      <div class="address-empty" *ngIf="!addressLoading && addressList.length === 0 && !showAddressForm">
+        <i class="bi bi-geo-alt" style="font-size:2rem; color: var(--text-muted);"></i>
+        <p>No addresses saved yet.</p>
+      </div>
+
+      <!-- Address List -->
+      <div class="address-list" *ngIf="!addressLoading">
+        <div class="address-card" *ngFor="let addr of addressList" [class.default-addr]="addr.is_default">
+          <div class="address-card-top">
+            <span class="address-label">{{ addr.label }}</span>
+            <span class="default-badge" *ngIf="addr.is_default">Default</span>
+          </div>
+          <p class="address-name">{{ addr.full_name }}</p>
+          <p class="address-line">{{ addr.address_line1 }}<span *ngIf="addr.address_line2">, {{ addr.address_line2 }}</span></p>
+          <p class="address-city">{{ addr.city }}, {{ addr.state }} - {{ addr.pincode }}</p>
+          <div class="address-card-actions">
+            <button class="btn btn-sm btn-ghost" (click)="deleteAddress(addr.id)">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYMENT -->
+    <div *ngIf="selectedTab==='payment'" class="content-card">
+      <h2>My Payments</h2>
+      <div class="payment-grid">
+        <div class="payment-card"><i class="bi bi-google"></i><span>Google Pay</span></div>
+        <div class="payment-card"><i class="bi bi-phone"></i><span>PhonePe</span></div>
+        <div class="payment-card"><i class="bi bi-credit-card"></i><span>Debit Card</span></div>
+        <div class="payment-card"><i class="bi bi-cash-stack"></i><span>Cash On Delivery</span></div>
+      </div>
+    </div>
+
+    <!-- ACCOUNT OPTIONS -->
+    <div *ngIf="selectedTab === 'account'" class="content-card">
+      <h2>Account Options</h2>
+      <a routerLink="/seller-hub" class="option"><span>Become a Seller</span><i class="bi bi-chevron-right"></i></a>
+      <div class="option"><span>Privacy &amp; Security</span><i class="bi bi-chevron-right"></i></div>
+      <div class="option"><span>Help &amp; Support</span><i class="bi bi-chevron-right"></i></div>
+      <div class="option logout" (click)="logout()"><span>Logout</span><i class="bi bi-chevron-right"></i></div>
+    </div>
+
+  </div>
+
+</div>

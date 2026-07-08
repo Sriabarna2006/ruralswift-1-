@@ -1,0 +1,148 @@
+/* Loading Overlay — matches design.html loading curtain */
+#loading-curtain {
+  position: fixed;
+  inset: 0;
+  background-color: #000029;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-loading);
+  transform-origin: top;
+  will-change: transform, opacity;
+  transition: opacity 0.5s ease 0.1s, transform 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.1s;
+}
+
+#loading-curtain.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scaleY(0);
+}
+
+.center-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.brand-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  position: relative;
+  z-index: 10;
+}
+
+.logo-mark {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 128px;
+  height: 128px;
+  z-index: 20;
+}
+
+/* Orbit rings */
+.orbit-ring {
+  position: absolute;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.orbit-ring--outer {
+  width: 190%;
+  height: 190%;
+  top: -45%;
+  left: -45%;
+  animation: spinCCW 12s linear infinite;
+}
+
+.orbit-ring--inner {
+  width: 145%;
+  height: 145%;
+  top: -22.5%;
+  left: -22.5%;
+  animation: spinCW 8s linear infinite;
+}
+
+@keyframes spinCCW {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+
+@keyframes spinCW {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Logo image */
+.loading-logo {
+  width: 130px;
+  height: 130px;
+  border-radius: 65px;
+  position: relative;
+  z-index: 20;
+  box-shadow: 0 0 40px rgba(16, 185, 129, 0.2);
+}
+
+/* Info */
+.loading-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 40px;
+}
+
+.percent-display {
+  font-size: 24px;
+  font-weight: 300;
+  color: #fff;
+  letter-spacing: -0.04em;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.percent-number {
+  font-variant-numeric: tabular-nums;
+  min-width: 2.5ch;
+  text-align: right;
+}
+
+.percent-symbol {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-left: 2px;
+}
+
+.status-text {
+  color: #10B981;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  opacity: 0.8;
+}
+
+/* Progress bar */
+.progress-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(to right, #000069, #10B981, #fff);
+  box-shadow: 0 0 15px #10B981;
+  transition: width 0.3s ease;
+}

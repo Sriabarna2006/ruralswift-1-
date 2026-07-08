@@ -1,0 +1,6 @@
+/* =============================================
+   REGISTER — Premium Auth Page Styles
+   Uses the same layout and tokens as login.css
+   ============================================= */
+
+@import "../login/login.css";

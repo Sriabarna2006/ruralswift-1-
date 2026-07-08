@@ -1,0 +1,220 @@
+<!-- REGISTER PAGE -->
+<div class="auth-page">
+
+  <!-- ═══ LEFT PANEL ═══ -->
+  <div class="auth-panel">
+
+    <div class="panel-logo">
+      <i class="bi bi-truck"></i>
+      <span>RuralSwift</span>
+    </div>
+
+    <div class="panel-content">
+      <h1>Start Your <span>Journey</span> With Us</h1>
+      <p>Join thousands of happy customers getting fast deliveries right to their doorstep.</p>
+
+      <div class="panel-badges">
+        <div class="badge-item">
+          <i class="bi bi-person-check-fill"></i>
+          <span>Free Account — No Hidden Fees</span>
+        </div>
+        <div class="badge-item">
+          <i class="bi bi-box-seam-fill"></i>
+          <span>Track Orders in Real-Time</span>
+        </div>
+        <div class="badge-item">
+          <i class="bi bi-star-fill"></i>
+          <span>Trusted by 50,000+ Customers</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ RIGHT FORM ═══ -->
+  <div class="auth-form-side">
+
+    <div class="form-header">
+      <h2>Create your account 🚀</h2>
+      <p>Fill in your details to get started with RuralSwift</p>
+    </div>
+
+    <!-- Alert Error -->
+    <div *ngIf="errorMessage" class="auth-alert error">
+      <i class="bi bi-exclamation-circle-fill"></i>
+      {{ errorMessage }}
+    </div>
+
+    <!-- Alert Success -->
+    <div *ngIf="successMessage" class="auth-alert success">
+      <i class="bi bi-check-circle-fill"></i>
+      {{ successMessage }}
+    </div>
+
+    <form *ngIf="!otpStep" (ngSubmit)="register()" #registerForm="ngForm">
+
+      <!-- First & Last Name -->
+      <div class="name-row">
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <div class="input-wrap">
+            <input
+              id="firstName"
+              type="text"
+              name="firstName"
+              [(ngModel)]="firstName"
+              placeholder="First name"
+              autocomplete="given-name"
+              required>
+            <i class="bi bi-person-fill"></i>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <div class="input-wrap">
+            <input
+              id="lastName"
+              type="text"
+              name="lastName"
+              [(ngModel)]="lastName"
+              placeholder="Last name"
+              autocomplete="family-name">
+            <i class="bi bi-person-fill"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <div class="input-wrap">
+          <input
+            id="email"
+            type="email"
+            name="email"
+            [(ngModel)]="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+            required>
+          <i class="bi bi-envelope-fill"></i>
+        </div>
+      </div>
+
+      <!-- Phone -->
+      <div class="form-group">
+        <label for="phone">Mobile Number</label>
+        <div class="input-wrap">
+          <input
+            id="phone"
+            type="tel"
+            name="phone"
+            [(ngModel)]="phone"
+            placeholder="+91 00000 00000"
+            autocomplete="tel">
+          <i class="bi bi-phone-fill"></i>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-wrap">
+          <input
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            name="password"
+            [(ngModel)]="password"
+            placeholder="Min. 6 characters"
+            autocomplete="new-password"
+            (input)="checkStrength()"
+            required>
+          <i class="bi bi-lock-fill"></i>
+          <button type="button" class="pwd-toggle" (click)="showPassword = !showPassword">
+            <i [class]="showPassword ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'"></i>
+          </button>
+        </div>
+        <!-- Strength Bar -->
+        <div *ngIf="password" class="strength-bar">
+          <span [class]="strengthClass(1)"></span>
+          <span [class]="strengthClass(2)"></span>
+          <span [class]="strengthClass(3)"></span>
+          <span [class]="strengthClass(4)"></span>
+        </div>
+        <div *ngIf="password" class="strength-label" [class]="passwordStrength">
+          {{ strengthText }}
+        </div>
+      </div>
+
+      <!-- Confirm Password -->
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <div class="input-wrap">
+          <input
+            id="confirmPassword"
+            [type]="showConfirm ? 'text' : 'password'"
+            name="confirmPassword"
+            [(ngModel)]="confirmPassword"
+            placeholder="Re-enter your password"
+            autocomplete="new-password"
+            required>
+          <i class="bi bi-lock-fill"></i>
+          <button type="button" class="pwd-toggle" (click)="showConfirm = !showConfirm">
+            <i [class]="showConfirm ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="auth-btn" [disabled]="isLoading">
+        <div *ngIf="isLoading" class="spinner"></div>
+        <span>{{ isLoading ? 'Creating account...' : 'Create Account' }}</span>
+        <i *ngIf="!isLoading" class="bi bi-arrow-right"></i>
+      </button>
+
+    </form>
+
+    <form *ngIf="otpStep" (ngSubmit)="verifyOtp()" #otpForm="ngForm">
+
+      <div class="form-group">
+        <label for="otp">Email OTP</label>
+        <div class="input-wrap">
+          <input
+            id="otp"
+            type="text"
+            name="otp"
+            [(ngModel)]="otp"
+            placeholder="Enter 6-digit OTP"
+            autocomplete="one-time-code"
+            inputmode="numeric"
+            maxlength="6"
+            required>
+          <i class="bi bi-shield-lock-fill"></i>
+        </div>
+      </div>
+
+      <button type="submit" class="auth-btn" [disabled]="isLoading">
+        <div *ngIf="isLoading" class="spinner"></div>
+        <span>{{ isLoading ? 'Verifying...' : 'Verify OTP & Create Account' }}</span>
+        <i *ngIf="!isLoading" class="bi bi-check2-circle"></i>
+      </button>
+
+      <button type="button" class="auth-btn secondary" [disabled]="isLoading" (click)="otpStep = false; otp = ''">
+        Change details
+      </button>
+
+    </form>
+
+    <p class="terms-text">
+      By creating an account you agree to our
+      <a href="#">Terms of Service</a> and
+      <a href="#">Privacy Policy</a>.
+    </p>
+
+    <div class="auth-footer">
+      Already have an account?
+      <a routerLink="/login">Sign in</a>
+    </div>
+
+  </div>
+
+</div>

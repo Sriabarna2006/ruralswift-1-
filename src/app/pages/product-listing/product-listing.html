@@ -1,0 +1,226 @@
+<div class="shop-page has-bottom-nav" id="page-shop">
+
+  <!-- ── Page Header ── -->
+  <div class="shop-page-header">
+    <h1 class="shop-heading">
+      @if (selectedCategory() !== 'All') {
+        {{ selectedCategory() }}
+      } @else if (searchQuery()) {
+        Results for "{{ searchQuery() }}"
+      } @else {
+        All Products
+      }
+    </h1>
+    <p class="shop-count" aria-live="polite">
+      @if (isLoading()) { Loading... }
+      @else { {{ totalCount() }} products found }
+    </p>
+  </div>
+
+  <!-- ── Category Chips (sticky) ── -->
+  <div class="shop-categories" role="list" aria-label="Filter by category">
+    @for (cat of categories; track cat) {
+      <button
+        class="shop-cat-chip"
+        [class.active]="selectedCategory() === cat"
+        (click)="selectCategory(cat)"
+        role="listitem"
+        [attr.aria-pressed]="selectedCategory() === cat"
+      >{{ cat }}</button>
+    }
+  </div>
+
+  <!-- ── Toolbar (sort + filter) ── -->
+  <div class="shop-toolbar">
+    <div class="shop-results-info">
+      @if (!isLoading() && totalCount() > 0) {
+        Showing {{ (currentPage() - 1) * 24 + 1 }}–{{ currentPage() * 24 > totalCount() ? totalCount() : currentPage() * 24 }} of {{ totalCount() }}
+      }
+    </div>
+    <div class="shop-toolbar-actions">
+      <button class="filter-toggle-btn" (click)="toggleFilters()" [attr.aria-expanded]="showFilters()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/>
+          <line x1="11" y1="18" x2="13" y2="18"/>
+        </svg>
+        Filters
+      </button>
+      <select
+        class="sort-select"
+        [value]="selectedSort()"
+        (change)="onSortChange($any($event.target).value)"
+        aria-label="Sort products"
+      >
+        @for (opt of sortOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- ── Filter Panel (collapsible) ── -->
+  @if (showFilters()) {
+    <div class="filter-panel" role="region" aria-label="Filters">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label class="filter-label" for="price-min">Min Price (₹)</label>
+          <input
+            id="price-min"
+            type="number"
+            class="filter-input"
+            placeholder="0"
+            [value]="priceMin() ?? ''"
+            (input)="priceMin.set(+$any($event.target).value || null)"
+          />
+        </div>
+        <div class="filter-group">
+          <label class="filter-label" for="price-max">Max Price (₹)</label>
+          <input
+            id="price-max"
+            type="number"
+            class="filter-input"
+            placeholder="10000"
+            [value]="priceMax() ?? ''"
+            (input)="priceMax.set(+$any($event.target).value || null)"
+          />
+        </div>
+        <button class="filter-apply-btn" (click)="loadProducts()">Apply</button>
+        <button class="filter-clear-btn" (click)="clearFilters()">Clear All</button>
+      </div>
+    </div>
+  }
+
+  <!-- ── Products Grid ── -->
+  <div class="shop-grid" role="list" aria-label="Products">
+    @if (isLoading()) {
+      @for (i of [1,2,3,4,5,6,7,8,9,10,11,12]; track i) {
+        <div class="product-card-skeleton skeleton" role="listitem" aria-hidden="true"></div>
+      }
+    } @else if (products().length === 0) {
+      <div class="shop-empty-state" role="listitem">
+        <div class="empty-icon">🔍</div>
+        <h2>No products found</h2>
+        <p>Try adjusting your filters or search terms</p>
+        <button class="btn-clear-search" (click)="clearFilters()">Clear Filters</button>
+      </div>
+    } @else {
+      @for (product of products(); track product.product_id) {
+        <article
+          class="shop-product-card"
+          role="listitem"
+          (click)="goToProduct(product.product_id)"
+          [attr.aria-label]="product.name + ', ' + fmt(product.price)"
+        >
+          <!-- Image -->
+          <div class="shop-product-img-wrap">
+            <img
+              [src]="product.image_url || placeholderImage"
+              [alt]="product.name"
+              class="pl-product-img"
+              loading="lazy"
+              [attr.decoding]="'async'"
+            />
+            @if (discount(product.price, product.mrp) > 0) {
+              <span class="shop-badge">-{{ discount(product.price, product.mrp) }}%</span>
+            }
+            @if (!product.is_active || product.stock === 0) {
+              <div class="oos-overlay">Out of Stock</div>
+            }
+          </div>
+
+          <!-- Body -->
+          <div class="shop-product-body">
+            <p class="shop-product-cat">{{ product.category }}</p>
+            <h3 class="shop-product-title line-clamp-2">{{ product.name }}</h3>
+
+            @if (product.rating) {
+              <div class="shop-rating">
+                <span class="shop-stars">★</span>
+                <span class="shop-rating-val">{{ product.rating | number:'1.1-1' }}</span>
+                <span class="shop-review-count">({{ product.review_count }})</span>
+              </div>
+            }
+
+            <div class="shop-price-row">
+              <span class="shop-product-price">{{ fmt(product.price) }}</span>
+              @if (product.mrp > product.price) {
+                <span class="shop-product-mrp">{{ fmt(product.mrp) }}</span>
+              }
+            </div>
+
+            <button
+              class="shop-add-cart-btn"
+              (click)="addToCart(product, $event)"
+              [disabled]="product.stock === 0"
+              [attr.aria-label]="'Add ' + product.name + ' to cart'"
+            >
+              @if (product.stock === 0) {
+                Out of Stock
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Add to Cart
+              }
+            </button>
+          </div>
+        </article>
+      }
+    }
+  </div>
+
+  <!-- ── Pagination ── -->
+  @if (totalPages() > 1) {
+    <div class="pagination" role="navigation" aria-label="Pagination">
+      <button
+        class="page-btn"
+        (click)="goToPage(currentPage() - 1)"
+        [disabled]="currentPage() === 1"
+        aria-label="Previous page"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+
+      @if (pageRange[0] > 1) {
+        <button class="page-btn" (click)="goToPage(1)">1</button>
+        @if (pageRange[0] > 2) {
+          <span class="page-ellipsis">…</span>
+        }
+      }
+
+      @for (page of pageRange; track page) {
+        <button
+          class="page-btn"
+          [class.active]="page === currentPage()"
+          (click)="goToPage(page)"
+          [attr.aria-current]="page === currentPage() ? 'page' : null"
+        >{{ page }}</button>
+      }
+
+      @if (pageRange[pageRange.length - 1] < totalPages()) {
+        @if (pageRange[pageRange.length - 1] < totalPages() - 1) {
+          <span class="page-ellipsis">…</span>
+        }
+        <button class="page-btn" (click)="goToPage(totalPages())">{{ totalPages() }}</button>
+      }
+
+      <button
+        class="page-btn"
+        (click)="goToPage(currentPage() + 1)"
+        [disabled]="currentPage() === totalPages()"
+        aria-label="Next page"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </div>
+  }
+
+</div>

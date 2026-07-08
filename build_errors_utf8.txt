@@ -1,0 +1,466 @@
+﻿
+> ruralswift@0.0.0 build
+> ng build
+
+> Building...
+ΓêÜ Building...
+Application bundle generation failed. [2.093 seconds] - 2026-07-01T17:40:05.903Z
+
+node.exe : [33mΓû▓ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: RouterLinkActive is not used within the template 
+of HomeComponent[0m [1m[35m[plugin angular-compiler][0m
+At line:1 char:1
++ & "V:\internship\Node/node.exe" "V:\internship\Node/node_modules/npm/ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([33mΓû▓ [43;3...r-compiler][0m:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+    src/app/pages/home/home.ts:9:24:
+[37m      9 Γöé   imports: [RouterLink, [32mRouterLinkActive[37m, NgFor, NgClass, NavbarCom...
+        Γò╡                         [32m~~~~~~~~~~~~~~~~[0m
+
+
+[33mΓû▓ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: NavbarComponent is not used within the template of 
+ProductDetailsComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/product-details/product-details.ts:12:38:
+[37m      12 Γöé   imports: [CommonModule, RouterLink, [32mNavbarComponent[37m],
+         Γò╡                                       [32m~~~~~~~~~~~~~~~[0m
+
+
+[33mΓû▓ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: RouterLink is not used within the template of 
+SellerHubComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/seller-hub/seller-hub.ts:14:60:
+[37m      14 Γöé ...e, FormsModule, ReactiveFormsModule, [32mRouterLink[37m, NavbarComponent],
+         Γò╡                                         [32m~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2729: Property 'cart' is used before its initialization.[0m 
+[1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/cart/cart.ts:19:26:
+[37m      19 Γöé   readonly items   = this.[32mcart[37m.items;
+         Γò╡                           [32m~~~~[0m
+
+  'cart' is declared here.
+
+    src/app/pages/cart/cart.ts:34:4:
+[37m      34 Γöé     [32mpublic cart: CartService[37m,
+         Γò╡     [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2729: Property 'cart' is used before its initialization.[0m 
+[1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/cart/cart.ts:20:26:
+[37m      20 Γöé   readonly loading = this.[32mcart[37m.loading;
+         Γò╡                           [32m~~~~[0m
+
+  'cart' is declared here.
+
+    src/app/pages/cart/cart.ts:34:4:
+[37m      34 Γöé     [32mpublic cart: CartService[37m,
+         Γò╡     [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2729: Property 'cart' is used before its initialization.[0m 
+[1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/cart/cart.ts:23:27:
+[37m      23 Γöé   readonly subtotal = this.[32mcart[37m.total;
+         Γò╡                            [32m~~~~[0m
+
+  'cart' is declared here.
+
+    src/app/pages/cart/cart.ts:34:4:
+[37m      34 Γöé     [32mpublic cart: CartService[37m,
+         Γò╡     [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2729: Property 'cart' is used before its initialization.[0m 
+[1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/cart/cart.ts:24:28:
+[37m      24 Γöé   readonly itemCount = this.[32mcart[37m.itemCount;
+         Γò╡                             [32m~~~~[0m
+
+  'cart' is declared here.
+
+    src/app/pages/cart/cart.ts:34:4:
+[37m      34 Γöé     [32mpublic cart: CartService[37m,
+         Γò╡     [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/order-tracking/order-tracking.html:40:59:
+[37m      40 Γöé ...       <span class="status-value">{{ orderDetails.[32mstatus[37m }}</span>
+         Γò╡                                                      [32m~~~~~~[0m
+
+  Error occurs in the template of component OrderTrackingComponent.
+
+    src/app/pages/order-tracking/order-tracking.ts:32:15:
+[37m      32 Γöé   templateUrl: [32m'./order-tracking.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/order-tracking/order-tracking.html:42:74:
+[37m      42 Γöé ...d-label">Order ID: <strong>{{ orderDetails.[32morderId[37m }}</strong></p>
+         Γò╡                                               [32m~~~~~~~[0m
+
+  Error occurs in the template of component OrderTrackingComponent.
+
+    src/app/pages/order-tracking/order-tracking.ts:32:15:
+[37m      32 Γöé   templateUrl: [32m'./order-tracking.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/order-tracking/order-tracking.html:46:30:
+[37m      46 Γöé               {{ orderDetails.[32mstatus[37m }}
+         Γò╡                               [32m~~~~~~[0m
+
+  Error occurs in the template of component OrderTrackingComponent.
+
+    src/app/pages/order-tracking/order-tracking.ts:32:15:
+[37m      32 Γöé   templateUrl: [32m'./order-tracking.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/order-tracking/order-tracking.html:65:49:
+[37m      65 Γöé ...         *ngFor="let step of orderDetails.[32mtimeline[37m; let i = index"
+         Γò╡                                              [32m~~~~~~~~[0m
+
+  Error occurs in the template of component OrderTrackingComponent.
+
+    src/app/pages/order-tracking/order-tracking.ts:32:15:
+[37m      32 Γöé   templateUrl: [32m'./order-tracking.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/order-tracking/order-tracking.html:158:53:
+[37m      158 Γöé               <span class="info-val">{{ orderDetails.[32mdate[37m }}</span>
+          Γò╡                                                      [32m~~~~[0m
+
+  Error occurs in the template of component OrderTrackingComponent.
+
+    src/app/pages/order-tracking/order-tracking.ts:32:15:
+[37m      32 Γöé   templateUrl: [32m'./order-tracking.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'deliveryType' does not exist on type 
+'OrderDetails'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/order-tracking/order-tracking.html:164:32:
+[37m      164 Γöé                 {{ orderDetails.[32mdeliveryType[37m }}
+          Γò╡                                 [32m~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component OrderTrackingComponent.
+
+    src/app/pages/order-tracking/order-tracking.ts:32:15:
+[37m      32 Γöé   templateUrl: [32m'./order-tracking.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/order-tracking/order-tracking.html:164:32:
+[37m      164 Γöé                 {{ orderDetails.[32mdeliveryType[37m }}
+          Γò╡                                 [32m~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component OrderTrackingComponent.
+
+    src/app/pages/order-tracking/order-tracking.ts:32:15:
+[37m      32 Γöé   templateUrl: [32m'./order-tracking.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/order-tracking/order-tracking.html:169:53:
+[37m      169 Γöé ...   <span class="info-val">{{ orderDetails.[32mpaymentMethod[37m }}</span>
+          Γò╡                                              [32m~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component OrderTrackingComponent.
+
+    src/app/pages/order-tracking/order-tracking.ts:32:15:
+[37m      32 Γöé   templateUrl: [32m'./order-tracking.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/order-tracking/order-tracking.html:173:58:
+[37m      173 Γöé ...    <span class="info-val mono">{{ orderDetails.[32morderId[37m }}</span>
+          Γò╡                                                    [32m~~~~~~~[0m
+
+  Error occurs in the template of component OrderTrackingComponent.
+
+    src/app/pages/order-tracking/order-tracking.ts:32:15:
+[37m      32 Γöé   templateUrl: [32m'./order-tracking.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'deliveryPartner' does not exist on type 
+'OrderDetails'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/order-tracking/order-tracking.html:186:54:
+[37m      186 Γöé ...   <p class="partner-name">{{ orderDetails.[32mdeliveryPartner[37m }}</p>
+          Γò╡                                               [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component OrderTrackingComponent.
+
+    src/app/pages/order-tracking/order-tracking.ts:32:15:
+[37m      32 Γöé   templateUrl: [32m'./order-tracking.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/order-tracking/order-tracking.html:186:54:
+[37m      186 Γöé ...   <p class="partner-name">{{ orderDetails.[32mdeliveryPartner[37m }}</p>
+          Γò╡                                               [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component OrderTrackingComponent.
+
+    src/app/pages/order-tracking/order-tracking.ts:32:15:
+[37m      32 Γöé   templateUrl: [32m'./order-tracking.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'contact' does not exist on type 'OrderDetails'.[0m 
+[1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/order-tracking/order-tracking.html:195:36:
+[37m      195 Γöé               <span>{{ orderDetails.[32mcontact[37m }}</span>
+          Γò╡                                     [32m~~~~~~~[0m
+
+  Error occurs in the template of component OrderTrackingComponent.
+
+    src/app/pages/order-tracking/order-tracking.ts:32:15:
+[37m      32 Γöé   templateUrl: [32m'./order-tracking.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/order-tracking/order-tracking.html:195:36:
+[37m      195 Γöé               <span>{{ orderDetails.[32mcontact[37m }}</span>
+          Γò╡                                     [32m~~~~~~~[0m
+
+  Error occurs in the template of component OrderTrackingComponent.
+
+    src/app/pages/order-tracking/order-tracking.ts:32:15:
+[37m      32 Γöé   templateUrl: [32m'./order-tracking.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/product-details/product-details.html:140:19:
+[37m      140 Γöé     [src]="product.[32mimage[37m"
+          Γò╡                    [32m~~~~~[0m
+
+  Error occurs in the template of component ProductDetailsComponent.
+
+    src/app/pages/product-details/product-details.ts:13:15:
+[37m      13 Γöé   templateUrl: [32m'./product-details.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'image' does not exist on type 'Product'. Did you mean 
+'images'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/product-details/product-details.html:140:19:
+[37m      140 Γöé     [src]="product.[32mimage[37m"
+          Γò╡                    [32m~~~~~[0m
+
+  Error occurs in the template of component ProductDetailsComponent.
+
+    src/app/pages/product-details/product-details.ts:13:15:
+[37m      13 Γöé   templateUrl: [32m'./product-details.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/product-details/product-details.html:142:19:
+[37m      142 Γöé     [alt]="product.[32mname[37m">
+          Γò╡                    [32m~~~~[0m
+
+  Error occurs in the template of component ProductDetailsComponent.
+
+    src/app/pages/product-details/product-details.ts:13:15:
+[37m      13 Γöé   templateUrl: [32m'./product-details.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/product-details/product-details.html:191:24:
+[37m      191 Γöé              {{ product.[32mcategory[37m }}
+          Γò╡                         [32m~~~~~~~~[0m
+
+  Error occurs in the template of component ProductDetailsComponent.
+
+    src/app/pages/product-details/product-details.ts:13:15:
+[37m      13 Γöé   templateUrl: [32m'./product-details.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/product-details/product-details.html:197:24:
+[37m      197 Γöé              {{ product.[32mname[37m }}
+          Γò╡                         [32m~~~~[0m
+
+  Error occurs in the template of component ProductDetailsComponent.
+
+    src/app/pages/product-details/product-details.ts:13:15:
+[37m      13 Γöé   templateUrl: [32m'./product-details.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/product-details/product-details.html:205:33:
+[37m      205 Γöé                     Γÿà {{ produc[32mt.rati[37mng }}
+          Γò╡                                [32m~~~~~~[0m
+
+  Error occurs in the template of component ProductDetailsComponent.
+
+    src/app/pages/product-details/product-details.ts:13:15:
+[37m      13 Γöé   templateUrl: [32m'./product-details.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/product-details/product-details.html:211:33:
+[37m      211 Γöé                     Γÿà {{ produc[32mt.rati[37mng }}
+          Γò╡                                [32m~~~~~~[0m
+
+  Error occurs in the template of component ProductDetailsComponent.
+
+    src/app/pages/product-details/product-details.ts:13:15:
+[37m      13 Γöé   templateUrl: [32m'./product-details.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/product-details/product-details.html:221:32:
+[37m      221 Γöé                     Γé╣{{ produc[32mt.pri[37mce }}
+          Γò╡                               [32m~~~~~[0m
+
+  Error occurs in the template of component ProductDetailsComponent.
+
+    src/app/pages/product-details/product-details.ts:13:15:
+[37m      13 Γöé   templateUrl: [32m'./product-details.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'oldPrice' does not exist on type 'Product'.[0m 
+[1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/product-details/product-details.html:226:36:
+[37m      226 Γöé                         Γé╣{{ produc[32mt.oldPri[37mce }}
+          Γò╡                                   [32m~~~~~~~~[0m
+
+  Error occurs in the template of component ProductDetailsComponent.
+
+    src/app/pages/product-details/product-details.ts:13:15:
+[37m      13 Γöé   templateUrl: [32m'./product-details.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/product-details/product-details.html:226:36:
+[37m      226 Γöé                         Γé╣{{ produc[32mt.oldPri[37mce }}
+          Γò╡                                   [32m~~~~~~~~[0m
+
+  Error occurs in the template of component ProductDetailsComponent.
+
+    src/app/pages/product-details/product-details.ts:13:15:
+[37m      13 Γöé   templateUrl: [32m'./product-details.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'offer' does not exist on type 'Product'.[0m 
+[1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/product-details/product-details.html:234:31:
+[37m      234 Γöé                     {{ product.[32moffer[37m }}
+          Γò╡                                [32m~~~~~[0m
+
+  Error occurs in the template of component ProductDetailsComponent.
+
+    src/app/pages/product-details/product-details.ts:13:15:
+[37m      13 Γöé   templateUrl: [32m'./product-details.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2531: Object is possibly 'null'.[0m [1m[35m[plugin 
+angular-compiler][0m
+
+    src/app/pages/product-details/product-details.html:234:31:
+[37m      234 Γöé                     {{ product.[32moffer[37m }}
+          Γò╡                                [32m~~~~~[0m
+
+  Error occurs in the template of component ProductDetailsComponent.
+
+    src/app/pages/product-details/product-details.ts:13:15:
+[37m      13 Γöé   templateUrl: [32m'./product-details.html'[37m,
+         Γò╡                [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2352: Conversion of type 'Observable<ApiResponse<Record<string, 
+unknown>>>' to type 'Observable<ApiResponse<SellerDashboard>>' may be a mistake because neither type sufficiently 
+overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property 'subscribe' are incompatible.
+    Type '{ (observerOrNext?: Partial<Observer<ApiResponse<Record<string, unknown>>>> | ((value: 
+ApiResponse<Record<string, unknown>>) => void) | undefined): Subscription; (next?: ((value: ApiResponse<...>) => void) 
+| ... 1 more ... | undefined, error?: ((error: any) => void) | ... 1 more ... | undefined, complete?: (() => vo...' is 
+not comparable to type '{ (observerOrNext?: Partial<Observer<ApiResponse<SellerDashboard>>> | ((value: 
+ApiResponse<SellerDashboard>) => void) | undefined): Subscription; (next?: ((value: ApiResponse<...>) => void) | ... 1 
+more ... | undefined, error?: ((error: any) => void) | ... 1 more ... | undefined, complete?: (() => void) | ... 1 
+more...'.
+      Types of parameters 'next' and 'next' are incompatible.
+        Types of parameters 'value' and 'value' are incompatible.
+          Type 'ApiResponse<Record<string, unknown>>' is not comparable to type 'ApiResponse<SellerDashboard>'.
+            Type 'Record<string, unknown>' is missing the following properties from type 'SellerDashboard': 
+totalProducts, totalOrders, totalRevenue, lowStockCount, and 4 more.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/seller.service.ts:70:11:
+[37m      70 Γöé     return [32mthis.api.getSellerDashboard() as Observable<ApiResponse[37m...
+         Γò╡            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+

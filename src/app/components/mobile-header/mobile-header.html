@@ -1,0 +1,62 @@
+<header class="mobile-header" id="global-mobile-header">
+  <!-- Top row: hamburger + logo + icons -->
+  <div class="mobile-top-row">
+    <div class="mobile-top-left">
+      <button class="hamburger-btn" aria-label="Open menu" (click)="openMenu()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <button class="mobile-logo" routerLink="/home" aria-label="Home">
+        <img
+          [src]="brandLogo"
+          alt="RuralSwift"
+          class="brand-logo-img brand-logo-img--nav-mobile"
+          (error)="handleImageError($event, brandLogoFallback)"
+          [attr.decoding]="'async'"
+        />
+      </button>
+    </div>
+
+    <div class="mobile-header-icons">
+      <button class="mobile-icon-btn" (click)="handleAccountClick()" aria-label="Account">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </button>
+      <button class="mobile-icon-btn" routerLink="/cart" aria-label="Cart">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+        @if (cart.itemCount() > 0) {
+          <span class="mobile-cart-badge" id="mobile-cart-count">{{ cart.itemCount() }}</span>
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- Search row -->
+  <div class="mobile-search-row">
+    <input
+      type="text"
+      placeholder="Search products..."
+      class="mobile-search-input"
+      aria-label="Search"
+      [(ngModel)]="searchQuery"
+      (keyup.enter)="onSearch()"
+    />
+    <button class="mobile-search-btn" (click)="onSearch()" aria-label="Search">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </button>
+  </div>
+</header>

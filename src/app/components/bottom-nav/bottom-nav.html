@@ -1,0 +1,59 @@
+<nav class="bottom-nav" id="global-bottom-nav" aria-label="Mobile navigation">
+
+  <!-- Home -->
+  <a routerLink="/home" routerLinkActive="active" class="bottom-nav-item" aria-label="Home" id="btn-nav-home">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+    <span>Home</span>
+  </a>
+
+  <!-- Shop -->
+  <a routerLink="/products" routerLinkActive="active" class="bottom-nav-item" aria-label="Shop" id="btn-nav-shop">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+      <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+    </svg>
+    <span>Shop</span>
+  </a>
+
+  <!-- Cart (center) -->
+  <a routerLink="/cart" routerLinkActive="active" class="bottom-nav-item bottom-nav-item--cart" aria-label="Cart" id="btn-nav-cart">
+    <div class="cart-icon-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+      </svg>
+      @if (cart.itemCount() > 0) {
+        <span class="cart-count-badge" id="bottom-cart-count">{{ cart.itemCount() }}</span>
+      }
+    </div>
+    <span>Cart</span>
+  </a>
+
+  <!-- Orders -->
+  <a routerLink="/account" [queryParams]="{tab:'orders'}" routerLinkActive="active" class="bottom-nav-item" aria-label="Orders" id="btn-nav-orders">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+      <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+      <line x1="12" y1="22.08" x2="12" y2="12"/>
+    </svg>
+    <span>Orders</span>
+  </a>
+
+  <!-- Seller Hub -->
+  <a routerLink="/seller-hub" routerLinkActive="active" class="bottom-nav-item" aria-label="Seller Hub" id="btn-nav-seller">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+    <span>Seller</span>
+  </a>
+
+</nav>

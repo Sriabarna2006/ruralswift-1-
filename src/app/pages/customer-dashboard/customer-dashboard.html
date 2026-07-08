@@ -1,0 +1,510 @@
+<app-navbar></app-navbar>
+
+<!-- Toast -->
+<div class="dash-toast" *ngIf="showToast" [class.toast-error]="toastType === 'error'">
+  {{ toastMessage }}
+</div>
+
+<!-- Full-height wrapper -->
+<div class="dash-wrapper">
+
+  <!-- Sidebar backdrop (mobile) -->
+  <div class="dash-backdrop" *ngIf="sidebarOpen" (click)="closeSidebar()"></div>
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="dash-sidebar" [class.sidebar-open]="sidebarOpen">
+
+    <!-- Mobile close button -->
+    <button class="sidebar-close-btn" (click)="closeSidebar()" aria-label="Close">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6 6 18M6 6l12 12"/>
+      </svg>
+    </button>
+
+    <!-- Avatar + Name -->
+    <div class="sidebar-profile">
+      <div class="sidebar-avatar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/>
+        </svg>
+      </div>
+      <div>
+        <p class="sidebar-name">{{ customerName }}</p>
+        <p class="sidebar-role">RuralSwift Customer</p>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+      <button class="sidebar-nav-item" [class.active]="selectedSection === 'dashboard'" (click)="setSection('dashboard')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+        Dashboard
+      </button>
+      <button class="sidebar-nav-item" [class.active]="selectedSection === 'orders'" (click)="setSection('orders')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        My Orders
+      </button>
+      <button class="sidebar-nav-item" [class.active]="selectedSection === 'track'" (click)="setSection('track')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="13" x="1" y="3" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Track Orders
+      </button>
+      <button class="sidebar-nav-item" [class.active]="selectedSection === 'profile'" (click)="setSection('profile')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+        Profile
+      </button>
+      <button class="sidebar-nav-item" [class.active]="selectedSection === 'address'" (click)="setSection('address')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        Addresses
+      </button>
+      <button class="sidebar-nav-item" [class.active]="selectedSection === 'wishlist'" (click)="setSection('wishlist')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Wishlist
+      </button>
+      <button class="sidebar-nav-item" [class.active]="selectedSection === 'notifications'" (click)="setSection('notifications')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        Notifications
+        <span class="sidebar-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+      </button>
+    </nav>
+
+    <!-- Logout -->
+    <div class="sidebar-logout-wrap">
+      <button class="sidebar-logout-btn" (click)="logout()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <main class="dash-main">
+
+    <!-- Mobile top bar with hamburger -->
+    <div class="dash-topbar">
+      <button class="dash-hamburger" (click)="toggleSidebar()" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+      <h2 class="dash-topbar-title">{{ selectedSection | titlecase }}</h2>
+    </div>
+
+    <!-- ══ DASHBOARD SECTION ══ -->
+    <section *ngIf="selectedSection === 'dashboard'" class="dash-section">
+
+      <!-- Welcome Banner -->
+      <div class="dash-welcome-banner">
+        <div>
+          <h1 class="welcome-title">Welcome Back, <span class="welcome-name">{{ customerName }}</span> 👋</h1>
+          <p class="welcome-sub">Manage your orders, deliveries and account settings.</p>
+        </div>
+        <div class="welcome-icon-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          </div>
+          <div class="stat-value">{{ totalOrders }}</div>
+          <div class="stat-label">Total Orders</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="13" x="1" y="3" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          </div>
+          <div class="stat-value">{{ activeOrders }}</div>
+          <div class="stat-label">Active Orders</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon teal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="stat-value">{{ deliveredOrders }}</div>
+          <div class="stat-label">Delivered</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <div class="stat-value">{{ wishlistItems.length }}</div>
+          <div class="stat-label">Wishlist</div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="dash-card">
+        <h3 class="card-title">Quick Actions</h3>
+        <div class="quick-actions">
+          <a routerLink="/products" class="qa-btn green">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 2 1.5 4.5"/><path d="M3.5 9H20l-1.3 7.5a2 2 0 0 1-2 1.5H7.8a2 2 0 0 1-2-1.5Z"/><path d="M11 13a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-2"/></svg>
+            Shop Now
+          </a>
+          <a routerLink="/order-tracking" class="qa-btn blue">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="13" x="1" y="3" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            Track Order
+          </a>
+          <button class="qa-btn outline" (click)="setSection('profile')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+            My Profile
+          </button>
+        </div>
+      </div>
+
+      <!-- Recent Orders -->
+      <div class="dash-card">
+        <h3 class="card-title">Recent Orders</h3>
+        <div *ngIf="ordersLoading" class="section-loading">
+          <div class="spinner spinner-primary"></div>
+          <p>Loading orders...</p>
+        </div>
+        <div *ngIf="!ordersLoading && ordersList.length === 0" class="section-empty">
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          <p>No orders yet. <a routerLink="/products">Shop now →</a></p>
+        </div>
+        <div class="order-mini-list" *ngIf="!ordersLoading && ordersList.length > 0">
+          <div class="order-mini-item" *ngFor="let order of ordersList.slice(0,3)">
+            <div class="omi-left">
+              <span class="omi-id">#{{ order.id }}</span>
+              <span class="omi-date">{{ order.date }}</span>
+            </div>
+            <span class="status-chip" [class]="'status-' + order.status.toLowerCase().replace(' ', '-')">{{ order.status }}</span>
+            <span class="omi-total">₹{{ order.total.toLocaleString('en-IN') }}</span>
+          </div>
+          <button class="view-all-btn" (click)="setSection('orders')">View All Orders →</button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ══ ORDERS SECTION ══ -->
+    <section *ngIf="selectedSection === 'orders'" class="dash-section">
+
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">My Orders</h2>
+          <p class="section-sub">{{ ordersList.length }} orders placed</p>
+        </div>
+        <div class="search-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" [(ngModel)]="orderSearchQuery" name="orderSearch" placeholder="Search orders..." class="search-input"/>
+        </div>
+      </div>
+
+      <div *ngIf="ordersLoading" class="section-loading">
+        <div class="spinner spinner-primary"></div>
+        <p>Loading orders...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!ordersLoading && filteredOrders.length === 0" class="dash-card section-empty">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        <p class="empty-title">No Orders Found</p>
+        <p class="empty-sub">{{ orderSearchQuery ? 'Try a different search.' : 'Start shopping to see your orders here.' }}</p>
+        <a routerLink="/products" class="btn btn-primary btn-sm">Shop Now</a>
+      </div>
+
+      <!-- Order Cards -->
+      <div class="orders-list" *ngIf="!ordersLoading && filteredOrders.length > 0">
+        <div class="order-card" *ngFor="let order of filteredOrders">
+
+          <!-- Order Header -->
+          <div class="order-card-header">
+            <div class="order-header-left">
+              <span class="order-id"># {{ order.id }}</span>
+              <span class="order-date">{{ order.date }}</span>
+              <span class="status-chip" [class]="'status-' + order.status.toLowerCase().replace(' ', '-')">
+                {{ order.status }}
+              </span>
+            </div>
+            <div class="order-header-right">
+              <div class="delivery-info">
+                <span class="delivery-label">Est. Delivery</span>
+                <span class="delivery-val">{{ order.estimatedDelivery }}</span>
+              </div>
+              <span class="order-total">₹{{ order.total.toLocaleString('en-IN') }}</span>
+            </div>
+          </div>
+
+          <!-- Order Items -->
+          <div class="order-card-items">
+            <div class="order-item-chip" *ngFor="let item of order.items">
+              <img [src]="item.image" [alt]="item.name" class="item-chip-img" [attr.decoding]="'async'" />
+              <div class="item-chip-info">
+                <p class="item-chip-name">{{ item.name }}</p>
+                <p class="item-chip-qty">Qty: {{ item.qty }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Actions -->
+          <div class="order-card-actions">
+            <a *ngIf="order.status === 'Shipped' || order.status === 'Out for Delivery'"
+              routerLink="/order-tracking"
+              [queryParams]="{ orderId: order.id }"
+              class="btn btn-primary btn-sm">
+              Track Order
+            </a>
+            <button *ngIf="order.status !== 'Delivered' && order.status !== 'Cancelled'"
+              class="btn btn-danger-outline btn-sm"
+              (click)="cancelOrder(order.id)">
+              Cancel Order
+            </button>
+            <button *ngIf="order.status === 'Delivered'" class="btn btn-outline btn-sm">
+              Buy Again
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ══ TRACK SECTION ══ -->
+    <section *ngIf="selectedSection === 'track'" class="dash-section">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Track Orders</h2>
+          <p class="section-sub">See live status of your active deliveries.</p>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <p class="card-hint">Select an active order below or go to the dedicated tracking page.</p>
+        <div class="orders-list">
+          <ng-container *ngFor="let order of ordersList">
+            <div class="order-card"
+              *ngIf="order.status === 'Shipped' || order.status === 'Out for Delivery' || order.status === 'Packed' || order.status === 'Confirmed'">
+              <div class="order-card-header">
+                <div class="order-header-left">
+                  <span class="order-id"># {{ order.id }}</span>
+                  <span class="status-chip" [class]="'status-' + order.status.toLowerCase().replace(' ', '-')">{{ order.status }}</span>
+                </div>
+                <a routerLink="/order-tracking" [queryParams]="{ orderId: order.id }" class="btn btn-primary btn-sm">
+                  Live Track
+                </a>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+        <div class="track-info-box">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          <p>Visit the <a routerLink="/order-tracking">Order Tracking page</a> to enter any Order ID for full timeline.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ PROFILE SECTION ══ -->
+    <section *ngIf="selectedSection === 'profile'" class="dash-section">
+
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Personal Information</h2>
+          <p class="section-sub">Update your personal details below.</p>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <!-- Loading -->
+        <div *ngIf="profileLoading" class="section-loading">
+          <div class="spinner spinner-primary"></div>
+          <p>Loading profile...</p>
+        </div>
+
+        <form *ngIf="!profileLoading" (ngSubmit)="onSaveProfile()" class="profile-form">
+
+          <!-- Avatar row -->
+          <div class="profile-avatar-row">
+            <div class="profile-avatar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/>
+              </svg>
+            </div>
+            <div>
+              <p class="profile-avatar-name">{{ customerName }}</p>
+              <p class="profile-avatar-email">{{ profileForm.email }}</p>
+            </div>
+          </div>
+
+          <hr class="form-divider">
+
+          <!-- Name row -->
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              <input type="text" [(ngModel)]="profileForm.first_name" name="first_name"
+                class="form-input" placeholder="Enter first name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <input type="text" [(ngModel)]="profileForm.last_name" name="last_name"
+                class="form-input" placeholder="Enter last name">
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" [(ngModel)]="profileForm.email" name="email"
+              class="form-input" placeholder="you@example.com">
+          </div>
+
+          <!-- Phone -->
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" [(ngModel)]="profileForm.phone" name="phone"
+              class="form-input" placeholder="+91 00000 00000">
+          </div>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline" (click)="loadProfile()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="profileSaving">
+              <div *ngIf="profileSaving" class="spinner"></div>
+              {{ profileSaving ? 'Saving...' : 'Save Changes' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ══ ADDRESS SECTION ══ -->
+    <section *ngIf="selectedSection === 'address'" class="dash-section">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">My Addresses</h2>
+          <p class="section-sub">Manage your saved delivery addresses.</p>
+        </div>
+        <button class="btn btn-primary btn-sm" (click)="showAddressForm = !showAddressForm">+ Add Address</button>
+      </div>
+
+      <div *ngIf="addressesLoading" class="section-loading">
+        <div class="spinner spinner-primary"></div>
+      </div>
+
+      <!-- Add Address Form -->
+      <div class="dash-card" *ngIf="showAddressForm">
+        <h3 class="card-title">New Address</h3>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" [(ngModel)]="newAddress.full_name" name="full_name" class="form-input" placeholder="Full name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="tel" [(ngModel)]="newAddress.phone" name="address_phone" class="form-input" placeholder="+91 XXXXX XXXXX">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Address Line 1</label>
+          <input type="text" [(ngModel)]="newAddress.address_line1" name="address_line1" class="form-input" placeholder="House No, Street, Village">
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <input type="text" [(ngModel)]="newAddress.city" name="city" class="form-input" placeholder="City">
+          </div>
+          <div class="form-group">
+            <label class="form-label">State</label>
+            <input type="text" [(ngModel)]="newAddress.state" name="state" class="form-input" placeholder="State">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Pincode</label>
+            <input type="text" [(ngModel)]="newAddress.pincode" name="pincode" class="form-input" placeholder="6-digit PIN">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" (click)="showAddressForm = false">Cancel</button>
+          <button type="button" class="btn btn-primary" (click)="saveAddress()" [disabled]="savingAddress">
+            <div *ngIf="savingAddress" class="spinner"></div>
+            Save Address
+          </button>
+        </div>
+      </div>
+
+      <!-- Address List -->
+      <div *ngIf="!addressesLoading && addressList.length === 0 && !showAddressForm" class="dash-card section-empty">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        <p class="empty-title">No Addresses Saved</p>
+        <p class="empty-sub">Add a delivery address to speed up checkout.</p>
+      </div>
+      <div class="address-grid" *ngIf="!addressesLoading && addressList.length > 0">
+        <div class="address-card" *ngFor="let addr of addressList" [class.default-address]="addr.is_default">
+          <div class="address-card-header">
+            <span class="address-label">{{ addr.label }}</span>
+            <span class="default-badge" *ngIf="addr.is_default">Default</span>
+          </div>
+          <p class="address-name">{{ addr.full_name }}</p>
+          <p class="address-line">{{ addr.address_line1 }}, {{ addr.city }}, {{ addr.state }} - {{ addr.pincode }}</p>
+          <p class="address-phone">{{ addr.phone }}</p>
+          <div class="address-actions">
+            <button class="btn btn-outline btn-xs" *ngIf="!addr.is_default" (click)="setDefaultAddress(addr.id)">Set Default</button>
+            <button class="btn btn-danger-outline btn-xs" (click)="deleteAddress(addr.id)">Remove</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ WISHLIST SECTION ══ -->
+    <section *ngIf="selectedSection === 'wishlist'" class="dash-section">
+      <div class="section-header">
+        <h2 class="section-title">My Wishlist</h2>
+      </div>
+      <div *ngIf="wishlistLoading" class="section-loading">
+        <div class="spinner spinner-primary"></div>
+      </div>
+      <div *ngIf="!wishlistLoading && wishlistItems.length === 0" class="dash-card section-empty">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <p class="empty-title">Your Wishlist is Empty</p>
+        <a routerLink="/products" class="btn btn-primary btn-sm">Browse Products</a>
+      </div>
+      <div class="wishlist-grid" *ngIf="!wishlistLoading && wishlistItems.length > 0">
+        <div class="wishlist-card" *ngFor="let item of wishlistItems">
+          <img [src]="item.image_url || imageKit.placeholder()" [alt]="item.name" class="wishlist-img" [attr.decoding]="'async'">
+          <div class="wishlist-info">
+            <p class="wishlist-name">{{ item.name }}</p>
+            <p class="wishlist-price">₹{{ item.price }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ NOTIFICATIONS SECTION ══ -->
+    <section *ngIf="selectedSection === 'notifications'" class="dash-section">
+      <div class="section-header">
+        <h2 class="section-title">Notifications</h2>
+        <button class="btn btn-outline btn-sm" (click)="markAllRead()" *ngIf="unreadCount > 0">Mark All Read</button>
+      </div>
+      <div *ngIf="notificationsLoading" class="section-loading">
+        <div class="spinner spinner-primary"></div>
+      </div>
+      <div *ngIf="!notificationsLoading && notificationList.length === 0" class="dash-card section-empty">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <p class="empty-title">No Notifications</p>
+      </div>
+      <div class="notif-list" *ngIf="!notificationsLoading && notificationList.length > 0">
+        <div class="notif-item" *ngFor="let n of notificationList" [class.unread]="!n.is_read" (click)="markRead(n.id)">
+          <div class="notif-dot" *ngIf="!n.is_read"></div>
+          <div class="notif-content">
+            <p class="notif-title">{{ n.title }}</p>
+            <p class="notif-msg">{{ n.message }}</p>
+            <p class="notif-time">{{ n.created_at | date: 'dd MMM yyyy, h:mm a' }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ FALLBACK ══ -->
+    <section *ngIf="selectedSection !== 'dashboard' && selectedSection !== 'orders' && selectedSection !== 'track' && selectedSection !== 'profile' && selectedSection !== 'address' && selectedSection !== 'wishlist' && selectedSection !== 'notifications'" class="dash-section">
+      <div class="dash-card section-empty">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <p class="empty-title">Coming Soon</p>
+        <p class="empty-sub">This section is under construction.</p>
+      </div>
+    </section>
+
+  </main>
+</div>

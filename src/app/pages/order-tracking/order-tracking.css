@@ -1,0 +1,545 @@
+/* Order Tracking Page */
+.ot-page {
+  background: var(--surface-bg);
+  min-height: 100vh;
+}
+
+/* Hero */
+.ot-hero {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--accent) 100%);
+  padding: 48px 24px 80px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.ot-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 70% 50%, rgba(16,185,129,0.15) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.ot-hero-title {
+  font-size: 28px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+
+@media (min-width: 768px) {
+  .ot-hero-title {
+    font-size: 36px;
+  }
+}
+
+.ot-hero-sub {
+  font-size: 14px;
+  color: rgba(255,255,255,0.8);
+}
+
+/* Search */
+.ot-search-wrap {
+  max-width: 640px;
+  margin: -32px auto 0;
+  padding: 0 16px;
+  position: relative;
+  z-index: 10;
+}
+
+.ot-search-box {
+  display: flex;
+  gap: 0;
+  background: var(--surface-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  border: 1px solid var(--surface-border);
+}
+
+.ot-search-input-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+}
+
+.ot-search-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.ot-search-input {
+  flex: 1;
+  padding: 16px 0;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  font-family: var(--font-family);
+  color: var(--text-primary);
+  background: none;
+}
+
+.ot-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.ot-search-btn {
+  background: var(--primary-dark);
+  color: #fff;
+  border: none;
+  padding: 16px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-base);
+  font-family: var(--font-family);
+}
+
+.ot-search-btn:hover:not(:disabled) {
+  background: var(--primary);
+}
+
+.ot-search-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Error message */
+.ot-error-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fee2e2;
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+}
+
+/* Container */
+.ot-container {
+  max-width: 960px;
+  margin: 32px auto;
+  padding: 0 16px;
+}
+
+@media (min-width: 768px) {
+  .ot-container {
+    padding: 0 24px;
+  }
+}
+
+/* Skeleton */
+.ot-sk-card     { height: 100px; border-radius: var(--radius-lg); margin-bottom: 16px; }
+.ot-sk-timeline { height: 300px; border-radius: var(--radius-lg); }
+
+/* Status Card */
+.ot-status-card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ot-order-id-label {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.ot-order-date {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.ot-status-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 100px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.status--delivered  { background: #d1fae5; color: var(--accent-dark); }
+.status--cancelled  { background: #fee2e2; color: var(--danger); }
+.status--shipped    { background: #dbeafe; color: #1d4ed8; }
+.status--confirmed  { background: #f3e8ff; color: #7c3aed; }
+.status--pending    { background: #f3f4f6; color: var(--text-secondary); }
+
+.ot-status-right { text-align: right; }
+.ot-total-label  { font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.ot-total-value  { font-size: 22px; font-weight: 900; color: var(--text-primary); margin-bottom: 4px; }
+.ot-payment-method { font-size: 12px; color: var(--text-secondary); }
+
+/* Progress Bar */
+.ot-progress-section {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.ot-progress-bar-wrap {
+  height: 6px;
+  background: var(--surface-hover);
+  border-radius: 100px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.ot-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-dark), var(--accent));
+  border-radius: 100px;
+  transition: width 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.ot-progress-steps {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.ot-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.ot-step-bubble {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface-hover);
+  border: 2px solid var(--surface-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text-muted);
+  transition: all var(--transition-base);
+}
+
+.ot-step.done .ot-step-bubble {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.ot-step.current .ot-step-bubble {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(0, 0, 105, 0.15);
+  animation: pulseBubble 2s ease-in-out infinite;
+}
+
+@keyframes pulseBubble {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(0, 0, 105, 0.15); }
+  50%       { box-shadow: 0 0 0 8px rgba(0, 0, 105, 0.08); }
+}
+
+.ot-step-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-align: center;
+  display: none;
+}
+
+@media (min-width: 480px) {
+  .ot-step-label {
+    display: block;
+  }
+}
+
+.ot-step.done .ot-step-label,
+.ot-step.current .ot-step-label {
+  color: var(--text-primary);
+}
+
+/* Layout */
+.ot-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .ot-layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 24px;
+  }
+}
+
+/* Vertical Timeline */
+.ot-timeline-wrap {
+  flex: 1;
+}
+
+.ot-section-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.ot-timeline {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.ot-timeline-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.ot-timeline-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.ot-tl-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface-hover);
+  border: 2px solid var(--surface-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: all var(--transition-base);
+}
+
+.ot-timeline-item.done .ot-tl-dot {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.ot-timeline-item.current .ot-tl-dot {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+  color: #fff;
+}
+
+.ot-tl-line {
+  width: 2px;
+  flex: 1;
+  min-height: 24px;
+  background: var(--surface-border);
+  margin: 4px auto;
+}
+
+.ot-timeline-item.done .ot-tl-line {
+  background: var(--accent);
+}
+
+.ot-tl-body {
+  padding-bottom: 20px;
+  flex: 1;
+}
+
+.ot-tl-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+.ot-timeline-item.done .ot-tl-label,
+.ot-timeline-item.current .ot-tl-label {
+  color: var(--text-primary);
+}
+
+.ot-tl-time {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.ot-tl-time--pending {
+  font-style: italic;
+}
+
+/* Order Info Cards */
+.ot-order-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .ot-order-info {
+    width: 320px;
+    flex-shrink: 0;
+  }
+}
+
+.ot-info-card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+.ot-info-card-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ot-info-value {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.ot-tracking-no {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  letter-spacing: 0.1em;
+}
+
+.ot-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ot-item-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ot-item-img {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--surface-hover);
+}
+
+.ot-item-info { flex: 1; }
+.ot-item-name { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+.ot-item-qty  { font-size: 11px; color: var(--text-muted); }
+.ot-item-price{ font-size: 13px; font-weight: 700; color: var(--text-primary); }
+
+/* Actions */
+.ot-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ot-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all var(--transition-base);
+  text-decoration: none;
+  font-family: var(--font-family);
+}
+
+.ot-action-btn--primary {
+  background: var(--primary-dark);
+  color: #fff;
+}
+
+.ot-action-btn--primary:hover {
+  background: var(--primary);
+}
+
+.ot-action-btn--ghost {
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+  border: 1px solid var(--surface-border);
+}
+
+.ot-action-btn--ghost:hover {
+  border-color: var(--primary-dark);
+  color: var(--primary-dark);
+}
+
+.ot-action-btn--danger {
+  background: #fee2e2;
+  color: var(--danger);
+  border: 1px solid #fca5a5;
+}
+
+.ot-action-btn--danger:hover {
+  background: var(--danger);
+  color: #fff;
+}
+
+/* Empty State */
+.ot-empty-state {
+  text-align: center;
+  padding: 80px 20px 40px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.ot-empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.ot-empty-state h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.ot-empty-state p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
