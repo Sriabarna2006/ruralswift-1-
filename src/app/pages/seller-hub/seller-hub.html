@@ -1,670 +1,678 @@
-<app-navbar></app-navbar>
+<div class="sh-page" id="page-seller-hub">
 
-<!-- ==============================
-     SELLER AUTH PAGE
-     ============================== -->
-<div class="page-bg" *ngIf="!isAuthenticated">
-  <div class="auth-container">
-    <div class="auth-card">
+  @if (!isAuthenticated()) {
+    <!-- ══════════════════════════════════════════════════
+         SELLER HUB — DARK BUSINESS PORTAL AUTH WALL
+         Completely distinct from customer register page
+    ══════════════════════════════════════════════════ -->
+    <div class="sh-portal-bg" id="seller-hub-auth">
 
-      <!-- Left: Branding -->
-      <div class="auth-left">
-        <div class="auth-logo">
-          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
-            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-            <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
-            <path d="M2 7h20"/>
-          </svg>
-          <span>Seller Central</span>
+      <!-- Top portal header bar -->
+      <div class="sh-portal-topbar">
+        <div class="sh-portal-topbar-brand">
+          <span class="sh-portal-logo">🏪</span>
+          <span class="sh-portal-name">RuralSwift</span>
+          <span class="sh-portal-sep">|</span>
+          <span class="sh-portal-label">Seller Portal</span>
         </div>
-
-        <h2 class="auth-headline">Grow your business with RuralSwift.</h2>
-        <p class="auth-sub">Reach millions of customers across villages and towns. Register today to start selling.</p>
-
-        <div class="auth-features">
-          <div class="auth-feature">
-            <div class="auth-feature-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-              </svg>
-            </div>
-            <div>
-              <h4>Business Verification</h4>
-              <p>Easy onboarding with PAN and GST verification.</p>
-            </div>
-          </div>
-          <div class="auth-feature">
-            <div class="auth-feature-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              </svg>
-            </div>
-            <div>
-              <h4>Secure Payments</h4>
-              <p>Direct bank transfers with full transparency.</p>
-            </div>
-          </div>
-          <div class="auth-feature">
-            <div class="auth-feature-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                <line x1="8" x2="16" y1="21" y2="21"/>
-                <line x1="12" x2="12" y1="17" y2="21"/>
-              </svg>
-            </div>
-            <div>
-              <h4>Powerful Seller Tools</h4>
-              <p>Manage inventory, orders, and analytics easily.</p>
-            </div>
-          </div>
-        </div>
+        <a href="/home" class="sh-portal-back-link">← Back to Store</a>
       </div>
 
-      <!-- Right: Form -->
-      <div class="auth-right">
-        <div class="auth-form-header">
-          <h3>{{ isLoginMode ? 'Welcome Back' : 'Create Seller Account' }}</h3>
-          <div class="auth-toggle">
-            <button [class.active-tab]="isLoginMode"  (click)="isLoginMode = true; awaitingOtp = false; authError = ''; authInfo = ''">Login</button>
-            <button [class.active-tab]="!isLoginMode" (click)="isLoginMode = false; awaitingOtp = false; authError = ''; authInfo = ''">Register</button>
+      <!-- Main content: left info + right form -->
+      <div class="sh-portal-body">
+
+        <!-- LEFT: Business info panel -->
+        <div class="sh-portal-info">
+          <div class="sh-portal-badge">🏢 Business Platform</div>
+          <h1 class="sh-portal-title">Grow Your Business<br/>with RuralSwift</h1>
+          <p class="sh-portal-sub">
+            India's fastest-growing rural commerce network.
+            List products, manage orders, and receive payouts —
+            all from one powerful dashboard.
+          </p>
+
+          <!-- Stats -->
+          <div class="sh-portal-stats">
+            <div class="sh-portal-stat">
+              <span class="sh-portal-stat-val">50K+</span>
+              <span class="sh-portal-stat-lbl">Active Sellers</span>
+            </div>
+            <div class="sh-portal-stat-div"></div>
+            <div class="sh-portal-stat">
+              <span class="sh-portal-stat-val">₹0</span>
+              <span class="sh-portal-stat-lbl">Listing Fee</span>
+            </div>
+            <div class="sh-portal-stat-div"></div>
+            <div class="sh-portal-stat">
+              <span class="sh-portal-stat-val">2–3 Days</span>
+              <span class="sh-portal-stat-lbl">Payout Time</span>
+            </div>
           </div>
+
+          <!-- Feature list -->
+          <ul class="sh-portal-features">
+            <li>
+              <span class="sh-pf-icon">✅</span>
+              <div>
+                <strong>List in minutes</strong>
+                <span>Upload photos, set price, go live instantly</span>
+              </div>
+            </li>
+            <li>
+              <span class="sh-pf-icon">✅</span>
+              <div>
+                <strong>Full order control</strong>
+                <span>Confirm, pack, and ship from one screen</span>
+              </div>
+            </li>
+            <li>
+              <span class="sh-pf-icon">✅</span>
+              <div>
+                <strong>Live analytics</strong>
+                <span>Revenue, stock alerts, and customer data</span>
+              </div>
+            </li>
+            <li>
+              <span class="sh-pf-icon">✅</span>
+              <div>
+                <strong>Fast payouts</strong>
+                <span>Direct bank transfer in 2–3 business days</span>
+              </div>
+            </li>
+          </ul>
         </div>
 
-        <!-- Error alert -->
-        <div class="alert alert-error" *ngIf="authError" style="margin-bottom:14px;">
-          {{ authError }}
-        </div>
-        <div class="alert alert-success" *ngIf="authInfo" style="margin-bottom:14px;">
-          {{ authInfo }}
-        </div>
+        <!-- RIGHT: Auth form card -->
+        <div class="sh-portal-form-wrap">
+          <div class="sh-portal-card">
 
-        <form (ngSubmit)="handleAuth($event)" class="auth-form">
+            @if (initLoading()) {
+              <div class="sh-portal-loading">
+                <div class="sh-portal-spinner"></div>
+                <p>Checking your session…</p>
+              </div>
+            } @else {
 
-          <!-- Register-only fields -->
-          <div class="form-row" *ngIf="!isLoginMode && !awaitingOtp">
-            <div class="form-group">
-              <label class="form-label">Full Name <span class="req">*</span></label>
-              <input class="form-control" type="text" required placeholder="Ramesh Kumar"
-                [(ngModel)]="authForm.fullName" name="fullName" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Business / Shop Name <span class="req">*</span></label>
-              <input class="form-control" type="text" required placeholder="Kumar Traders"
-                [(ngModel)]="authForm.businessName" name="businessName" />
-            </div>
-          </div>
-
-          <div class="form-row" *ngIf="!isLoginMode && !awaitingOtp">
-            <div class="form-group">
-              <label class="form-label">GST Number <span class="req">*</span></label>
-              <input class="form-control" type="text" required placeholder="22AAAAA0000A1Z5"
-                style="text-transform:uppercase" [(ngModel)]="authForm.gstNumber" name="gstNumber" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Phone Number <span class="req">*</span></label>
-              <input class="form-control" type="tel" required placeholder="+91 98765 43210"
-                [(ngModel)]="authForm.phone" name="phone" />
-            </div>
-          </div>
-
-          <div class="form-group form-full" *ngIf="!isLoginMode && !awaitingOtp">
-            <label class="form-label">Business Address <span class="req">*</span></label>
-            <textarea class="form-control" required rows="2" placeholder="Village, District, State, PIN..."
-              [(ngModel)]="authForm.businessAddress" name="businessAddress"></textarea>
-          </div>
-
-          <!-- Shared fields -->
-          <div class="form-group form-full" *ngIf="!awaitingOtp">
-            <label class="form-label">Email Address <span class="req">*</span></label>
-            <input class="form-control" type="email" required placeholder="seller@example.com"
-              [(ngModel)]="authForm.email" name="email" />
-          </div>
-
-          <div class="form-group form-full" *ngIf="!awaitingOtp">
-            <label class="form-label">Password <span class="req">*</span></label>
-            <input class="form-control" type="password" required placeholder="••••••••"
-              [(ngModel)]="authForm.password" name="password" />
-          </div>
-
-          <div class="form-group form-full" *ngIf="awaitingOtp">
-            <label class="form-label">Email OTP <span class="req">*</span></label>
-            <input class="form-control" type="text" required maxlength="6" inputmode="numeric" placeholder="Enter 6-digit OTP"
-              [(ngModel)]="authForm.otp" name="otp" />
-          </div>
-
-          <div class="form-checkbox" *ngIf="!isLoginMode && !awaitingOtp">
-            <input type="checkbox" id="terms" [(ngModel)]="authForm.terms" name="terms" required />
-            <label for="terms">I agree to the <a href="#">Seller Agreement</a> and consent to bank/tax verification.</label>
-          </div>
-
-          <button type="submit" class="btn-submit" [disabled]="authLoading">
-            <span *ngIf="!authLoading">{{ awaitingOtp ? 'Verify OTP & Open Dashboard' : (isLoginMode ? 'Login to Dashboard' : 'Register & Send OTP') }}</span>
-            <span *ngIf="authLoading" class="spinner"></span>
-            <svg *ngIf="!authLoading" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="m9 18 6-6-6-6"/>
-            </svg>
-          </button>
-        </form>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-
-<!-- ==============================
-     SELLER DASHBOARD
-     ============================== -->
-<div class="seller-bg" *ngIf="isAuthenticated">
-
-  <!-- Top Bar -->
-  <div class="seller-topbar">
-    <div class="seller-topbar-inner">
-      <div class="seller-topbar-left">
-        <!-- Mobile hamburger -->
-        <button class="seller-hamburger" (click)="toggleSidebar()" aria-label="Toggle sidebar">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="4" x2="20" y1="6" y2="6"/>
-            <line x1="4" x2="20" y1="12" y2="12"/>
-            <line x1="4" x2="20" y1="18" y2="18"/>
-          </svg>
-        </button>
-        <div>
-          <h1 class="seller-topbar-title">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-              stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
-              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-              <path d="M2 7h20"/>
-            </svg>
-            Seller Central
-          </h1>
-          <p class="seller-topbar-sub">{{ sellerDisplayName }} - {{ sellerSubtitle }}</p>
-        </div>
-      </div>
-      <div class="seller-topbar-actions">
-        <button class="btn-add-product" (click)="setTab('add-product')">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 5v14M5 12h14"/>
-          </svg>
-          <span class="btn-text-full">Add New Product</span>
-          <span class="btn-text-short">Add</span>
-        </button>
-        <button class="btn-signout" (click)="logout()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-            <polyline points="16 17 21 12 16 7"/>
-            <line x1="21" x2="9" y1="12" y2="12"/>
-          </svg>
-          <span class="btn-text-full">Sign Out</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Body: sidebar + main -->
-  <div class="seller-body">
-
-    <!-- Sidebar backdrop (mobile) -->
-    <div class="sidebar-backdrop" *ngIf="sidebarOpen" (click)="closeSidebar()"></div>
-
-    <!-- Sidebar -->
-    <aside class="seller-sidebar" [class.sidebar-open]="sidebarOpen">
-      <div class="sidebar-header-mobile">
-        <span class="sidebar-brand">Menu</span>
-        <button class="sidebar-close" (click)="closeSidebar()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 6 6 18M6 6l12 12"/>
-          </svg>
-        </button>
-      </div>
-      <nav class="seller-sidenav">
-        <button [class.sidenav-active]="activeTab === 'dashboard'" (click)="setTab('dashboard')" class="sidenav-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect width="7" height="9" x="3" y="3" rx="1"/>
-            <rect width="7" height="5" x="14" y="3" rx="1"/>
-            <rect width="7" height="9" x="14" y="12" rx="1"/>
-            <rect width="7" height="5" x="3" y="16" rx="1"/>
-          </svg>
-          Overview
-        </button>
-        <button [class.sidenav-active]="activeTab === 'inventory'" (click)="setTab('inventory')" class="sidenav-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-            <polyline points="3.29 7 12 12 20.71 7"/>
-            <line x1="12" x2="12" y1="22" y2="12"/>
-          </svg>
-          Manage Inventory
-        </button>
-        <button [class.sidenav-active]="activeTab === 'orders'" (click)="setTab('orders')" class="sidenav-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
-            <line x1="3" x2="21" y1="6" y2="6"/>
-            <path d="M16 10a4 4 0 0 1-8 0"/>
-          </svg>
-          Orders
-          <span class="sidenav-badge">{{ stats.activeOrders }}</span>
-        </button>
-        <button [class.sidenav-active]="activeTab === 'analytics'" (click)="setTab('analytics')" class="sidenav-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-          </svg>
-          Analytics
-        </button>
-        <button [class.sidenav-active]="activeTab === 'add-product'" (click)="setTab('add-product')" class="sidenav-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 5v14M5 12h14"/>
-          </svg>
-          Add Product
-        </button>
-        <button [class.sidenav-active]="activeTab === 'settings'" (click)="setTab('settings')" class="sidenav-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
-          </svg>
-          Settings
-        </button>
-      </nav>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="seller-main">
-
-      <!-- ============ DASHBOARD TAB ============ -->
-      <div *ngIf="activeTab === 'dashboard'">
-
-        <div class="seller-welcome-card">
-          <div class="seller-welcome-main">
-            <div class="seller-avatar-badge">{{ sellerDisplayName.charAt(0).toUpperCase() }}</div>
-            <div>
-              <p class="seller-welcome-eyebrow">Welcome back</p>
-              <h2>{{ sellerDisplayName }}</h2>
-              <p class="seller-welcome-sub">{{ sellerSubtitle }}</p>
-            </div>
-          </div>
-          <div class="seller-welcome-meta">
-            <span class="seller-pill">{{ sellerProfile?.gst_number ? 'GST ready' : 'Seller account ready' }}</span>
-            <p>Upload products with gallery or camera, then publish them to the home and product pages.</p>
-          </div>
-        </div>
-
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon green-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
-                <polyline points="16 7 22 7 22 13"/>
-              </svg>
-            </div>
-            <p class="stat-label">Total Revenue</p>
-            <p class="stat-value">₹{{ stats.totalSales.toLocaleString('en-IN') }}</p>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon blue-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
-                <line x1="3" x2="21" y1="6" y2="6"/>
-                <path d="M16 10a4 4 0 0 1-8 0"/>
-              </svg>
-            </div>
-            <p class="stat-label">Active Orders</p>
-            <p class="stat-value">{{ stats.activeOrders }}</p>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon purple-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-              </svg>
-            </div>
-            <p class="stat-label">Products Listed</p>
-            <p class="stat-value">{{ stats.productsListed }}</p>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon red-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" x2="12" y1="8" y2="12"/>
-                <line x1="12" x2="12.01" y1="16" y2="16"/>
-              </svg>
-            </div>
-            <p class="stat-label">Low / Out of Stock</p>
-            <p class="stat-value red-val">{{ stats.lowStock }}</p>
-          </div>
-        </div>
-
-        <!-- Recent Orders -->
-        <div class="table-card">
-          <div class="table-card-header">
-            <h2>Action Required: Recent Orders</h2>
-            <button class="btn-link" (click)="setTab('orders')">View All Orders</button>
-          </div>
-          <div class="table-wrap">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Order ID</th>
-                  <th>Date</th>
-                  <th>Customer</th>
-                  
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let order of sellerOrders">
-                  <td class="font-mono">{{ order.order_id }}</td>
-                  <td class="text-muted">{{ (order.created_at | date:'mediumDate') }}</td>
-                  <td>{{ order.customer_name }}</td>
-                  
-                  <td><span [class]="'badge ' + getStatusClass(order.status)">{{ order.status }}</span></td>
-                  <td>
-                    <button *ngIf="order.status === 'pending' || order.status === 'packed' || order.status === 'pending' || order.status === 'confirmed' || order.status === 'packed'" class="btn-ship" (click)="shipOrder(order.order_id)">Ship Now</button>
-                    <button *ngIf="order.status !== 'Pending Shipment' && order.status !== 'pending' && order.status !== 'confirmed' && order.status !== 'packed'" class="btn-details">Details</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-
-      <!-- ============ INVENTORY TAB ============ -->
-      <div *ngIf="activeTab === 'inventory'" class="table-card">
-        <div class="table-card-header">
-          <h2>Manage Inventory</h2>
-          <div class="search-wrap">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon">
-              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-            </svg>
-            <input type="text" placeholder="Search SKU or Name..." class="inv-search-input"
-              [(ngModel)]="inventorySearch" />
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>SKU</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Status</th>
-                <th class="text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of filteredInventory">
-                <td>
-                  <p class="item-name">{{ item.name }}</p>
-                  <p class="item-cat text-muted text-sm">{{ item.category }}</p>
-                </td>
-                <td class="font-mono text-muted">{{ item.product_id }}</td>
-                <td class="font-medium">₹{{ item.price }}</td>
-                <td>
-                  <div class="stock-cell">
-                    <span>{{ item.stock }}</span>
-                    <span [class]="'stock-dot ' + getStockDotClass(item.stock)"></span>
+              <!-- Step indicator -->
+              <div class="sh-portal-steps">
+                <div class="sh-portal-step" [class.active]="regStep() === 'form' || isLoginMode()">
+                  <span>1</span> Account
+                </div>
+                @if (!isLoginMode()) {
+                  <div class="sh-portal-step-line"></div>
+                  <div class="sh-portal-step" [class.active]="regStep() === 'otp' || regStep() === 'seller-setup'">
+                    <span>2</span> Verify
                   </div>
-                </td>
-                <td><span [class]="'badge ' + getStatusClass(getInventoryStatus(item.stock))">{{ getInventoryStatus(item.stock) }}</span></td>
-                <td class="text-right">
-                  <button class="icon-btn edit-btn" title="Edit" (click)="editProduct(item)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-                    </svg>
+                  <div class="sh-portal-step-line"></div>
+                  <div class="sh-portal-step" [class.active]="regStep() === 'seller-setup'">
+                    <span>3</span> Go Live
+                  </div>
+                }
+              </div>
+
+              <!-- Heading -->
+              <div class="sh-portal-card-header">
+                @if (regStep() === 'otp') {
+                  <h2>📧 Verify Your Email</h2>
+                  <p>We sent a 6-digit code to <strong>{{ authForm.email }}</strong></p>
+                } @else if (regStep() === 'seller-setup') {
+                  <h2>⚙️ Setting Up Your Store</h2>
+                  <p>Creating your seller profile, please wait…</p>
+                } @else if (isLoginMode()) {
+                  <h2>Welcome Back, Seller</h2>
+                  <p>Sign in to your seller dashboard</p>
+                } @else {
+                  <h2>Create Seller Account</h2>
+                  <p>Fill in your details to start selling</p>
+                }
+              </div>
+
+              <!-- Mode tabs (only on form step) -->
+              @if (regStep() === 'form') {
+                <div class="sh-portal-tabs">
+                  <button class="sh-ptab" [class.active]="isLoginMode()"
+                    (click)="isLoginMode.set(true); authError.set(''); authInfo.set(''); isUnverified.set(false)">
+                    Sign In
                   </button>
-                  <button class="icon-btn del-btn" title="Delete" (click)="deleteProduct(item.product_id)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-                    </svg>
+                  <button class="sh-ptab" [class.active]="!isLoginMode()"
+                    (click)="isLoginMode.set(false); authError.set(''); authInfo.set('')">
+                    Register
                   </button>
-                </td>
-              </tr>
-              <tr *ngIf="filteredInventory.length === 0">
-                <td colspan="6" class="empty-row">No products match your search.</td>
-              </tr>
-            </tbody>
-          </table>
+                </div>
+              }
+
+              <!-- Alerts -->
+              @if (authError()) {
+                <div class="sh-portal-alert sh-portal-alert--error">
+                  ⚠️ {{ authError() }}
+                  @if (isUnverified()) {
+                    <span class="sh-alert-action">
+                      <a (click)="isLoginMode.set(false); regStep.set('form'); authError.set(''); isUnverified.set(false)">
+                        Switch to Register to resend OTP →
+                      </a>
+                    </span>
+                  }
+                </div>
+              }
+              @if (authInfo()) {
+                <div class="sh-portal-alert sh-portal-alert--info">
+                  ℹ️ {{ authInfo() }}
+                </div>
+              }
+
+              <!-- Form -->
+              <form (ngSubmit)="handleAuth($event)" class="sh-portal-form" id="seller-auth-form">
+
+                @if (regStep() === 'otp') {
+                  <!-- OTP step -->
+                  <div class="sh-pfield">
+                    <label for="seller-otp">Verification Code</label>
+                    <input id="seller-otp" type="text" inputmode="numeric"
+                      class="sh-pinput sh-pinput--otp"
+                      placeholder="• • • • • •"
+                      [(ngModel)]="authForm.otp" name="otp"
+                      required maxlength="6" autocomplete="one-time-code" />
+                    <span class="sh-pfield-hint">Check your spam folder if you don't see it.</span>
+                  </div>
+
+                } @else if (regStep() === 'seller-setup') {
+                  <div class="sh-portal-setup-spinner">
+                    <div class="sh-portal-spinner"></div>
+                    <span>Creating your seller profile…</span>
+                  </div>
+
+                } @else if (isLoginMode()) {
+                  <!-- Login form -->
+                  <div class="sh-pfield">
+                    <label for="seller-email">Business Email</label>
+                    <input id="seller-email" type="email" class="sh-pinput"
+                      placeholder="you@business.com"
+                      [(ngModel)]="authForm.email" name="email"
+                      required autocomplete="email" />
+                  </div>
+                  <div class="sh-pfield">
+                    <label for="seller-password">Password</label>
+                    <input id="seller-password" type="password" class="sh-pinput"
+                      placeholder="Your password"
+                      [(ngModel)]="authForm.password" name="password"
+                      required autocomplete="current-password" />
+                  </div>
+
+                } @else {
+                  <!-- Register form: account + business details -->
+                  <p class="sh-pgroup-label">👤 Account Details</p>
+                  <div class="sh-pgrid">
+                    <div class="sh-pfield">
+                      <label for="seller-fullname">Full Name</label>
+                      <input id="seller-fullname" type="text" class="sh-pinput"
+                        placeholder="Ramesh Kumar"
+                        [(ngModel)]="authForm.fullName" name="fullName"
+                        required autocomplete="name" />
+                    </div>
+                    <div class="sh-pfield">
+                      <label for="seller-phone">Phone</label>
+                      <input id="seller-phone" type="tel" class="sh-pinput"
+                        placeholder="9876543210"
+                        [(ngModel)]="authForm.phone" name="phone"
+                        required autocomplete="tel" />
+                    </div>
+                  </div>
+                  <div class="sh-pfield">
+                    <label for="seller-reg-email">Email Address</label>
+                    <input id="seller-reg-email" type="email" class="sh-pinput"
+                      placeholder="you@business.com"
+                      [(ngModel)]="authForm.email" name="email"
+                      required autocomplete="email" />
+                  </div>
+                  <div class="sh-pfield">
+                    <label for="seller-reg-pwd">Password</label>
+                    <input id="seller-reg-pwd" type="password" class="sh-pinput"
+                      placeholder="Create a strong password (min 6 chars)"
+                      [(ngModel)]="authForm.password" name="password"
+                      required minlength="6" autocomplete="new-password" />
+                  </div>
+
+                  <p class="sh-pgroup-label" style="margin-top:4px;">🏪 Business Details</p>
+                  <div class="sh-pfield">
+                    <label for="seller-biz-name">Business / Store Name</label>
+                    <input id="seller-biz-name" type="text" class="sh-pinput"
+                      placeholder="e.g. Kumar Kirana Store"
+                      [(ngModel)]="authForm.businessName" name="businessName"
+                      required />
+                  </div>
+                  <div class="sh-pgrid">
+                    <div class="sh-pfield">
+                      <label for="seller-gst">GST Number <span style="opacity:.6;">(optional)</span></label>
+                      <input id="seller-gst" type="text" class="sh-pinput"
+                        placeholder="22AAAAA0000A1Z5"
+                        [(ngModel)]="authForm.gstNumber" name="gstNumber" />
+                    </div>
+                    <div class="sh-pfield">
+                      <label for="seller-biz-addr">Business Location</label>
+                      <input id="seller-biz-addr" type="text" class="sh-pinput"
+                        placeholder="City, State"
+                        [(ngModel)]="authForm.businessAddress" name="businessAddress" />
+                    </div>
+                  </div>
+                }
+
+                @if (regStep() !== 'seller-setup') {
+                  <button type="submit" class="sh-portal-submit" [disabled]="authLoading()" id="btn-seller-submit">
+                    @if (authLoading()) {
+                      <span class="sh-portal-spinner sh-portal-spinner--sm"></span> Processing…
+                    } @else if (regStep() === 'otp') {
+                      ✓ Verify & Activate Account
+                    } @else if (isLoginMode()) {
+                      Sign In to Seller Dashboard →
+                    } @else {
+                      Create Seller Account & Continue →
+                    }
+                  </button>
+                }
+              </form>
+
+              <!-- OTP actions -->
+              @if (regStep() === 'otp') {
+                <div class="sh-portal-otp-actions">
+                  <button (click)="regStep.set('form'); authError.set('')" [disabled]="authLoading()">
+                    ← Change details
+                  </button>
+                  <button (click)="resendOtp()" [disabled]="authLoading()">
+                    ↩ Resend OTP
+                  </button>
+                </div>
+              }
+
+            }
+          </div>
         </div>
+
       </div>
+    </div>
 
+  } @else {
+    <!-- ── SELLER DASHBOARD ── -->
+    <div class="sh-dashboard">
 
-      <!-- ============ ORDERS TAB ============ -->
-      <div *ngIf="activeTab === 'orders'" class="table-card">
-        <div class="table-card-header">
-          <h2>All Orders</h2>
-        </div>
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>Date</th>
-                <th>Customer</th>
-                
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let order of sellerOrders">
-                <td class="font-mono">{{ order.order_id }}</td>
-                <td class="text-muted">{{ (order.created_at | date:'mediumDate') }}</td>
-                <td>{{ order.customer_name }}</td>
-                
-                <td class="font-medium">₹{{ order.total }}</td>
-                <td><span [class]="'badge ' + getStatusClass(order.status)">{{ order.status }}</span></td>
-                <td>
-                  <button *ngIf="order.status === 'pending' || order.status === 'packed' || order.status === 'pending' || order.status === 'confirmed' || order.status === 'packed'" class="btn-ship" (click)="shipOrder(order.order_id)">Ship Now</button>
-                  <button *ngIf="order.status !== 'Pending Shipment' && order.status !== 'pending' && order.status !== 'confirmed' && order.status !== 'packed'" class="btn-details">Details</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-
-      <!-- ============ ANALYTICS TAB ============ -->
-      <div *ngIf="activeTab === 'analytics'" class="table-card">
-        <div class="table-card-header">
-          <h2>Analytics</h2>
-        </div>
-        <div class="analytics-placeholder">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
-            stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      <!-- Mobile Header -->
+      <div class="sh-mobile-header">
+        <button class="sh-hamburger" (click)="toggleSidebar()" aria-label="Toggle menu">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
           </svg>
-          <h3>Analytics Coming Soon</h3>
-          <p>Revenue charts, order trends and customer insights will appear here once connected to the backend.</p>
-        </div>
+        </button>
+        <span class="sh-mobile-title">Seller Hub</span>
+        <div class="sh-mobile-avatar">{{ sellerName[0] }}</div>
       </div>
 
-
-      <!-- ============ ADD PRODUCT TAB ============ -->
-      <div *ngIf="activeTab === 'add-product'" class="add-product-card">
-        <div class="add-product-header">
-          <h2>Add New Product to Catalog</h2>
-          <p>Upload product details to publish them on RuralSwift.</p>
+      <!-- Sidebar -->
+      @if (sidebarOpen()) {
+        <div class="sh-sidebar-backdrop" (click)="toggleSidebar()"></div>
+      }
+      <aside class="sh-sidebar" [class.open]="sidebarOpen()">
+        <div class="sh-sidebar-header">
+          <div class="sh-seller-avatar">{{ sellerName[0] }}</div>
+          <div>
+            <p class="sh-seller-name">{{ sellerName }}</p>
+            <p class="sh-seller-role">Verified Seller</p>
+          </div>
         </div>
 
-        <div *ngIf="productSubmitSuccess" class="alert alert-success" style="margin-bottom:16px;">
-          ✅ Product submitted for review! Redirecting to inventory...
-        </div>
+        <nav class="sh-sidebar-nav">
+          @for (tab of tabs; track tab.id) {
+            <button
+              class="sh-nav-item"
+              [class.active]="activeTab() === tab.id"
+              (click)="setTab(tab.id)"
+            >
+              <span class="sh-nav-icon">{{ tab.icon }}</span>
+              {{ tab.label }}
+            </button>
+          }
+        </nav>
 
-        <div class="add-product-body">
-          <form (ngSubmit)="submitProduct($event)" class="product-form">
+        <button class="sh-logout-btn" (click)="logout()">
+          <span>🚪</span> Sign Out
+        </button>
+      </aside>
 
-            <!-- Section 1 -->
-            <div class="form-section">
-              <h3 class="form-section-title">1. Basic Information</h3>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Product Title <span class="req">*</span></label>
-                  <input class="form-control" type="text" placeholder="e.g. Neem Organic Fertilizer 1kg"
-                    required [(ngModel)]="newProduct.name" name="title" />
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Brand</label>
-                  <input class="form-control" type="text" placeholder="e.g. GreenGrow"
-                    [(ngModel)]="newProduct.brand" name="brand" />
-                </div>
-              </div>
-              <div class="form-group form-full">
-                <label class="form-label">Product Description <span class="req">*</span></label>
-                <textarea class="form-control" rows="4" placeholder="Detailed description of the product..."
-                  required [(ngModel)]="newProduct.description" name="description"></textarea>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Category <span class="req">*</span></label>
-                  <select class="form-control" required [(ngModel)]="newProduct.category" name="category">
-                    <option value="">Select a category...</option>
-                    <option>Farming Equipment</option>
-                    <option>Seeds & Fertilizers</option>
-                    <option>Groceries</option>
-                    <option>Medicine & Health</option>
-                    <option>Electronics</option>
-                    <option>Home & Kitchen</option>
-                    <option>Livestock Care</option>
-                  </select>
-                </div>
+      <!-- Main Content -->
+      <main class="sh-main">
+
+        <!-- ── Dashboard Tab ── -->
+        @if (activeTab() === 'dashboard') {
+          <div class="sh-tab-content" id="sh-dashboard">
+            <div class="sh-page-header">
+              <div>
+                <h1 class="sh-page-title">Welcome back, {{ sellerName }}! 👋</h1>
+                <p class="sh-page-sub">Here's your business overview</p>
               </div>
             </div>
 
-            <!-- Section 2 -->
-            <div class="form-section">
-              <h3 class="form-section-title">2. Pricing & Inventory</h3>
-              <div class="form-row three-col">
-                <div class="form-group">
-                  <label class="form-label">Selling Price (₹) <span class="req">*</span></label>
-                  <input class="form-control" type="number" placeholder="0.00" required min="0"
-                    [(ngModel)]="newProduct.price" name="price" />
+            <div class="sh-stats-grid">
+              @for (card of [
+                {label:'Total Revenue', value: fmt(stats().totalRevenue), icon:'💰', color:'var(--accent)'},
+                {label:'Total Orders', value: stats().totalOrders, icon:'📦', color:'var(--primary-dark)'},
+                {label:'Products Listed', value: stats().totalProducts, icon:'🏷️', color:'#6366f1'},
+                {label:'Low Stock Items', value: stats().lowStockCount, icon:'⚠️', color:'var(--warning)'},
+              ]; track card.label) {
+                <div class="sh-stat-card">
+                  <div class="sh-stat-icon" [style.background]="card.color + '1a'" [style.color]="card.color">
+                    {{ card.icon }}
+                  </div>
+                  <div>
+                    <p class="sh-stat-value">{{ card.value }}</p>
+                    <p class="sh-stat-label">{{ card.label }}</p>
+                  </div>
                 </div>
-                <div class="form-group">
-                  <label class="form-label">Initial Stock <span class="req">*</span></label>
-                  <input class="form-control" type="number" placeholder="50" required min="0"
-                    [(ngModel)]="newProduct.stock" name="stock" />
+              }
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="sh-section-card">
+              <div class="sh-section-header">
+                <h2 class="sh-section-title">Recent Orders</h2>
+                <button class="sh-see-all" (click)="setTab('orders')">View all</button>
+              </div>
+              @if (ordersLoading()) {
+                <div class="sh-table-skeleton skeleton"></div>
+              } @else if (sellerOrders().length === 0) {
+                <div class="sh-empty">No orders yet. Share your products to get started!</div>
+              } @else {
+                <div class="sh-table-wrap">
+                  <table class="sh-table">
+                    <thead>
+                      <tr>
+                        <th>Order ID</th><th>Customer</th><th>Amount</th><th>Status</th><th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (order of sellerOrders().slice(0, 5); track order.order_id) {
+                        <tr>
+                          <td>#{{ order.order_id }}</td>
+                          <td>{{ order.customer_name || '—' }}</td>
+                          <td>{{ fmt(order.total) }}</td>
+                          <td>
+                            <span class="sh-badge" [ngClass]="getStatusBadge(order.status)">
+                              {{ order.status | titlecase }}
+                            </span>
+                          </td>
+                          <td>
+                            @if (order.status === 'confirmed' || order.status === 'packed') {
+                              <button class="sh-action-btn" (click)="shipOrder(order.order_id)">Ship</button>
+                            }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
                 </div>
-                <div class="form-group">
-                  <label class="form-label">Weight (grams)</label>
-                  <input class="form-control" type="number" placeholder="250" min="0"
-                    [(ngModel)]="newProduct.weight_grams" name="weight" />
-                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- ── Inventory Tab ── -->
+        @if (activeTab() === 'inventory') {
+          <div class="sh-tab-content" id="sh-inventory">
+            <div class="sh-page-header">
+              <div>
+                <h1 class="sh-page-title">Inventory</h1>
+                <p class="sh-page-sub">{{ inventory().length }} products listed</p>
+              </div>
+              <button class="sh-primary-btn" (click)="setTab('add-product')">+ Add Product</button>
+            </div>
+
+            <div class="sh-search-bar-wrap">
+              <input
+                type="search"
+                class="sh-search-bar"
+                placeholder="Search products…"
+                [value]="inventorySearch()"
+                (input)="inventorySearch.set($any($event.target).value)"
+                id="sh-inventory-search"
+              />
+            </div>
+
+            @if (invLoading()) {
+              <div class="sh-table-skeleton skeleton"></div>
+            } @else if (filteredInventory.length === 0) {
+              <div class="sh-empty-card">
+                <div class="sh-empty-icon">📦</div>
+                <p>No products found. Add your first product!</p>
+                <button class="sh-primary-btn" (click)="setTab('add-product')">Add Product</button>
+              </div>
+            } @else {
+              <div class="sh-inv-grid">
+                @for (item of filteredInventory; track item.product_id) {
+                  <div class="sh-inv-card">
+                    <div class="sh-inv-img-wrap">
+                      <img
+                        [src]="item.image_url || placeholderImage"
+                        [alt]="item.name"
+                        class="sh-inv-img"
+                      />
+                    </div>
+                    <div class="sh-inv-body">
+                      <h3 class="sh-inv-name line-clamp-2">{{ item.name }}</h3>
+                      <p class="sh-inv-cat">{{ item.category }}</p>
+                      <div class="sh-inv-row">
+                        <span class="sh-inv-price">₹{{ item.price }}</span>
+                        <span class="sh-stock-tag" [ngClass]="getStockClass(item.stock)">
+                          {{ item.stock }} units
+                        </span>
+                      </div>
+                    </div>
+                    <div class="sh-inv-actions">
+                      <button class="sh-inv-btn sh-inv-btn--del" (click)="deleteProduct(item.product_id)"
+                        aria-label="Delete product">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                          <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ── Add Product Tab ── -->
+        @if (activeTab() === 'add-product') {
+          <div class="sh-tab-content" id="sh-add-product">
+            <div class="sh-page-header">
+              <div>
+                <h1 class="sh-page-title">Add New Product</h1>
+                <p class="sh-page-sub">Fill in the details to list your product</p>
               </div>
             </div>
 
-            <!-- Section 3 -->
-            <div class="form-section">
-              <h3 class="form-section-title">3. Product Images</h3>
-              <input #galleryInput type="file" accept="image/*" hidden (change)="onProductImageSelected($event)" />
-              <input #cameraInput type="file" accept="image/*" capture="environment" hidden (change)="onProductImageSelected($event)" />
+            @if (productError()) {
+              <div class="sh-form-error">⚠️ {{ productError() }}</div>
+            }
 
-              <div class="product-image-uploader">
-                <div class="product-image-preview" [class.empty-preview]="!newProduct.image_url">
-                  <img *ngIf="newProduct.image_url" [src]="newProduct.image_url" alt="Product preview" />
-                  <div *ngIf="!newProduct.image_url" class="preview-placeholder">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none"
-                      stroke="var(--primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="2"/>
-                      <circle cx="9" cy="9" r="2"/>
-                      <path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/>
+            <form (ngSubmit)="submitProduct($event)" class="sh-product-form" id="product-add-form">
+              <div class="sh-form-card">
+                <h3 class="sh-form-section-title">Basic Information</h3>
+                <div class="sh-product-form-grid">
+                  <div class="sh-form-field sh-form-field--full">
+                    <label for="p-name">Product Name *</label>
+                    <input id="p-name" type="text" class="sh-form-input" placeholder="e.g. Organic Wheat Seeds 1kg"
+                      [(ngModel)]="newProduct.name" name="name" required />
+                  </div>
+                  <div class="sh-form-field">
+                    <label for="p-brand">Brand</label>
+                    <input id="p-brand" type="text" class="sh-form-input" placeholder="Brand name"
+                      [(ngModel)]="newProduct.brand" name="brand" />
+                  </div>
+                  <div class="sh-form-field">
+                    <label for="p-category">Category *</label>
+                    <select id="p-category" class="sh-form-input" [(ngModel)]="newProduct.category" name="category" required>
+                      <option value="">Select category</option>
+                      <option value="Farming Equipment">Farming Equipment</option>
+                      <option value="Seeds & Fertilizers">Seeds & Fertilizers</option>
+                      <option value="Groceries">Groceries</option>
+                      <option value="Medicine & Health">Medicine & Health</option>
+                      <option value="Electronics">Electronics</option>
+                      <option value="Home & Kitchen">Home & Kitchen</option>
+                      <option value="Livestock Care">Livestock Care</option>
+                      <option value="Clothing">Clothing</option>
+                      <option value="Tools & Hardware">Tools & Hardware</option>
+                    </select>
+                  </div>
+                  <div class="sh-form-field sh-form-field--full">
+                    <label for="p-desc">Description</label>
+                    <textarea id="p-desc" class="sh-form-input sh-form-textarea" rows="3"
+                      placeholder="Describe your product…"
+                      [(ngModel)]="newProduct.description" name="description"></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sh-form-card">
+                <h3 class="sh-form-section-title">Pricing & Stock</h3>
+                <div class="sh-product-form-grid">
+                  <div class="sh-form-field">
+                    <label for="p-price">Selling Price (₹) *</label>
+                    <input id="p-price" type="number" class="sh-form-input" placeholder="e.g. 299"
+                      [(ngModel)]="newProduct.price" name="price" required min="1" />
+                  </div>
+                  <div class="sh-form-field">
+                    <label for="p-stock">Stock Quantity *</label>
+                    <input id="p-stock" type="number" class="sh-form-input" placeholder="e.g. 100"
+                      [(ngModel)]="newProduct.stock" name="stock" required min="0" />
+                  </div>
+                  <div class="sh-form-field">
+                    <label for="p-weight">Weight (grams)</label>
+                    <input id="p-weight" type="number" class="sh-form-input" placeholder="e.g. 1000"
+                      [(ngModel)]="newProduct.weight_grams" name="weight_grams" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="sh-form-card">
+                <h3 class="sh-form-section-title">Product Image</h3>
+                @if (newProduct.image_url) {
+                  <div class="sh-img-preview">
+                    <img [src]="newProduct.image_url" alt="Product preview" class="sh-preview-img" [attr.decoding]="'async'" />
+                    <button type="button" class="sh-remove-img" (click)="removeImage()">Remove</button>
+                  </div>
+                } @else {
+                  <label class="sh-img-upload-btn" for="p-image">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
                     </svg>
-                    <span>No image selected</span>
-                  </div>
-                </div>
+                    <span>{{ selectedImageName() || 'Click to upload product image' }}</span>
+                    <input id="p-image" type="file" class="sh-file-input" accept="image/*" (change)="onImageSelected($event)" />
+                  </label>
+                }
+              </div>
 
-                <div class="image-upload-controls">
-                  <p class="upload-title">{{ selectedImageName || 'Add a clear cover image' }}</p>
-                  <p class="upload-sub">Choose from gallery or take a photo using camera. This image appears on home, listing and details pages.</p>
-                  <div class="upload-actions">
-                    <button type="button" class="btn-upload" (click)="galleryInput.click()">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="17 8 12 3 7 8"/>
-                        <line x1="12" x2="12" y1="3" y2="15"/>
-                      </svg>
-                      Upload Image
-                    </button>
-                    <button type="button" class="btn-upload btn-camera" (click)="cameraInput.click()">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
-                        <circle cx="12" cy="13" r="3"/>
-                      </svg>
-                      Camera
-                    </button>
-                    <button type="button" class="btn-remove-image" *ngIf="newProduct.image_url" (click)="removeProductImage()">Remove</button>
-                  </div>
-                  <label class="form-label image-url-label">Or paste image URL</label>
-                  <input class="form-control" type="url" placeholder="https://example.com/product.jpg"
-                    [(ngModel)]="newProduct.image_url" name="imageUrl" />
-                </div>
+              <div class="sh-form-actions">
+                <button type="button" class="sh-cancel-btn" (click)="setTab('inventory')">Cancel</button>
+                <button type="submit" class="sh-submit-product-btn" [disabled]="productSaving()">
+                  {{ productSaving() ? 'Publishing…' : 'Publish Product' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        }
+
+        <!-- ── Orders Tab ── -->
+        @if (activeTab() === 'orders') {
+          <div class="sh-tab-content" id="sh-orders">
+            <div class="sh-page-header">
+              <div>
+                <h1 class="sh-page-title">Manage Orders</h1>
+                <p class="sh-page-sub">{{ sellerOrders().length }} orders total</p>
               </div>
             </div>
 
-            <!-- Submit -->
-            <div class="form-actions">
-              <button type="button" class="btn-cancel" (click)="setTab('inventory')">Cancel</button>
-              <button type="submit" class="btn-submit-product">
-                Publish Product
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="m9 18 6-6-6-6"/>
-                </svg>
-              </button>
+            @if (ordersLoading()) {
+              <div class="sh-table-skeleton skeleton"></div>
+            } @else if (sellerOrders().length === 0) {
+              <div class="sh-empty-card">
+                <div class="sh-empty-icon">📭</div>
+                <p>No orders yet. Keep listing great products!</p>
+              </div>
+            } @else {
+              <div class="sh-table-wrap">
+                <table class="sh-table">
+                  <thead>
+                    <tr>
+                      <th>Order</th>
+                      <th>Customer</th>
+                      <th>Date</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (order of sellerOrders(); track order.order_id) {
+                      <tr>
+                        <td><strong>#{{ order.order_id }}</strong></td>
+                        <td>{{ order.customer_name || '—' }}</td>
+                        <td>{{ order.created_at | date:'dd MMM yyyy' }}</td>
+                        <td>{{ fmt(order.total) }}</td>
+                        <td>
+                          <span class="sh-badge" [ngClass]="getStatusBadge(order.status)">
+                            {{ order.status | titlecase }}
+                          </span>
+                        </td>
+                        <td>
+                          @if (order.status === 'confirmed' || order.status === 'packed') {
+                            <button class="sh-action-btn" (click)="shipOrder(order.order_id)">Mark Shipped</button>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ── Settings Tab ── -->
+        @if (activeTab() === 'settings') {
+          <div class="sh-tab-content" id="sh-settings">
+            <h1 class="sh-page-title">Account Settings</h1>
+            <div class="sh-settings-card">
+              <div class="sh-settings-row">
+                <div>
+                  <p class="sh-settings-label">Business Name</p>
+                  <p class="sh-settings-value">{{ sellerProfile()?.business_name || '—' }}</p>
+                </div>
+              </div>
+              <div class="sh-settings-row">
+                <div>
+                  <p class="sh-settings-label">GST Number</p>
+                  <p class="sh-settings-value">{{ sellerProfile()?.gst_number || 'Not provided' }}</p>
+                </div>
+              </div>
+              <div class="sh-settings-row">
+                <div>
+                  <p class="sh-settings-label">Business Address</p>
+                  <p class="sh-settings-value">{{ sellerProfile()?.business_address || '—' }}</p>
+                </div>
+              </div>
+              <div class="sh-settings-divider"></div>
+              <button class="sh-danger-btn" (click)="logout()">🚪 Sign Out of Seller Hub</button>
             </div>
-            <p class="form-note">Published products appear on the product listing and details pages.</p>
-          </form>
-        </div>
-      </div>
+          </div>
+        }
 
+      </main>
+    </div>
+  }
 
-      <!-- ============ SETTINGS TAB ============ -->
-      <div *ngIf="activeTab === 'settings'" class="table-card">
-        <div class="table-card-header">
-          <h2>Account Settings</h2>
-        </div>
-        <div class="analytics-placeholder">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
-            stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
-          </svg>
-          <h3>Settings Coming Soon</h3>
-          <p>Business profile, bank details, and notification preferences will be available here.</p>
-        </div>
-      </div>
-
-    </main>
-  </div>
 </div>
-

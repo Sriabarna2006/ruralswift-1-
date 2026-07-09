@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../../services/api.service';
+import { ApiService, DirectLoginResponse, RegisterResponse, RegisterOtpResponse } from '../../services/api.service';
 
 @Component({
   selector: 'app-register',
@@ -41,6 +41,10 @@ export class RegisterComponent {
     }
   }
 
+  get isEmailExistsError(): boolean {
+    return this.errorMessage ? this.errorMessage.toLowerCase().includes('already exists') : false;
+  }
+
   /** Calculate password strength */
   checkStrength() {
     const p = this.password;
@@ -68,39 +72,36 @@ export class RegisterComponent {
     return '';
   }
 
-  /** Register form submit */
+  /** Register form submit — also works as "Resend OTP" when otpStep is true */
   register() {
     this.errorMessage   = '';
     this.successMessage = '';
 
-    // Validation
-    if (!this.firstName.trim()) {
-      this.errorMessage = 'First name is required.';
-      return;
-    }
-    if (!this.email.trim()) {
-      this.errorMessage = 'Email address is required.';
-      return;
-    }
-    if (!this.phone.trim()) {
-      this.errorMessage = 'Mobile number is required.';
-      return;
-    }
-    if (!this.isValidIndianMobile(this.phone)) {
-      this.errorMessage = 'Please enter a valid 10-digit Indian mobile number.';
-      return;
-    }
-    if (!this.password) {
-      this.errorMessage = 'Password is required.';
-      return;
-    }
-    if (this.password.length < 6) {
-      this.errorMessage = 'Password must be at least 6 characters.';
-      return;
-    }
-    if (this.password !== this.confirmPassword) {
-      this.errorMessage = 'Passwords do not match.';
-      return;
+    const isResend = this.otpStep; // true when resending from OTP screen
+
+    // Skip form validation on resend — use the already-submitted data
+    if (!isResend) {
+      if (!this.firstName.trim()) {
+        this.errorMessage = 'First name is required.'; return;
+      }
+      if (!this.email.trim()) {
+        this.errorMessage = 'Email address is required.'; return;
+      }
+      if (!this.phone.trim()) {
+        this.errorMessage = 'Mobile number is required.'; return;
+      }
+      if (!this.isValidIndianMobile(this.phone)) {
+        this.errorMessage = 'Please enter a valid 10-digit Indian mobile number.'; return;
+      }
+      if (!this.password) {
+        this.errorMessage = 'Password is required.'; return;
+      }
+      if (this.password.length < 6) {
+        this.errorMessage = 'Password must be at least 6 characters.'; return;
+      }
+      if (this.password !== this.confirmPassword) {
+        this.errorMessage = 'Passwords do not match.'; return;
+      }
     }
 
     this.isLoading = true;
@@ -108,15 +109,27 @@ export class RegisterComponent {
     this.api.register({
       first_name: this.firstName.trim(),
       last_name:  this.lastName.trim(),
-      email:      this.email.trim(),
+      email:      (this.pendingEmail || this.email).trim(),
       phone:      this.phone.trim(),
       password:   this.password
     }).subscribe({
-      next: (res) => {
+      next: (res: RegisterResponse) => {
         this.isLoading = false;
-        this.pendingEmail = res.email;
-        this.otpStep = true;
-        this.successMessage = `OTP sent to ${res.email}. Please verify to create your account.`;
+
+        if ('directLogin' in res && res.directLogin) {
+          // Existing verified account with correct password → auto-login
+          this.api.saveSession(res.token, res.user);
+          this.successMessage = 'Welcome back! Logging you in...';
+          setTimeout(() => this.router.navigate(['/home']), 1200);
+        } else {
+          const otpRes = res as RegisterOtpResponse;
+          this.pendingEmail = otpRes.email;
+          this.otpStep = true;
+          this.otp = '';
+          this.successMessage = isResend
+            ? `New OTP sent to ${otpRes.email}. Check your inbox!`
+            : `OTP sent to ${otpRes.email}. Please verify to create your account.`;
+        }
       },
       error: (err) => {
         this.isLoading    = false;

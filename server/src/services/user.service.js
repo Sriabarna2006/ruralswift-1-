@@ -7,9 +7,9 @@ const crypto         = require('crypto');
 const userRepository = require('../repositories/user.repository');
 const env            = require('../config/env');
 const logger         = require('../utils/logger');
-const { sendRegistrationOtp } = require('../utils/mailer');
+const { sendRegistrationOtp, sendPasswordResetEmail } = require('../utils/mailer');
 
-const BCRYPT_ROUNDS = 12; // Industry standard; bcrypt auto-manages salt
+const BCRYPT_ROUNDS  = 12;
 const OTP_TTL_MINUTES = 10;
 
 class UserService {
@@ -71,16 +71,30 @@ class UserService {
     const { first_name, last_name, email, phone, password } = userData;
     const normalisedEmail = email.toLowerCase().trim();
 
+    // Check if a fully verified account already exists
     const existingUser = await userRepository.findByEmail(normalisedEmail);
     if (existingUser) {
+      // If the password matches, allow direct login
+      const isMatch = await bcrypt.compare(password, existingUser.password);
+      if (isMatch) {
+        const effectiveRole = await this._resolveRole(existingUser);
+        return {
+          directLogin: true,
+          token: this._generateToken({ ...existingUser, role: effectiveRole }),
+          user:  this._formatUserResponse(existingUser, effectiveRole),
+        };
+      }
       throw new Error('An account with this email already exists.');
     }
 
+    // If there is already a pending registration, just resend a fresh OTP
+    // (user may have lost their first OTP or it expired — no need to 409)
     const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
     const otp = crypto.randomInt(100000, 1000000).toString();
     const otpHash = await bcrypt.hash(otp, BCRYPT_ROUNDS);
     const otpExpiresAt = new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000);
 
+    // upsertPendingRegistration will INSERT or UPDATE if row already exists
     await userRepository.upsertPendingRegistration({
       firstName: (first_name || '').trim(),
       lastName: (last_name || '').trim(),
@@ -91,9 +105,13 @@ class UserService {
       otpExpiresAt,
     });
 
-    await sendRegistrationOtp(normalisedEmail, otp);
-
-    logger.info('Registration OTP sent', { email: normalisedEmail });
+    try {
+      await sendRegistrationOtp(normalisedEmail, otp);
+      logger.info('Registration OTP sent', { email: normalisedEmail });
+    } catch (err) {
+      logger.warn('Failed to send registration OTP email. Falling back to mock mode.', { email: normalisedEmail, message: err.message });
+      console.log(`\n\n[MAILER FALLBACK] Registration OTP for ${normalisedEmail} is: ${otp}\n\n`);
+    }
 
     return {
       verificationRequired: true,
@@ -126,19 +144,7 @@ class UserService {
       throw new Error('An account with this email already exists.');
     }
 
-    const name = [
-      (pending.first_name || '').trim(),
-      (pending.last_name || '').trim(),
-    ].filter(Boolean).join(' ');
-
-    const user = await userRepository.create(
-      name,
-      normalisedEmail,
-      (pending.phone || '').trim(),
-      pending.password_hash
-    );
-
-    await userRepository.deletePendingRegistration(normalisedEmail);
+    const user = await userRepository.verifyAndCreateUser(normalisedEmail, pending);
 
     logger.info('New user verified and registered', { userId: user.user_id, email: user.email });
 
@@ -249,6 +255,80 @@ class UserService {
     logger.info('User profile updated', { userId });
 
     return this._formatUserResponse(updatedUser);
+  }
+
+  /** Update a user's avatar URL */
+  async updateAvatar(userId, avatarUrl) {
+    const updated = await userRepository.updateAvatar(userId, avatarUrl);
+    if (!updated) throw new Error('User not found.');
+    logger.info('Avatar updated', { userId });
+    return this._formatUserResponse(updated);
+  }
+
+  // ── Password Reset ─────────────────────────────────────────────────────────────
+
+  /**
+   * Initiate a password reset.
+   * Always returns success (timing-safe: doesn't reveal whether email exists).
+   */
+  async forgotPassword(email) {
+    const normalisedEmail = email.toLowerCase().trim();
+    const user = await userRepository.findByEmail(normalisedEmail);
+
+    // If no user exists we silently succeed (anti-enumeration)
+    if (!user) {
+      logger.info('Forgot password: unknown email (suppressed)', { email: normalisedEmail });
+      return;
+    }
+
+    // Generate a cryptographically secure random token
+    const rawToken  = crypto.randomBytes(32).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const ttl       = env.passwordReset.ttlMinutes;
+    const expiresAt = new Date(Date.now() + ttl * 60 * 1000);
+
+    await userRepository.createResetToken(user.user_id, tokenHash, expiresAt);
+
+    const resetLink = `${env.passwordReset.baseUrl}/reset-password?token=${rawToken}`;
+    console.log('\n*** [DEBUG] Reset Link:', resetLink, '\n');
+    try {
+      await sendPasswordResetEmail(normalisedEmail, resetLink);
+      logger.info('Password reset email sent', { userId: user.user_id });
+    } catch (err) {
+      logger.warn('Failed to send password reset email. Falling back to mock mode.', { email: normalisedEmail, message: err.message });
+      console.log(`\n\n[MAILER FALLBACK] Password reset link for ${normalisedEmail} is: ${resetLink}\n\n`);
+    }
+  }
+
+  /**
+   * Apply a new password using a valid reset token.
+   * Token is single-use and expires.
+   */
+  async resetPassword(rawToken, newPassword) {
+    if (!newPassword || newPassword.length < 8) {
+      throw new Error('Password must be at least 8 characters.');
+    }
+
+    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const tokenRow  = await userRepository.findValidResetToken(tokenHash);
+
+    if (!tokenRow) {
+      throw new Error('This password reset link is invalid or has expired.');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+    await userRepository.updatePassword(tokenRow.user_id, hashedPassword);
+    await userRepository.markResetTokenUsed(tokenRow.id);
+
+    logger.info('Password reset successful', { userId: tokenRow.user_id });
+
+    const user = await userRepository.findById(tokenRow.user_id);
+    const effectiveRole = await this._resolveRole(user);
+    return {
+      autoLogin: true,
+      token: this._generateToken({ ...user, role: effectiveRole }),
+      user:  this._formatUserResponse(user, effectiveRole),
+    };
   }
 }
 

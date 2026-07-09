@@ -1,46 +1,85 @@
+// src/app/app.routes.ts
 import { Routes } from '@angular/router';
-
-import { HomeComponent } from './pages/home/home';
-import { CustomerDashboardComponent } from './pages/customer-dashboard/customer-dashboard';
-import { ProfileComponent } from './pages/profile/profile';
-import { LoginComponent } from './pages/login/login';
-import { RegisterComponent } from './pages/register/register';
-import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password';
-
-import { ProductListingComponent } from './pages/product-listing/product-listing';
-import { ProductDetailsComponent } from './pages/product-details/product-details';
-import { CartComponent } from './pages/cart/cart';
-import { OrderTrackingComponent } from './pages/order-tracking/order-tracking';
-import { SellerHubComponent } from './pages/seller-hub/seller-hub';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
+  // Default → home
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
 
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
-
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
-
-  { path: 'home', component: HomeComponent },
-
-  { path: 'products', component: ProductListingComponent },
-
+  // Home
   {
-    path: 'product-details/:id',
-    component: ProductDetailsComponent
+    path: 'home',
+    loadComponent: () => import('./pages/home/home').then(m => m.HomeComponent)
   },
 
-  { path: 'cart', component: CartComponent },
+  // Product Listing (shop)
+  {
+    path: 'products',
+    loadComponent: () => import('./pages/product-listing/product-listing').then(m => m.ProductListingComponent)
+  },
 
-  { path: 'order-tracking', component: OrderTrackingComponent },
+  // Product Details
+  {
+    path: 'product-details/:id',
+    loadComponent: () => import('./pages/product-details/product-details').then(m => m.ProductDetailsComponent)
+  },
 
-  { path: 'seller-hub', component: SellerHubComponent },
+  // Cart
+  {
+    path: 'cart',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/cart/cart').then(m => m.CartComponent)
+  },
 
-  { path: 'dashboard', component: CustomerDashboardComponent },
+  // Checkout (new)
+  {
+    path: 'checkout',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/checkout/checkout').then(m => m.CheckoutComponent)
+  },
 
-  { path: 'profile', component: ProfileComponent },
+  // Account (tabbed — replaces dashboard + profile)
+  {
+    path: 'account',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/account/account').then(m => m.AccountComponent)
+  },
 
-  { path: 'forgot-password', component: ForgotPasswordComponent },
+  // Order Tracking
+  {
+    path: 'order-tracking',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/order-tracking/order-tracking').then(m => m.OrderTrackingComponent)
+  },
 
+  // Seller Hub
+  {
+    path: 'seller-hub',
+    loadComponent: () => import('./pages/seller-hub/seller-hub').then(m => m.SellerHubComponent)
+  },
+
+  // Auth pages (standalone fallback — main auth uses overlay)
+  {
+    path: 'login',
+    loadComponent: () => import('./pages/login/login').then(m => m.LoginComponent)
+  },
+  {
+    path: 'register',
+    loadComponent: () => import('./pages/register/register').then(m => m.RegisterComponent)
+  },
+  {
+    path: 'forgot-password',
+    loadComponent: () => import('./pages/forgot-password/forgot-password').then(m => m.ForgotPasswordComponent)
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./pages/reset-password/reset-password').then(m => m.ResetPasswordComponent)
+  },
+
+  // Legacy redirects
+  { path: 'dashboard', redirectTo: 'account', pathMatch: 'full' },
+  { path: 'profile',   redirectTo: 'account', pathMatch: 'full' },
+
+  // Wildcard fallback
   { path: '**', redirectTo: 'home' }
-
 ];

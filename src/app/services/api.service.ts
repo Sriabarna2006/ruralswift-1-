@@ -1,7 +1,9 @@
 // src/app/services/api.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
+import { ImageKitService } from './imagekit.service';
+import { AuthStateService } from './auth-state.service';
 
 // ── Data Interfaces ───────────────────────────────────────────────────────────
 
@@ -129,6 +131,20 @@ export interface RegisterOtpResponse {
   requestId?: string;
 }
 
+/** Returned when a duplicate registration attempt uses the correct password. */
+export interface DirectLoginResponse {
+  success: boolean;
+  message: string;
+  directLogin: true;
+  token: string;
+  user: UserProfile;
+  timestamp?: string;
+  requestId?: string;
+}
+
+/** Union of the two possible register() outcomes. */
+export type RegisterResponse = RegisterOtpResponse | DirectLoginResponse;
+
 export interface ProfileResponse {
   success:  boolean;
   message:  string;
@@ -162,51 +178,38 @@ export class ApiService {
 
   private readonly baseUrl = 'http://localhost:3000/api';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authState: AuthStateService, private imageKit: ImageKitService) {}
 
   // ── Session helpers ────────────────────────────────────────────────────────
 
-  saveSession(token: string, user: UserProfile): void {
-    try {
-      localStorage.setItem('token',        token);
-      localStorage.setItem('user',         JSON.stringify(user));
-      localStorage.setItem('customerName', user.first_name || user.email || 'Customer');
-    } catch {
-      console.warn('[ApiService] Could not save session to localStorage.');
-    }
+  saveSession(token: string, user: UserProfile, remember = true): void {
+    this.authState.saveSession(token, user, remember);
   }
 
-  getToken(): string | null { return localStorage.getItem('token'); }
+  getToken(): string | null { return this.authState.getToken(); }
 
   getStoredUser(): UserProfile | null {
-    try {
-      const raw = localStorage.getItem('user');
-      if (!raw) return null;
-      const parsed = JSON.parse(raw);
-      if (typeof parsed !== 'object' || !parsed.email) return null;
-      return parsed as UserProfile;
-    } catch {
-      localStorage.removeItem('user');
-      return null;
-    }
+    return this.authState.getUser();
   }
 
-  isLoggedIn(): boolean { return !!this.getToken(); }
+  isLoggedIn(): boolean { return this.authState.isLoggedIn(); }
 
   clearSession(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('customerName');
+    this.authState.clearSession();
     // cart is now server-side only — no localStorage to clear
   }
 
   // ── Auth ──────────────────────────────────────────────────────────────────
 
-  login(email: string, password: string): Observable<AuthResponse> {
+  login(credentials: { email: string; password: string }): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(
       `${this.baseUrl}/auth/login`,
-      { email: email.trim().toLowerCase(), password }
+      { email: credentials.email.trim().toLowerCase(), password: credentials.password }
     );
+  }
+
+  logout(): void {
+    this.authState.logout();
   }
 
   register(data: {
@@ -215,8 +218,8 @@ export class ApiService {
     email:      string;
     phone:      string;
     password:   string;
-  }): Observable<RegisterOtpResponse> {
-    return this.http.post<RegisterOtpResponse>(
+  }): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(
       `${this.baseUrl}/auth/register`,
       { ...data, email: data.email.trim().toLowerCase() }
     );
@@ -229,10 +232,31 @@ export class ApiService {
     );
   }
 
+  // Alias for auth-overlay compatibility
+  verifyOtp(data: { email: string; otp: string }): Observable<AuthResponse> {
+    return this.verifyRegistrationOtp(data.email, data.otp);
+  }
+
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post<any>(
+      `${this.baseUrl}/auth/forgot-password`,
+      { email: email.trim().toLowerCase() }
+    );
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post<any>(
+      `${this.baseUrl}/auth/reset-password`,
+      { token: token.trim(), password: newPassword }
+    );
+  }
+
   // ── Profile ────────────────────────────────────────────────────────────────
 
   getProfile(): Observable<ProfileResponse> {
-    return this.http.get<ProfileResponse>(`${this.baseUrl}/profile`);
+    return this.http.get<ProfileResponse>(`${this.baseUrl}/profile`).pipe(
+      map(res => ({ ...res, user: this.normalizeUser(res.user) }))
+    );
   }
 
   updateProfile(data: Partial<UserProfile>): Observable<ProfileResponse> {
@@ -258,11 +282,13 @@ export class ApiService {
     if (filters.limit)    params = params.set('limit',    filters.limit.toString());
     return this.http.get<ApiResponse<{ products: Product[]; pagination: Pagination }>>(
       `${this.baseUrl}/products`, { params }
-    );
+    ).pipe(map(res => this.normalizeProductsResponse(res)));
   }
 
   getProduct(id: number): Observable<ApiResponse<{ product: Product }>> {
-    return this.http.get<ApiResponse<{ product: Product }>>(`${this.baseUrl}/products/${id}`);
+    return this.http.get<ApiResponse<{ product: Product }>>(`${this.baseUrl}/products/${id}`).pipe(
+      map(res => ({ ...res, data: res.data ? { product: this.normalizeProduct(res.data.product) } : res.data }))
+    );
   }
 
   getProductCategories(): Observable<ApiResponse<{ categories: string[] }>> {
@@ -284,7 +310,9 @@ export class ApiService {
   // ── Cart ──────────────────────────────────────────────────────────────────
 
   getCart(): Observable<ApiResponse<CartResponse>> {
-    return this.http.get<ApiResponse<CartResponse>>(`${this.baseUrl}/cart`);
+    return this.http.get<ApiResponse<CartResponse>>(`${this.baseUrl}/cart`).pipe(
+      map(res => ({ ...res, data: res.data ? this.normalizeCart(res.data) : res.data }))
+    );
   }
 
   addToCart(productId: number, quantity: number = 1): Observable<ApiResponse> {
@@ -310,7 +338,9 @@ export class ApiService {
     if (filters.status) params = params.set('status', filters.status);
     if (filters.page)   params = params.set('page',   filters.page.toString());
     if (filters.limit)  params = params.set('limit',  filters.limit.toString());
-    return this.http.get<ApiResponse<{ orders: Order[] }>>(`${this.baseUrl}/orders`, { params });
+    return this.http.get<ApiResponse<{ orders: Order[] }>>(`${this.baseUrl}/orders`, { params }).pipe(
+      map(res => ({ ...res, data: res.data ? { orders: res.data.orders.map(order => this.normalizeOrder(order)) } : res.data }))
+    );
   }
 
   getOrder(id: number): Observable<ApiResponse<{ order: Order }>> {
@@ -329,7 +359,9 @@ export class ApiService {
   // ── Wishlist ──────────────────────────────────────────────────────────────
 
   getWishlist(): Observable<ApiResponse<{ items: any[] }>> {
-    return this.http.get<ApiResponse<{ items: any[] }>>(`${this.baseUrl}/wishlist`);
+    return this.http.get<ApiResponse<{ items: any[] }>>(`${this.baseUrl}/wishlist`).pipe(
+      map(res => ({ ...res, data: res.data ? { items: res.data.items.map(item => this.normalizeAnyImageItem(item)) } : res.data }))
+    );
   }
 
   addToWishlist(productId: number): Observable<ApiResponse> {
@@ -371,7 +403,7 @@ export class ApiService {
   getNotifications(limit: number = 20): Observable<ApiResponse<{ notifications: Notification[]; unreadCount: number }>> {
     return this.http.get<ApiResponse<{ notifications: Notification[]; unreadCount: number }>>(
       `${this.baseUrl}/notifications?limit=${limit}`
-    );
+    ).pipe(map(res => ({ ...res, data: res.data ? { ...res.data, notifications: res.data.notifications.map(notification => this.normalizeAnyImageItem(notification)) } : res.data })));
   }
 
   markNotificationRead(id: number): Observable<ApiResponse> {
@@ -393,10 +425,79 @@ export class ApiService {
     if (filters.status) params = params.set('status', filters.status);
     if (filters.page)   params = params.set('page',   filters.page.toString());
     if (filters.limit)  params = params.set('limit',  filters.limit.toString());
-    return this.http.get<ApiResponse<{ orders: any[] }>>(`${this.baseUrl}/seller/orders`, { params });
+    return this.http.get<ApiResponse<{ orders: any[] }>>(`${this.baseUrl}/seller/orders`, { params }).pipe(
+      map(res => ({ ...res, data: res.data ? { orders: res.data.orders.map(order => this.normalizeOrder(order)) } : res.data }))
+    );
   }
 
   updateSellerOrderStatus(orderId: number, status: string, trackingNumber?: string): Observable<ApiResponse> {
     return this.http.put<ApiResponse>(`${this.baseUrl}/seller/orders/${orderId}/status`, { status, trackingNumber });
+  }
+
+  private normalizeProductsResponse(res: ApiResponse<{ products: Product[]; pagination: Pagination }>): ApiResponse<{ products: Product[]; pagination: Pagination }> {
+    return {
+      ...res,
+      data: res.data ? {
+        ...res.data,
+        products: res.data.products.map(product => this.normalizeProduct(product)),
+      } : res.data,
+    };
+  }
+
+  private normalizeProduct(product: Product): Product {
+    return {
+      ...product,
+      image_url: this.imageKit.resolve(product.image_url, 'product'),
+      images: (product.images ?? []).map(image => this.imageKit.resolve(image, 'product')),
+    };
+  }
+
+  private normalizeCart(cart: CartResponse): CartResponse {
+    return {
+      ...cart,
+      items: cart.items.map(item => ({
+        ...item,
+        image_url: this.imageKit.resolve(item.image_url, 'cart'),
+      })),
+    };
+  }
+
+  private normalizeOrder(order: Order | any): Order | any {
+    return {
+      ...order,
+      items: Array.isArray(order.items)
+        ? order.items.map((item: any) => ({
+            ...item,
+            image_url: this.imageKit.resolve(item.image_url, 'cart'),
+          }))
+        : order.items,
+    };
+  }
+
+  private normalizeUser(user: UserProfile): UserProfile {
+    return {
+      ...user,
+      avatar_url: this.imageKit.resolve(user.avatar_url, 'profile'),
+    };
+  }
+
+  private normalizeAnyImageItem<T extends Record<string, any>>(item: T): T {
+    const next: Record<string, any> = { ...item };
+
+    if (typeof next['image_url'] === 'string') {
+      next['image_url'] = this.imageKit.resolve(next['image_url'], 'product');
+    }
+
+    if (typeof next['avatar_url'] === 'string') {
+      next['avatar_url'] = this.imageKit.resolve(next['avatar_url'], 'profile');
+    }
+
+    if (Array.isArray(next['images'])) {
+      next['images'] = next['images'].map((image: any) => typeof image === 'string'
+        ? this.imageKit.resolve(image, 'product')
+        : image);
+    }
+
+    return next as T;
   }
 }

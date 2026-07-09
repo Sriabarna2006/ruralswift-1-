@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
@@ -19,11 +19,14 @@ export class LoginComponent {
   showPassword = false;
   isLoading    = false;
   errorMessage = '';
+  isUnverified = false;  // true when server returns AUTH_EMAIL_NOT_VERIFIED
+  returnUrl = '/home';
 
-  constructor(private router: Router, private api: ApiService) {
+  constructor(private router: Router, private route: ActivatedRoute, private api: ApiService) {
+    this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
 
     if (this.api.getToken()) {
-      this.router.navigate(['/home']);
+      this.router.navigateByUrl(this.returnUrl);
     }
 
   }
@@ -44,14 +47,16 @@ export class LoginComponent {
 
     this.isLoading = true;
 
-    this.api.login(this.email.trim(), this.password).subscribe({
+    this.api.login({ email: this.email.trim(), password: this.password }).subscribe({
       next: (res) => {
         this.isLoading = false;
-        this.api.saveSession(res.token, res.user);
-        this.router.navigate(['/home']);
+        this.api.saveSession(res.token, res.user, this.rememberMe);
+        this.router.navigateByUrl(this.returnUrl);
       },
       error: (err) => {
         this.isLoading = false;
+        const code = err.error?.code;
+        this.isUnverified = code === 'AUTH_EMAIL_NOT_VERIFIED';
         this.errorMessage =
           err.error?.message ||
           'Login failed. Please check your credentials.';
