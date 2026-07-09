@@ -71,9 +71,19 @@ class UserService {
     const { first_name, last_name, email, phone, password } = userData;
     const normalisedEmail = email.toLowerCase().trim();
 
-    // Check if a fully verified account already exists — block it
+    // Check if a fully verified account already exists
     const existingUser = await userRepository.findByEmail(normalisedEmail);
     if (existingUser) {
+      // If the password matches, allow direct login
+      const isMatch = await bcrypt.compare(password, existingUser.password);
+      if (isMatch) {
+        const effectiveRole = await this._resolveRole(existingUser);
+        return {
+          directLogin: true,
+          token: this._generateToken({ ...existingUser, role: effectiveRole }),
+          user:  this._formatUserResponse(existingUser, effectiveRole),
+        };
+      }
       throw new Error('An account with this email already exists.');
     }
 
@@ -280,6 +290,7 @@ class UserService {
     await userRepository.createResetToken(user.user_id, tokenHash, expiresAt);
 
     const resetLink = `${env.passwordReset.baseUrl}/reset-password?token=${rawToken}`;
+    console.log('\n*** [DEBUG] Reset Link:', resetLink, '\n');
     try {
       await sendPasswordResetEmail(normalisedEmail, resetLink);
       logger.info('Password reset email sent', { userId: user.user_id });
@@ -310,6 +321,14 @@ class UserService {
     await userRepository.markResetTokenUsed(tokenRow.id);
 
     logger.info('Password reset successful', { userId: tokenRow.user_id });
+
+    const user = await userRepository.findById(tokenRow.user_id);
+    const effectiveRole = await this._resolveRole(user);
+    return {
+      autoLogin: true,
+      token: this._generateToken({ ...user, role: effectiveRole }),
+      user:  this._formatUserResponse(user, effectiveRole),
+    };
   }
 }
 

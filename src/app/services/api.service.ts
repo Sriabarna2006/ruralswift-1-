@@ -131,6 +131,20 @@ export interface RegisterOtpResponse {
   requestId?: string;
 }
 
+/** Returned when a duplicate registration attempt uses the correct password. */
+export interface DirectLoginResponse {
+  success: boolean;
+  message: string;
+  directLogin: true;
+  token: string;
+  user: UserProfile;
+  timestamp?: string;
+  requestId?: string;
+}
+
+/** Union of the two possible register() outcomes. */
+export type RegisterResponse = RegisterOtpResponse | DirectLoginResponse;
+
 export interface ProfileResponse {
   success:  boolean;
   message:  string;
@@ -204,8 +218,8 @@ export class ApiService {
     email:      string;
     phone:      string;
     password:   string;
-  }): Observable<RegisterOtpResponse> {
-    return this.http.post<RegisterOtpResponse>(
+  }): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(
       `${this.baseUrl}/auth/register`,
       { ...data, email: data.email.trim().toLowerCase() }
     );
@@ -221,6 +235,20 @@ export class ApiService {
   // Alias for auth-overlay compatibility
   verifyOtp(data: { email: string; otp: string }): Observable<AuthResponse> {
     return this.verifyRegistrationOtp(data.email, data.otp);
+  }
+
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post<any>(
+      `${this.baseUrl}/auth/forgot-password`,
+      { email: email.trim().toLowerCase() }
+    );
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post<any>(
+      `${this.baseUrl}/auth/reset-password`,
+      { token: token.trim(), password: newPassword }
+    );
   }
 
   // ── Profile ────────────────────────────────────────────────────────────────

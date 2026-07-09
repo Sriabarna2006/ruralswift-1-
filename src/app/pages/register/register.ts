@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../../services/api.service';
+import { ApiService, DirectLoginResponse, RegisterResponse, RegisterOtpResponse } from '../../services/api.service';
 
 @Component({
   selector: 'app-register',
@@ -39,6 +39,10 @@ export class RegisterComponent {
     if (this.api.getToken()) {
       this.router.navigate(['/dashboard']);
     }
+  }
+
+  get isEmailExistsError(): boolean {
+    return this.errorMessage ? this.errorMessage.toLowerCase().includes('already exists') : false;
   }
 
   /** Calculate password strength */
@@ -109,14 +113,23 @@ export class RegisterComponent {
       phone:      this.phone.trim(),
       password:   this.password
     }).subscribe({
-      next: (res) => {
+      next: (res: RegisterResponse) => {
         this.isLoading = false;
-        this.pendingEmail = res.email;
-        this.otpStep = true;
-        this.otp = '';
-        this.successMessage = isResend
-          ? `New OTP sent to ${res.email}. Check your inbox!`
-          : `OTP sent to ${res.email}. Please verify to create your account.`;
+
+        if ('directLogin' in res && res.directLogin) {
+          // Existing verified account with correct password → auto-login
+          this.api.saveSession(res.token, res.user);
+          this.successMessage = 'Welcome back! Logging you in...';
+          setTimeout(() => this.router.navigate(['/home']), 1200);
+        } else {
+          const otpRes = res as RegisterOtpResponse;
+          this.pendingEmail = otpRes.email;
+          this.otpStep = true;
+          this.otp = '';
+          this.successMessage = isResend
+            ? `New OTP sent to ${otpRes.email}. Check your inbox!`
+            : `OTP sent to ${otpRes.email}. Please verify to create your account.`;
+        }
       },
       error: (err) => {
         this.isLoading    = false;

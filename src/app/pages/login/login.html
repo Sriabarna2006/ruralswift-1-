@@ -5,8 +5,9 @@
   <div class="auth-left">
     <div class="auth-brand">
       <div class="brand-logo">🏪</div>
+      <div class="auth-portal-badge">🛒 Customer Account</div>
       <h1 class="brand-title">RuralSwift</h1>
-      <p class="brand-sub">Fast, reliable deliveries connecting rural India with everything they need.</p>
+      <p class="brand-sub">Shop from thousands of rural products and get fast deliveries right to your doorstep.</p>
     </div>
     <div class="benefits">
       <div class="benefit-item">
@@ -38,6 +39,10 @@
 
       <div *ngIf="errorMessage" class="auth-error">
         ⚠️ {{ errorMessage }}
+        <span *ngIf="isUnverified" style="display: block; margin-top: 6px; font-size: 13px;">
+          Haven't received it?
+          <a routerLink="/register" class="alert-link" style="color: var(--primary); font-weight: 600; text-decoration: none;">Re-enter your details to resend OTP →</a>
+        </span>
       </div>
 
       <form (ngSubmit)="login()" #loginForm="ngForm" class="auth-form">

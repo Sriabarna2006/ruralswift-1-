@@ -5,6 +5,7 @@
   <div class="auth-left">
     <div class="auth-brand">
       <div class="brand-logo">🏪</div>
+      <div class="auth-portal-badge">🛒 Customer Account</div>
       <h1 class="brand-title">RuralSwift</h1>
       <p class="brand-sub">{{ otpStep ? 'One last step — verify your email to activate your account.' : 'Join thousands of happy customers getting fast deliveries right to their doorstep.' }}</p>
     </div>
@@ -55,7 +56,13 @@
 
         <!-- Error / Success alerts -->
         <div *ngIf="errorMessage" class="auth-alert auth-alert--error">
-          <span class="alert-icon">⚠️</span> {{ errorMessage }}
+          <span class="alert-icon">⚠️</span>
+          <span>
+            {{ errorMessage }}
+            <span *ngIf="isEmailExistsError" style="display: block; margin-top: 6px;">
+              Would you like to <a routerLink="/login" class="alert-link">Sign In</a> or <a routerLink="/forgot-password" class="alert-link">Reset Password</a>?
+            </span>
+          </span>
         </div>
         <div *ngIf="successMessage" class="auth-alert auth-alert--success">
           <span class="alert-icon">✅</span> {{ successMessage }}

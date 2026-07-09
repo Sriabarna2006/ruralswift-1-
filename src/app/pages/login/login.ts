@@ -19,6 +19,7 @@ export class LoginComponent {
   showPassword = false;
   isLoading    = false;
   errorMessage = '';
+  isUnverified = false;  // true when server returns AUTH_EMAIL_NOT_VERIFIED
   returnUrl = '/home';
 
   constructor(private router: Router, private route: ActivatedRoute, private api: ApiService) {
@@ -54,6 +55,8 @@ export class LoginComponent {
       },
       error: (err) => {
         this.isLoading = false;
+        const code = err.error?.code;
+        this.isUnverified = code === 'AUTH_EMAIL_NOT_VERIFIED';
         this.errorMessage =
           err.error?.message ||
           'Login failed. Please check your credentials.';
