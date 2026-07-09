@@ -152,35 +152,6 @@ class UserRepository {
   }
 
   /**
-   * Atomically create a user and delete the pending registration.
-   */
-  async verifyAndCreateUser(email, pending) {
-    const { withTransaction } = require('../config/db');
-    return withTransaction(async (client) => {
-      const name = [
-        (pending.first_name || '').trim(),
-        (pending.last_name || '').trim(),
-      ].filter(Boolean).join(' ');
-
-      // 1. Create user
-      const result = await client.query(
-        `INSERT INTO users (name, email, phone, password, is_email_verified)
-         VALUES ($1, $2, $3, $4, TRUE)
-         RETURNING user_id, name, email, phone, address, gender, avatar_url, role, is_email_verified, created_at`,
-        [name, email, (pending.phone || '').trim(), pending.password_hash]
-      );
-      
-      // 2. Delete pending registration
-      await client.query(
-        `DELETE FROM pending_user_registrations WHERE email = $1`,
-        [email]
-      );
-      
-      return result.rows[0];
-    });
-  }
-
-  /**
    * Update a user's profile fields.
    *
    * @param {number}   userId  - User to update
@@ -205,91 +176,6 @@ class UserRepository {
       return result.rows[0]; // undefined if no row was updated
     } catch (err) {
       logger.dbError('UserRepository.update', err, { userId });
-      throw err;
-    }
-  }
-  /**
-   * Update a user's hashed password directly (used after reset token verification).
-   */
-  async updatePassword(userId, hashedPassword) {
-    try {
-      await query(
-        `UPDATE users SET password = $1, updated_at = NOW() WHERE user_id = $2`,
-        [hashedPassword, userId]
-      );
-    } catch (err) {
-      logger.dbError('UserRepository.updatePassword', err, { userId });
-      throw err;
-    }
-  }
-
-  /** Update avatar_url on a user */
-  async updateAvatar(userId, avatarUrl) {
-    try {
-      const result = await query(
-        `UPDATE users SET avatar_url = $1, updated_at = NOW()
-         WHERE user_id = $2
-         RETURNING user_id, name, email, phone, address, gender, avatar_url, role, is_email_verified, created_at`,
-        [avatarUrl, userId]
-      );
-      return result.rows[0];
-    } catch (err) {
-      logger.dbError('UserRepository.updateAvatar', err, { userId });
-      throw err;
-    }
-  }
-
-  // ── Password Reset Tokens ─────────────────────────────────────────────────────
-
-  /** Store a hashed reset token for a user, invalidating any prior unused tokens */
-  async createResetToken(userId, tokenHash, expiresAt) {
-    try {
-      // Invalidate old unused tokens for this user
-      await query(
-        `DELETE FROM password_reset_tokens WHERE user_id = $1 AND used_at IS NULL`,
-        [userId]
-      );
-      const result = await query(
-        `INSERT INTO password_reset_tokens (user_id, token_hash, expires_at)
-         VALUES ($1, $2, $3)
-         RETURNING id, expires_at`,
-        [userId, tokenHash, expiresAt]
-      );
-      return result.rows[0];
-    } catch (err) {
-      logger.dbError('UserRepository.createResetToken', err, { userId });
-      throw err;
-    }
-  }
-
-  /** Find a valid (unexpired, unused) reset token row by token hash */
-  async findValidResetToken(tokenHash) {
-    try {
-      const result = await query(
-        `SELECT prt.id, prt.user_id, prt.expires_at
-         FROM password_reset_tokens prt
-         WHERE prt.token_hash = $1
-           AND prt.used_at IS NULL
-           AND prt.expires_at > NOW()
-         LIMIT 1`,
-        [tokenHash]
-      );
-      return result.rows[0] || null;
-    } catch (err) {
-      logger.dbError('UserRepository.findValidResetToken', err, { tokenHash: '[REDACTED]' });
-      throw err;
-    }
-  }
-
-  /** Mark a reset token as used so it can't be replayed */
-  async markResetTokenUsed(tokenId) {
-    try {
-      await query(
-        `UPDATE password_reset_tokens SET used_at = NOW() WHERE id = $1`,
-        [tokenId]
-      );
-    } catch (err) {
-      logger.dbError('UserRepository.markResetTokenUsed', err, { tokenId });
       throw err;
     }
   }

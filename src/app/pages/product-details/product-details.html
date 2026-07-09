@@ -1,229 +1,203 @@
-<div class="pd-page has-bottom-nav" id="page-product-details">
-  @if (isLoading()) {
-    <div class="pd-skeleton-layout">
-      <div class="pd-img-skeleton skeleton"></div>
-      <div class="pd-info-skeleton">
-        <div class="skeleton sk-line sk-line--xl"></div>
-        <div class="skeleton sk-line sk-line--md"></div>
-        <div class="skeleton sk-line sk-line--sm"></div>
-        <div class="skeleton sk-line sk-line--lg"></div>
+<!-- Product Details Page -->
+<app-navbar></app-navbar>
+
+<!-- Toast Notification -->
+<div class="pd-toast" *ngIf="showToast">{{ toastMsg }}</div>
+
+<!-- Loading State -->
+<div class="pd-loading" *ngIf="loading">
+  <div class="spinner spinner-primary"></div>
+  <p>Loading product...</p>
+</div>
+
+<!-- Error State -->
+<div class="pd-error" *ngIf="!loading && error">
+  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+    stroke="var(--danger)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>
+  </svg>
+  <p>{{ error }}</p>
+  <a routerLink="/products" class="btn btn-primary btn-sm">Back to Products</a>
+</div>
+
+<!-- Product Content -->
+<div class="pd-wrapper has-bottom-nav" *ngIf="!loading && !error && product">
+
+  <!-- Breadcrumb -->
+  <div class="pd-breadcrumb">
+    <a routerLink="/home">Home</a>
+    <span class="bc-sep">/</span>
+    <a routerLink="/products">Products</a>
+    <span class="bc-sep">/</span>
+    <span>{{ product.name }}</span>
+  </div>
+
+  <div class="pd-grid">
+
+    <!-- ── LEFT: Images ───────────────────────────────────────── -->
+    <div class="pd-images">
+
+      <!-- Main image -->
+      <div class="pd-main-img-wrap">
+        <img
+          [src]="product.image_url || 'https://placehold.co/600x600/f1f5f9/475569?text=Product'"
+          [alt]="product.name"
+          class="pd-main-img"
+          (error)="fallbackImg($event)"
+        />
+        <!-- Discount badge -->
+        <span class="pd-discount-badge" *ngIf="getDiscount(product.price, product.mrp) > 0">
+          {{ getDiscount(product.price, product.mrp) }}% OFF
+        </span>
+      </div>
+
+      <!-- Thumbnail row (from images array) -->
+      <div class="pd-thumbs" *ngIf="product.images && product.images.length > 1">
+        <img
+          *ngFor="let img of product.images.slice(0, 4)"
+          [src]="img"
+          [alt]="product.name"
+          class="pd-thumb"
+          (error)="fallbackImg($event)"
+        />
       </div>
     </div>
-  } @else if (product()) {
-    <!-- Breadcrumb -->
-    <nav class="pd-breadcrumb" aria-label="Breadcrumb">
-      <a routerLink="/home">Home</a>
-      <span aria-hidden="true">›</span>
-      <a routerLink="/products">Products</a>
-      <span aria-hidden="true">›</span>
-      <span>{{ product()!.name }}</span>
-    </nav>
 
-    <div class="pd-layout">
-      <!-- ── Gallery ── -->
-      <div class="pd-gallery">
-        <div class="pd-main-img-wrap">
-          <img
-            [src]="images[activeImage()] || placeholderImage"
-            [alt]="product()!.name"
-            class="pd-main-img"
-            id="pd-main-img"
-          />
-          @if (discount(product()!.price, product()!.mrp) > 0) {
-            <span class="pd-discount-badge">{{ discount(product()!.price, product()!.mrp) }}% OFF</span>
-          }
-        </div>
-        @if (images.length > 1) {
-          <div class="pd-thumbnails" role="list">
-            @for (img of images; track $index) {
-              <button
-                class="pd-thumb"
-                [class.active]="activeImage() === $index"
-                (click)="activeImage.set($index)"
-                [attr.aria-label]="'View image ' + ($index + 1)"
-                role="listitem"
-              >
-                <img [src]="img" [alt]="'Image ' + ($index + 1)" [attr.decoding]="'async'" />
-              </button>
-            }
-          </div>
-        }
+    <!-- ── RIGHT: Details ─────────────────────────────────────── -->
+    <div class="pd-info">
+
+      <!-- Category badge -->
+      <span class="pd-category-badge">{{ product.category || 'Product' }}</span>
+
+      <!-- Title -->
+      <h1 class="pd-title">{{ product.name }}</h1>
+
+      <!-- Brand -->
+      <p class="pd-brand" *ngIf="product.brand">By <strong>{{ product.brand }}</strong></p>
+      <p class="pd-seller" *ngIf="product.seller_name">Sold by <strong>{{ product.seller_name }}</strong></p>
+
+      <!-- Rating -->
+      <div class="pd-rating-row">
+        <span class="pd-stars">
+          <span *ngFor="let s of [1,2,3,4,5]" [class.filled]="s <= (product.rating || 0)">★</span>
+        </span>
+        <span class="pd-rating-val">{{ product.rating || '0' }}</span>
+        <span class="pd-review-count">({{ product.review_count || 0 }} reviews)</span>
       </div>
 
-      <!-- ── Product Info ── -->
-      <div class="pd-info">
-        <p class="pd-category">{{ product()!.category }}</p>
-        <h1 class="pd-title">{{ product()!.name }}</h1>
+      <!-- Price -->
+      <div class="pd-price-row">
+        <span class="pd-price">₹{{ product.price | number: '1.0-0' }}</span>
+        <span class="pd-mrp" *ngIf="product.mrp > product.price">₹{{ product.mrp | number: '1.0-0' }}</span>
+        <span class="pd-save badge-green badge" *ngIf="getDiscount(product.price, product.mrp) > 0">
+          Save ₹{{ (product.mrp - product.price) | number:'1.0-0' }}
+        </span>
+      </div>
 
-        @if (product()!.brand) {
-          <p class="pd-brand">by <strong>{{ product()!.brand }}</strong></p>
-        }
+      <!-- Stock status -->
+      <div class="pd-stock" [class.out-of-stock]="product.stock === 0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline *ngIf="product.stock > 0" points="20 6 9 17 4 12"/>
+          <path *ngIf="product.stock === 0" d="M18 6 6 18M6 6l12 12"/>
+        </svg>
+        {{ product.stock > 0 ? 'In Stock (' + product.stock + ' available)' : 'Out of Stock' }}
+      </div>
 
-        <!-- Rating -->
-        @if (product()!.rating) {
-          <div class="pd-rating-row">
-            <div class="pd-stars" [attr.aria-label]="product()!.rating + ' out of 5 stars'">
-              @for (i of starsArray(product()!.rating); track i) {
-                <span [class.filled]="isFilled(i, product()!.rating)">★</span>
-              }
-            </div>
-            <span class="pd-rating-val">{{ product()!.rating | number:'1.1-1' }}</span>
-            <span class="pd-review-count">{{ product()!.review_count }} reviews</span>
-          </div>
-        }
+      <hr class="pd-divider">
 
-        <!-- Price -->
-        <div class="pd-price-block">
-          <span class="pd-price">{{ fmt(product()!.price) }}</span>
-          @if (product()!.mrp > product()!.price) {
-            <span class="pd-mrp">{{ fmt(product()!.mrp) }}</span>
-            <span class="pd-savings">Save {{ fmt(product()!.mrp - product()!.price) }}</span>
-          }
+      <!-- Quantity selector -->
+      <div class="pd-qty-row">
+        <label class="pd-qty-label">Quantity:</label>
+        <div class="pd-qty-ctrl">
+          <button class="pd-qty-btn" (click)="decrementQty()" [disabled]="quantity <= 1">−</button>
+          <span class="pd-qty-val">{{ quantity }}</span>
+          <button class="pd-qty-btn" (click)="incrementQty()" [disabled]="quantity >= product.stock">+</button>
         </div>
+        <span class="pd-unit" *ngIf="product.unit">/ {{ product.unit }}</span>
+      </div>
 
-        <!-- Unit -->
-        @if (product()!.unit) {
-          <p class="pd-unit">Unit: <strong>{{ product()!.unit }}</strong></p>
-        }
-
-        <!-- Stock status -->
-        <div class="pd-stock">
-          @if (product()!.stock > 10) {
-            <span class="stock-badge stock-badge--in">In Stock</span>
-          } @else if (product()!.stock > 0) {
-            <span class="stock-badge stock-badge--low">Only {{ product()!.stock }} left!</span>
-          } @else {
-            <span class="stock-badge stock-badge--out">Out of Stock</span>
-          }
-        </div>
-
-        <!-- Seller -->
-        @if (product()!.seller_name) {
-          <p class="pd-seller">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-              <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-            Sold by <strong>{{ product()!.seller_name }}</strong>
-          </p>
-        }
-
-        <div class="pd-divider"></div>
-
-        <!-- Quantity + Actions -->
-        @if (product()!.stock > 0) {
-          <div class="pd-qty-row">
-            <label class="pd-qty-label">Quantity:</label>
-            <div class="pd-qty-control">
-              <button class="qty-btn" (click)="decrement()" [disabled]="quantity() <= 1" aria-label="Decrease quantity">−</button>
-              <span class="qty-value" aria-live="polite">{{ quantity() }}</span>
-              <button class="qty-btn" (click)="increment()" [disabled]="quantity() >= product()!.stock" aria-label="Increase quantity">+</button>
-            </div>
-          </div>
-
-          <div class="pd-actions">
-            <button
-              class="pd-btn pd-btn--cart"
-              (click)="addToCart()"
-              [disabled]="addingCart()"
-              id="btn-add-to-cart"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-              </svg>
-              {{ addingCart() ? 'Added!' : 'Add to Cart' }}
-            </button>
-            <button class="pd-btn pd-btn--buy" (click)="buyNow()" id="btn-buy-now">
-              Buy Now
-            </button>
-          </div>
-        } @else {
-          <button class="pd-btn pd-btn--oos" disabled>Out of Stock</button>
-        }
-
-        <!-- Wishlist -->
+      <!-- Action buttons -->
+      <div class="pd-actions">
         <button
-          class="pd-wishlist-btn"
-          (click)="toggleWishlist()"
-          [class.active]="inWishlist()"
-          id="btn-wishlist"
-          aria-label="Add to wishlist"
+          class="btn btn-primary pd-btn-cart"
+          (click)="addToCart()"
+          [disabled]="addingToCart || product.stock === 0"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-            [attr.fill]="inWishlist() ? '#EF4444' : 'none'"
-            stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          <svg *ngIf="!addingToCart" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
+            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
           </svg>
-          {{ inWishlist() ? 'Saved to Wishlist' : 'Add to Wishlist' }}
+          <div *ngIf="addingToCart" class="spinner"></div>
+          {{ addingToCart ? 'Adding...' : 'Add to Cart' }}
         </button>
 
-        <!-- Delivery promise -->
+        <button
+          class="pd-btn-buy"
+          (click)="buyNow()"
+          [disabled]="addingToCart || product.stock === 0"
+        >
+          Buy Now
+        </button>
+
+        <button
+          class="pd-btn-wish"
+          [class.wished]="inWishlist"
+          (click)="toggleWishlist()"
+          [disabled]="togglingWish"
+          [title]="inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+            [attr.fill]="inWishlist ? 'currentColor' : 'none'"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Delivery info -->
+      <div class="pd-delivery-cards">
         <div class="pd-delivery-card">
-          <div class="pd-delivery-item">
-            <span class="delivery-icon">🚚</span>
-            <div>
-              <p class="delivery-label">Free Delivery</p>
-              <p class="delivery-sub">On orders above ₹499</p>
-            </div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+          <div>
+            <p class="pd-dc-title">Free Delivery</p>
+            <p class="pd-dc-sub">On orders above ₹500</p>
           </div>
-          <div class="pd-delivery-item">
-            <span class="delivery-icon">🔄</span>
-            <div>
-              <p class="delivery-label">Easy Returns</p>
-              <p class="delivery-sub">7-day return policy</p>
-            </div>
+        </div>
+        <div class="pd-delivery-card">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          <div>
+            <p class="pd-dc-title">Secure Payment</p>
+            <p class="pd-dc-sub">100% safe & encrypted</p>
+          </div>
+        </div>
+        <div class="pd-delivery-card" *ngIf="(product.weight_grams ?? 0) > 0">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="6"/><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/>
+          </svg>
+          <div>
+            <p class="pd-dc-title">Weight</p>
+            <p class="pd-dc-sub">{{ product.weight_grams }}g</p>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- ── Description / Reviews / Shipping tabs ── -->
-    <div class="pd-tabs-section">
-      <div class="pd-tabs" role="tablist">
-        <button class="pd-tab" [class.active]="activeTab() === 'description'"
-          (click)="activeTab.set('description')" role="tab">Description</button>
-        <button class="pd-tab" [class.active]="activeTab() === 'reviews'"
-          (click)="activeTab.set('reviews')" role="tab">Reviews</button>
-        <button class="pd-tab" [class.active]="activeTab() === 'shipping'"
-          (click)="activeTab.set('shipping')" role="tab">Shipping</button>
+      <!-- Description -->
+      <div class="pd-description" *ngIf="product.description">
+        <h3 class="pd-section-title">Product Description</h3>
+        <p>{{ product.description }}</p>
       </div>
 
-      <div class="pd-tab-content" role="tabpanel">
-        @if (activeTab() === 'description') {
-          <div class="pd-description">
-            <p>{{ product()!.description || 'No description available for this product.' }}</p>
-            @if (product()!.weight_grams) {
-              <p class="pd-spec"><strong>Weight:</strong> {{ product()!.weight_grams }}g</p>
-            }
-          </div>
-        }
-        @if (activeTab() === 'reviews') {
-          <div class="pd-reviews-placeholder">
-            <div class="empty-icon">⭐</div>
-            <h3>{{ product()!.review_count || 0 }} Reviews</h3>
-            <p>Review details will appear here after connecting to the reviews API.</p>
-          </div>
-        }
-        @if (activeTab() === 'shipping') {
-          <div class="pd-shipping-info">
-            <div class="shipping-item">
-              <strong>Standard Delivery:</strong> 3–5 business days
-            </div>
-            <div class="shipping-item">
-              <strong>Express Delivery:</strong> 1–2 business days (extra charges apply)
-            </div>
-            <div class="shipping-item">
-              <strong>Free Delivery:</strong> On orders above ₹499
-            </div>
-            <div class="shipping-item">
-              <strong>COD Available:</strong> Cash on Delivery accepted for most pin codes
-            </div>
-          </div>
-        }
-      </div>
     </div>
-  }
+  </div>
+
 </div>

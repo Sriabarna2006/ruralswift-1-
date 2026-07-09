@@ -232,7 +232,7 @@
           <!-- Order Items -->
           <div class="order-card-items">
             <div class="order-item-chip" *ngFor="let item of order.items">
-              <img [src]="item.image" [alt]="item.name" class="item-chip-img" [attr.decoding]="'async'" />
+              <img [src]="item.image" [alt]="item.name" class="item-chip-img" />
               <div class="item-chip-info">
                 <p class="item-chip-name">{{ item.name }}</p>
                 <p class="item-chip-qty">Qty: {{ item.qty }}</p>
@@ -463,7 +463,7 @@
       </div>
       <div class="wishlist-grid" *ngIf="!wishlistLoading && wishlistItems.length > 0">
         <div class="wishlist-card" *ngFor="let item of wishlistItems">
-          <img [src]="item.image_url || imageKit.placeholder()" [alt]="item.name" class="wishlist-img" [attr.decoding]="'async'">
+          <img [src]="item.image_url || 'https://placehold.co/100x100/f1f5f9/475569?text=Product'" [alt]="item.name" class="wishlist-img">
           <div class="wishlist-info">
             <p class="wishlist-name">{{ item.name }}</p>
             <p class="wishlist-price">₹{{ item.price }}</p>

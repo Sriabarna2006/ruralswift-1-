@@ -57,11 +57,13 @@ class OrderRepository {
 
   /**
    * Create an order inside a transaction.
-   * Decrements product stock and clears the cart atomically.
+   * Decrements product stock atomically.
    */
   async createOrder(userId, { deliveryAddress, paymentMethod = 'cod', notes = '', items }) {
-    const { withTransaction } = require('../config/db');
-    return withTransaction(async (client) => {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
       // Compute total & verify stock
       let total = 0;
       for (const item of items) {
@@ -95,11 +97,14 @@ class OrderRepository {
         );
       }
 
-      // Clear the user's cart automatically inside the same transaction
-      await client.query(`DELETE FROM cart_items WHERE user_id = $1`, [userId]);
-
+      await client.query('COMMIT');
       return order;
-    });
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
   }
 
   async updateStatus(orderId, status, extra = {}) {
@@ -117,70 +122,6 @@ class OrderRepository {
     const { rows } = await pool.query(
       `UPDATE orders SET ${sets.join(', ')} WHERE order_id = $${idx} RETURNING *`,
       values
-    );
-    return rows[0] || null;
-  }
-  /**
-   * Cancel an order — only allowed when status is 'pending' or 'confirmed'.
-   * Restores product stock atomically inside a transaction.
-   */
-  async cancelOrder(orderId, userId) {
-    const { withTransaction } = require('../config/db');
-    return withTransaction(async (client) => {
-      // Lock the order row and verify ownership + cancellable status
-      const { rows: [order] } = await client.query(
-        `SELECT order_id, status, user_id FROM orders
-         WHERE order_id = $1 AND user_id = $2
-         FOR UPDATE`,
-        [orderId, userId]
-      );
-      if (!order) throw new Error('Order not found.');
-      if (!['pending', 'confirmed'].includes(order.status)) {
-        throw new Error(`Cannot cancel order with status '${order.status}'.`);
-      }
-
-      // Restore stock for each item
-      const { rows: items } = await client.query(
-        `SELECT product_id, quantity FROM order_items WHERE order_id = $1`,
-        [orderId]
-      );
-      for (const item of items) {
-        await client.query(
-          `UPDATE products SET stock = stock + $1, updated_at = NOW() WHERE product_id = $2`,
-          [item.quantity, item.product_id]
-        );
-      }
-
-      // Mark order cancelled
-      const { rows: [updated] } = await client.query(
-        `UPDATE orders
-         SET status = 'cancelled', cancelled_at = NOW(), updated_at = NOW()
-         WHERE order_id = $1
-         RETURNING *`,
-        [orderId]
-      );
-
-      return updated;
-    });
-  }
-
-  /** Find an order by tracking number (public guest tracking — no userId check) */
-  async findByTrackingNumber(trackingNumber) {
-    const { rows } = await pool.query(
-      `SELECT o.order_id, o.status, o.total, o.delivery_address,
-              o.tracking_number, o.payment_method, o.created_at, o.delivered_at,
-              o.cancelled_at, o.updated_at,
-              json_agg(json_build_object(
-                'product_id', oi.product_id, 'quantity', oi.quantity,
-                'unit_price', oi.unit_price, 'name', p.name, 'image_url', p.image_url
-              )) AS items
-       FROM orders o
-       LEFT JOIN order_items oi ON oi.order_id   = o.order_id
-       LEFT JOIN products p     ON p.product_id  = oi.product_id
-       WHERE o.tracking_number = $1
-       GROUP BY o.order_id
-       LIMIT 1`,
-      [trackingNumber]
     );
     return rows[0] || null;
   }

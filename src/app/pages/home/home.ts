@@ -1,183 +1,108 @@
-// src/app/pages/home/home.ts
-import {
-  Component, OnInit, OnDestroy, ChangeDetectionStrategy,
-  inject, signal, computed
-} from '@angular/core';
-import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { forkJoin } from 'rxjs';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { NgFor, NgClass, NgIf, DecimalPipe } from '@angular/common';
+import { NavbarComponent } from '../../components/navbar/navbar';
 import { ApiService, Product } from '../../services/api.service';
 import { CartService } from '../../services/cart.service';
-import { ToastService } from '../../services/toast.service';
-import { ImageKitService } from '../../services/imagekit.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule],
+  imports: [RouterLink, NgFor, NgClass, NgIf, NavbarComponent, DecimalPipe],
   templateUrl: './home.html',
-  styleUrl: './home.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  styleUrl: './home.css'
 })
 export class HomeComponent implements OnInit, OnDestroy {
-  private api      = inject(ApiService);
-  private cart     = inject(CartService);
-  private toast    = inject(ToastService);
-  private router   = inject(Router);
-  private imageKit = inject(ImageKitService);
 
-  // Hero carousel state
-  public currentSlide = signal(0);
-  public activeHeroSlide = computed(() => this.heroSlides[this.currentSlide()] ?? this.heroSlides[0]);
-  private carouselTimer: ReturnType<typeof setTimeout> | null = null;
-  private readonly carouselDelay = 5000;
+  currentSlide = 0;
+  private carouselTimer: any;
 
-  // Products for Horizontal Scrolls
-  public computersProducts = signal<Product[]>([]);
-  public kitchenProducts   = signal<Product[]>([]);
-  public smallBizProducts  = signal<Product[]>([]);
-  public isLoading         = signal(true);
+  // Live products from DB
+  featuredProducts: Product[] = [];
+  productsLoading = false;
 
-  public readonly placeholderImage = this.imageKit.placeholder('product');
-
-  public heroSlides = [
+  heroSlides = [
     {
-      image: this.imageKit.resolve('hero-cookware.webp', 'hero'),
-      link: 'Home & Kitchen'
+      id: 1,
+      image: 'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=2071',
+      alt: 'Fast Delivery to Every Village'
     },
     {
-      image: this.imageKit.resolve('hero-electronics.webp', 'hero'),
-      link: 'Electronics'
+      id: 2,
+      image: 'https://images.unsplash.com/photo-1586771107445-d3af9e150123?auto=format&fit=crop&q=80&w=2070',
+      alt: 'Farming Essentials Sale'
     },
     {
-      image: this.imageKit.resolve('hero-fashion.webp', 'hero'),
-      link: 'Clothing'
-    },
-  ];
-
-  public quadCards = [
-    {
-      title: 'Up to 60% off | Cookware, kitchen tool & more',
-      category: 'Home & Kitchen',
-      images: [
-        this.imageKit.resolve('cookware-1.webp', 'category'),
-        this.imageKit.resolve('cookware-2.webp', 'category'),
-        this.imageKit.resolve('cookware-3.webp', 'category'),
-        this.imageKit.resolve('cookware-4.webp', 'category'),
-      ],
-      linkText: 'See all'
-    },
-    {
-      title: 'Best Sellers in Beauty',
-      category: 'Medicine & Health',
-      images: [
-        this.imageKit.resolve('beauty-1.webp', 'category'),
-        this.imageKit.resolve('beauty-2.webp', 'category'),
-        this.imageKit.resolve('beauty-3.webp', 'category'),
-        this.imageKit.resolve('beauty-4.webp', 'category'),
-      ],
-      linkText: 'See more'
-    },
-    {
-      title: '50 - 80% off | Sports, outdoor & more',
-      category: 'Tools & Hardware',
-      images: [
-        this.imageKit.resolve('sports-1.webp', 'category'),
-        this.imageKit.resolve('sports-2.webp', 'category'),
-        this.imageKit.resolve('sports-3.webp', 'category'),
-        this.imageKit.resolve('sports-4.webp', 'category'),
-      ],
-      linkText: 'See all deals'
-    },
-    {
-      title: "Minimum 50% off | Men's clothing",
-      category: 'Clothing',
-      images: [
-        this.imageKit.resolve('mens-1.webp', 'category'),
-        this.imageKit.resolve('mens-2.webp', 'category'),
-        this.imageKit.resolve('mens-3.webp', 'category'),
-        this.imageKit.resolve('mens-4.webp', 'category'),
-      ],
-      linkText: 'See all deals'
+      id: 3,
+      image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1974',
+      alt: 'Fresh Groceries Daily'
     }
   ];
 
-  // Currency formatter
-  public fmt = (n: number): string =>
-    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(n);
+  categoryCards = [
+    { title: 'Farming Tools & Machinery', img: 'https://images.unsplash.com/photo-1592982537447-6f29efeb063b?w=500&q=80', link: '/products?category=Farming+Equipment' },
+    { title: 'Seeds & Fertilizers',       img: 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=500&q=80', link: '/products?category=Seeds+%26+Fertilizers' },
+    { title: 'Fresh Local Produce',       img: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=500&q=80', link: '/products?category=Groceries' },
+    { title: 'Livestock Care',            img: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=500&q=80', link: '/products?category=Livestock+Care' }
+  ];
 
-  public discount(price: number, mrp: number): number {
-    if (!mrp || mrp <= price) return 0;
-    return Math.round(((mrp - price) / mrp) * 100);
-  }
+  constructor(private api: ApiService, private cart: CartService) {}
 
   ngOnInit(): void {
-    this.preloadHeroImage(this.heroSlides[0]?.image);
-    this.restartCarousel();
-    this.loadProducts();
+    this.startCarousel();
+    this.loadFeaturedProducts();
+    // Load cart if logged in
+    this.cart.load();
   }
 
   ngOnDestroy(): void {
-    if (this.carouselTimer) clearTimeout(this.carouselTimer);
+    this.stopCarousel();
   }
 
-  private restartCarousel(): void {
-    if (this.carouselTimer) clearTimeout(this.carouselTimer);
-
-    this.carouselTimer = setTimeout(() => {
-      this.currentSlide.update(s => (s + 1) % this.heroSlides.length);
-      this.restartCarousel();
-    }, this.carouselDelay);
-  }
-
-  goToSlide(index: number): void {
-    this.currentSlide.set(index);
-    this.restartCarousel();
-  }
-
-  private preloadHeroImage(src?: string): void {
-  }
-
-  private loadProducts(): void {
-    // Fetch 3 different categories for the horizontal rows in parallel
-    forkJoin({
-      computers: this.api.getProducts({ category: 'Electronics', limit: 10 }),
-      kitchen:   this.api.getProducts({ category: 'Home & Kitchen', limit: 10 }),
-      smallBiz:  this.api.getProducts({ category: 'Farming Equipment', limit: 10 }),
-      fallback:  this.api.getProducts({ limit: 10 }) // In case some categories are empty
-    }).subscribe({
+  loadFeaturedProducts(): void {
+    this.productsLoading = true;
+    this.api.getProducts({ limit: 12, page: 1 }).subscribe({
       next: (res) => {
-        // If a specific category has no products, use the fallback list to ensure UI isn't empty
-        const fback = res.fallback.data?.products ?? [];
-        
-        const comp = res.computers.data?.products ?? [];
-        this.computersProducts.set(comp.length ? comp : fback);
-        
-        const kitch = res.kitchen.data?.products ?? [];
-        this.kitchenProducts.set(kitch.length ? kitch : fback);
-        
-        const small = res.smallBiz.data?.products ?? [];
-        this.smallBizProducts.set(small.length ? small : fback);
-        
-        this.isLoading.set(false);
+        this.featuredProducts = (res as any).data?.products ?? [];
+        this.productsLoading  = false;
       },
       error: () => {
-        this.isLoading.set(false);
+        this.featuredProducts = [];
+        this.productsLoading  = false;
       }
     });
   }
 
-  addToCart(product: Product, event: Event): void {
-    event.stopPropagation();
-    this.cart.addItem(product.product_id);
-    this.toast.success(`${product.name} added to cart`);
+  addToCart(product: Product): void {
+    this.cart.addItem(product.product_id, 1);
   }
 
-  goToProduct(id: number): void {
-    this.router.navigate(['/product-details', id]);
+  getDiscount(price: number, mrp: number): number {
+    if (!mrp || mrp <= price) return 0;
+    return Math.round(((mrp - price) / mrp) * 100);
   }
 
-  shopCategory(category: string): void {
-    this.router.navigate(['/products'], { queryParams: { category } });
+  fallbackImg(event: Event): void {
+    (event.target as HTMLImageElement).src = 'https://placehold.co/300x300/f1f5f9/475569?text=Product';
+  }
+
+  private startCarousel(): void {
+    this.carouselTimer = setInterval(() => { this.nextSlide(); }, 4000);
+  }
+
+  private stopCarousel(): void {
+    if (this.carouselTimer) clearInterval(this.carouselTimer);
+  }
+
+  nextSlide(): void {
+    this.currentSlide = (this.currentSlide + 1) % this.heroSlides.length;
+  }
+
+  prevSlide(): void {
+    this.currentSlide = (this.currentSlide - 1 + this.heroSlides.length) % this.heroSlides.length;
+  }
+
+  goToSlide(i: number): void {
+    this.currentSlide = i;
   }
 }

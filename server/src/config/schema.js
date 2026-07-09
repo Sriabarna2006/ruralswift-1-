@@ -223,11 +223,6 @@ async function createTables() {
       `CREATE INDEX IF NOT EXISTS idx_notifications_read      ON notifications(user_id, is_read)`,
       `CREATE INDEX IF NOT EXISTS idx_addresses_user          ON addresses(user_id)`,
       `CREATE INDEX IF NOT EXISTS idx_seller_profiles_user    ON seller_profiles(user_id)`,
-      `CREATE INDEX IF NOT EXISTS idx_reset_tokens_user       ON password_reset_tokens(user_id)`,
-      `CREATE INDEX IF NOT EXISTS idx_reset_tokens_expires    ON password_reset_tokens(expires_at)`,
-      `CREATE INDEX IF NOT EXISTS idx_reviews_product         ON reviews(product_id)`,
-      `CREATE INDEX IF NOT EXISTS idx_reviews_user            ON reviews(user_id)`,
-      `CREATE INDEX IF NOT EXISTS idx_coupons_code            ON coupons(code)`,
     ];
 
     for (const indexSql of indexes) {
@@ -238,60 +233,9 @@ async function createTables() {
       }
     }
 
-    // ── 10. password_reset_tokens ──────────────────────────────────────────────
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS password_reset_tokens (
-        id          SERIAL       PRIMARY KEY,
-        user_id     INT          NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-        token_hash  TEXT         NOT NULL,
-        expires_at  TIMESTAMP    NOT NULL,
-        used_at     TIMESTAMP,
-        created_at  TIMESTAMP    DEFAULT NOW()
-      )
-    `);
-
-    // ── 11. reviews ────────────────────────────────────────────────────────────
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS reviews (
-        id          SERIAL       PRIMARY KEY,
-        product_id  INT          NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
-        user_id     INT          NOT NULL REFERENCES users(user_id)       ON DELETE CASCADE,
-        order_id    INT          REFERENCES orders(order_id)              ON DELETE SET NULL,
-        rating      SMALLINT     NOT NULL CHECK (rating BETWEEN 1 AND 5),
-        title       VARCHAR(200) DEFAULT '',
-        body        TEXT         DEFAULT '',
-        is_verified BOOLEAN      DEFAULT FALSE,
-        created_at  TIMESTAMP    DEFAULT NOW(),
-        updated_at  TIMESTAMP    DEFAULT NOW(),
-        UNIQUE(product_id, user_id)
-      )
-    `);
-
-    // ── 12. coupons ────────────────────────────────────────────────────────────
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS coupons (
-        id              SERIAL        PRIMARY KEY,
-        code            VARCHAR(50)   NOT NULL UNIQUE,
-        discount_type   VARCHAR(20)   NOT NULL DEFAULT 'percent' CHECK (discount_type IN ('percent','fixed')),
-        discount_value  NUMERIC(10,2) NOT NULL DEFAULT 0,
-        min_order_value NUMERIC(10,2) DEFAULT 0,
-        max_uses        INT           DEFAULT NULL,
-        uses_count      INT           DEFAULT 0,
-        is_active       BOOLEAN       DEFAULT TRUE,
-        expires_at      TIMESTAMP,
-        created_at      TIMESTAMP     DEFAULT NOW()
-      )
-    `);
-
-    // ── 13. Schema additions for existing tables ────────────────────────────────
-    await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMP`);
-    await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_code  VARCHAR(50) DEFAULT ''`);
-    await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_discount NUMERIC(10,2) DEFAULT 0`);
-
     console.log('✅  [Schema] Migration complete');
-    console.log('    → Tables: users, seller_profiles, products, cart_items, orders, order_items, addresses, wishlist, notifications, password_reset_tokens, reviews, coupons');
+    console.log('    → Tables: users, seller_profiles, products, cart_items, orders, order_items, addresses, wishlist, notifications');
     console.log('    → Indexes applied for performance');
-
 
   } catch (err) {
     console.error('❌  [Schema] Migration failed:', err.message);

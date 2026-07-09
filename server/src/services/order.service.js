@@ -21,6 +21,8 @@ class OrderService {
     if (!items || !items.length) throw new Error('Order must contain at least one item.');
 
     const order = await orderRepo.createOrder(userId, { deliveryAddress, paymentMethod, notes, items });
+    // Clear the cart after successful order
+    await cartRepo.clearCart(userId);
     return order;
   }
 
@@ -28,21 +30,6 @@ class OrderService {
     const order = await orderRepo.updateStatus(orderId, status, extra);
     if (!order) throw new Error('Order not found.');
     return order;
-  }
-
-  async cancelOrder(orderId, userId) {
-    return orderRepo.cancelOrder(orderId, userId);
-  }
-
-  async getOrderByTracking(trackingNumber) {
-    if (!trackingNumber || !trackingNumber.trim()) {
-      throw new Error('Tracking number is required.');
-    }
-    const order = await orderRepo.findByTrackingNumber(trackingNumber.trim().toUpperCase());
-    if (!order) throw new Error('No order found with this tracking number.');
-    // Strip internal user details for public response
-    const { user_id, ...publicOrder } = order;
-    return publicOrder;
   }
 }
 

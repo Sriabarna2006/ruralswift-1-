@@ -1,226 +1,155 @@
-<div class="shop-page has-bottom-nav" id="page-shop">
+<!-- Product Listing Page -->
+<app-navbar></app-navbar>
 
-  <!-- ── Page Header ── -->
-  <div class="shop-page-header">
-    <h1 class="shop-heading">
-      @if (selectedCategory() !== 'All') {
-        {{ selectedCategory() }}
-      } @else if (searchQuery()) {
-        Results for "{{ searchQuery() }}"
-      } @else {
-        All Products
-      }
-    </h1>
-    <p class="shop-count" aria-live="polite">
-      @if (isLoading()) { Loading... }
-      @else { {{ totalCount() }} products found }
-    </p>
+<!-- Toast -->
+<div class="cart-toast" *ngIf="showToast">{{ toastMsg }}</div>
+
+<!-- ── Header Bar ──────────────────────────────────────── -->
+<div class="product-header-bar">
+  <div class="product-header-inner">
+    <a routerLink="/home" class="back-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m15 18-6-6 6-6"/>
+      </svg>
+    </a>
+    <h1 class="product-header-title">All Products</h1>
+    <!-- Search bar -->
+    <div class="product-search-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+      </svg>
+      <input type="text" [(ngModel)]="searchQuery"
+             (keyup.enter)="onSearch()"
+             placeholder="Search products..."
+             class="product-search-input" />
+      <button class="search-go-btn" (click)="onSearch()">Go</button>
+    </div>
+    <!-- Sort -->
+    <select class="product-sort-select" (change)="sortProducts($event)">
+      <option value="default">Sort By</option>
+      <option value="low">Price: Low → High</option>
+      <option value="high">Price: High → Low</option>
+      <option value="best">Best Rated</option>
+    </select>
+  </div>
+</div>
+
+<!-- ── Category Filter ─────────────────────────────────── -->
+<section class="category-filter-bar">
+  <div class="category-filter-scroll">
+    <button
+      *ngFor="let category of categories"
+      class="category-chip"
+      [class.active]="selectedCategory === category"
+      (click)="filterCategory(category)">
+      {{ category }}
+    </button>
+  </div>
+</section>
+
+<!-- ── Loading State ───────────────────────────────────── -->
+<div class="products-loading" *ngIf="loading">
+  <div class="spinner spinner-primary"></div>
+  <p>Loading products...</p>
+</div>
+
+<!-- ── Error State ─────────────────────────────────────── -->
+<div class="products-error" *ngIf="!loading && error">
+  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"
+    stroke="var(--danger)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>
+  </svg>
+  <p>{{ error }}</p>
+  <button class="btn btn-primary btn-sm" (click)="loadProducts()">Retry</button>
+</div>
+
+<!-- ── Products Grid ───────────────────────────────────── -->
+<section class="products-section" *ngIf="!loading && !error">
+
+  <!-- Result count -->
+  <div class="products-meta" *ngIf="filteredProducts.length > 0">
+    <span>Showing {{ filteredProducts.length }} of {{ totalCount }} products</span>
+    <span *ngIf="selectedCategory !== 'All'" class="category-tag">{{ selectedCategory }}</span>
   </div>
 
-  <!-- ── Category Chips (sticky) ── -->
-  <div class="shop-categories" role="list" aria-label="Filter by category">
-    @for (cat of categories; track cat) {
-      <button
-        class="shop-cat-chip"
-        [class.active]="selectedCategory() === cat"
-        (click)="selectCategory(cat)"
-        role="listitem"
-        [attr.aria-pressed]="selectedCategory() === cat"
-      >{{ cat }}</button>
-    }
+  <!-- Empty state -->
+  <div class="products-empty" *ngIf="filteredProducts.length === 0">
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+      stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+    </svg>
+    <h3>No products found</h3>
+    <p>Try a different category or search term</p>
+    <button class="btn btn-outline" (click)="filterCategory('All')">Clear Filter</button>
   </div>
 
-  <!-- ── Toolbar (sort + filter) ── -->
-  <div class="shop-toolbar">
-    <div class="shop-results-info">
-      @if (!isLoading() && totalCount() > 0) {
-        Showing {{ (currentPage() - 1) * 24 + 1 }}–{{ currentPage() * 24 > totalCount() ? totalCount() : currentPage() * 24 }} of {{ totalCount() }}
-      }
-    </div>
-    <div class="shop-toolbar-actions">
-      <button class="filter-toggle-btn" (click)="toggleFilters()" [attr.aria-expanded]="showFilters()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/>
-          <line x1="11" y1="18" x2="13" y2="18"/>
-        </svg>
-        Filters
-      </button>
-      <select
-        class="sort-select"
-        [value]="selectedSort()"
-        (change)="onSortChange($any($event.target).value)"
-        aria-label="Sort products"
-      >
-        @for (opt of sortOptions; track opt.value) {
-          <option [value]="opt.value">{{ opt.label }}</option>
-        }
-      </select>
-    </div>
-  </div>
+  <!-- Grid -->
+  <div class="products-grid" *ngIf="filteredProducts.length > 0">
+    <div class="product-card-wrap" *ngFor="let product of filteredProducts">
+      <div class="product-card">
 
-  <!-- ── Filter Panel (collapsible) ── -->
-  @if (showFilters()) {
-    <div class="filter-panel" role="region" aria-label="Filters">
-      <div class="filter-row">
-        <div class="filter-group">
-          <label class="filter-label" for="price-min">Min Price (₹)</label>
-          <input
-            id="price-min"
-            type="number"
-            class="filter-input"
-            placeholder="0"
-            [value]="priceMin() ?? ''"
-            (input)="priceMin.set(+$any($event.target).value || null)"
-          />
-        </div>
-        <div class="filter-group">
-          <label class="filter-label" for="price-max">Max Price (₹)</label>
-          <input
-            id="price-max"
-            type="number"
-            class="filter-input"
-            placeholder="10000"
-            [value]="priceMax() ?? ''"
-            (input)="priceMax.set(+$any($event.target).value || null)"
-          />
-        </div>
-        <button class="filter-apply-btn" (click)="loadProducts()">Apply</button>
-        <button class="filter-clear-btn" (click)="clearFilters()">Clear All</button>
-      </div>
-    </div>
-  }
+        <!-- Discount badge -->
+        <span class="product-discount-badge"
+              *ngIf="getDiscount(product.price, product.mrp) > 0">
+          {{ getDiscount(product.price, product.mrp) }}% OFF
+        </span>
 
-  <!-- ── Products Grid ── -->
-  <div class="shop-grid" role="list" aria-label="Products">
-    @if (isLoading()) {
-      @for (i of [1,2,3,4,5,6,7,8,9,10,11,12]; track i) {
-        <div class="product-card-skeleton skeleton" role="listitem" aria-hidden="true"></div>
-      }
-    } @else if (products().length === 0) {
-      <div class="shop-empty-state" role="listitem">
-        <div class="empty-icon">🔍</div>
-        <h2>No products found</h2>
-        <p>Try adjusting your filters or search terms</p>
-        <button class="btn-clear-search" (click)="clearFilters()">Clear Filters</button>
-      </div>
-    } @else {
-      @for (product of products(); track product.product_id) {
-        <article
-          class="shop-product-card"
-          role="listitem"
-          (click)="goToProduct(product.product_id)"
-          [attr.aria-label]="product.name + ', ' + fmt(product.price)"
-        >
-          <!-- Image -->
-          <div class="shop-product-img-wrap">
-            <img
-              [src]="product.image_url || placeholderImage"
-              [alt]="product.name"
-              class="pl-product-img"
-              loading="lazy"
-              [attr.decoding]="'async'"
-            />
-            @if (discount(product.price, product.mrp) > 0) {
-              <span class="shop-badge">-{{ discount(product.price, product.mrp) }}%</span>
-            }
-            @if (!product.is_active || product.stock === 0) {
-              <div class="oos-overlay">Out of Stock</div>
-            }
+        <!-- Image -->
+        <a [routerLink]="['/product-details', product.product_id]" class="product-img-link">
+          <img [src]="product.image_url || 'https://placehold.co/300x300/f1f5f9/475569?text=Product'"
+               [alt]="product.name"
+               class="product-img"
+               (error)="fallbackImg($event)" />
+        </a>
+
+        <!-- Body -->
+        <div class="product-card-body">
+          <span class="product-category-tag">{{ product.category }}</span>
+          <h3 class="product-name">{{ product.name }}</h3>
+          <p class="product-seller" *ngIf="product.seller_name">By {{ product.seller_name }}</p>
+
+          <!-- Rating -->
+          <div class="product-rating" *ngIf="product.rating > 0">
+            <span class="stars">
+              <span *ngFor="let s of getStarArray(product.rating)" class="star"
+                    [class.filled]="s <= product.rating">★</span>
+            </span>
+            <span class="rating-count">({{ product.review_count }})</span>
           </div>
 
-          <!-- Body -->
-          <div class="shop-product-body">
-            <p class="shop-product-cat">{{ product.category }}</p>
-            <h3 class="shop-product-title line-clamp-2">{{ product.name }}</h3>
+          <!-- Price -->
+          <div class="product-price-row">
+            <span class="product-price">₹{{ product.price }}</span>
+            <span class="product-mrp" *ngIf="product.mrp > product.price">₹{{ product.mrp }}</span>
+          </div>
 
-            @if (product.rating) {
-              <div class="shop-rating">
-                <span class="shop-stars">★</span>
-                <span class="shop-rating-val">{{ product.rating | number:'1.1-1' }}</span>
-                <span class="shop-review-count">({{ product.review_count }})</span>
-              </div>
-            }
+          <!-- Stock indicator -->
+          <span class="stock-badge out" *ngIf="product.stock === 0">Out of Stock</span>
 
-            <div class="shop-price-row">
-              <span class="shop-product-price">{{ fmt(product.price) }}</span>
-              @if (product.mrp > product.price) {
-                <span class="shop-product-mrp">{{ fmt(product.mrp) }}</span>
-              }
-            </div>
-
-            <button
-              class="shop-add-cart-btn"
-              (click)="addToCart(product, $event)"
-              [disabled]="product.stock === 0"
-              [attr.aria-label]="'Add ' + product.name + ' to cart'"
-            >
-              @if (product.stock === 0) {
-                Out of Stock
-              } @else {
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
-                  fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                Add to Cart
-              }
+          <!-- Actions -->
+          <div class="product-card-actions">
+            <a [routerLink]="['/product-details', product.product_id]"
+               class="btn btn-outline btn-sm">View</a>
+            <button class="btn btn-primary btn-sm"
+                    [disabled]="product.stock === 0 || isAddingToCart(product.product_id)"
+                    (click)="addToCart(product)">
+              <span *ngIf="!isAddingToCart(product.product_id)">Add to Cart</span>
+              <span *ngIf="isAddingToCart(product.product_id)" class="spinner"></span>
             </button>
           </div>
-        </article>
-      }
-    }
+        </div>
+
+      </div>
+    </div>
   </div>
 
-  <!-- ── Pagination ── -->
-  @if (totalPages() > 1) {
-    <div class="pagination" role="navigation" aria-label="Pagination">
-      <button
-        class="page-btn"
-        (click)="goToPage(currentPage() - 1)"
-        [disabled]="currentPage() === 1"
-        aria-label="Previous page"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-      </button>
+  <!-- Pagination -->
+  <div class="pagination-row" *ngIf="totalPages > 1">
+    <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">← Prev</button>
+    <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+    <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Next →</button>
+  </div>
 
-      @if (pageRange[0] > 1) {
-        <button class="page-btn" (click)="goToPage(1)">1</button>
-        @if (pageRange[0] > 2) {
-          <span class="page-ellipsis">…</span>
-        }
-      }
-
-      @for (page of pageRange; track page) {
-        <button
-          class="page-btn"
-          [class.active]="page === currentPage()"
-          (click)="goToPage(page)"
-          [attr.aria-current]="page === currentPage() ? 'page' : null"
-        >{{ page }}</button>
-      }
-
-      @if (pageRange[pageRange.length - 1] < totalPages()) {
-        @if (pageRange[pageRange.length - 1] < totalPages() - 1) {
-          <span class="page-ellipsis">…</span>
-        }
-        <button class="page-btn" (click)="goToPage(totalPages())">{{ totalPages() }}</button>
-      }
-
-      <button
-        class="page-btn"
-        (click)="goToPage(currentPage() + 1)"
-        [disabled]="currentPage() === totalPages()"
-        aria-label="Next page"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
-      </button>
-    </div>
-  }
-
-</div>
+</section>

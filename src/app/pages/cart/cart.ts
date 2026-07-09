@@ -1,110 +1,92 @@
 // src/app/pages/cart/cart.ts
-import {
-  Component, OnInit, ChangeDetectionStrategy, inject, signal, computed
-} from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { RouterLink, Router } from '@angular/router';
+import { NavbarComponent } from '../../components/navbar/navbar';
 import { CartService } from '../../services/cart.service';
-import { ApiService, CartItem } from '../../services/api.service';
-import { UiService } from '../../services/ui.service';
-import { ToastService } from '../../services/toast.service';
-import { ImageKitService } from '../../services/imagekit.service';
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, NavbarComponent],
   templateUrl: './cart.html',
-  styleUrl: './cart.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  styleUrl: './cart.css'
 })
 export class CartComponent implements OnInit {
-  public cartSvc = inject(CartService);
-  private api       = inject(ApiService);
-  private ui        = inject(UiService);
-  private toast     = inject(ToastService);
-  private router    = inject(Router);
-  public imageKit = inject(ImageKitService);
-  public readonly placeholderImage = this.imageKit.placeholder();
 
-  public couponCode  = signal('');
-  public couponApplied = signal(false);
-  public couponDiscount = signal(0);
-  public isApplyingCoupon = signal(false);
+  private cart = inject(CartService);
 
-  public readonly deliveryFee = 49;
-  public readonly freeDeliveryThreshold = 499;
+  // Expose reactive signals from CartService via getters
+  get items()     { return this.cart.items; }
+  get loading()   { return this.cart.loading; }
+  get subtotal()  { return this.cart.total; }
+  get itemCount() { return this.cart.itemCount; }
 
-  public subtotal = computed(() =>
-    this.cartSvc.items().reduce((s, i) => s + i.price * i.quantity, 0)
-  );
+  get shipping(): number { return this.cart.total() > 0 ? 40 : 0; }
+  get total(): number    { return this.cart.total() + this.shipping; }
 
-  public effectiveDelivery = computed(() =>
-    this.subtotal() >= this.freeDeliveryThreshold ? 0 : this.deliveryFee
-  );
+  toastMsg  = '';
+  showToast = false;
+  placingOrder = false;
 
-  public total = computed(() =>
-    this.subtotal() + this.effectiveDelivery() - this.couponDiscount()
-  );
-
-  public savings = computed(() =>
-    this.cartSvc.items().reduce((s, i) => s + (i.mrp - i.price) * i.quantity, 0)
-  );
+  constructor(
+    private api: ApiService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-    if (this.api.isLoggedIn()) {
-      this.cartSvc.load();
-    }
+    this.cart.load();
   }
 
-  updateQty(item: CartItem, delta: number): void {
+  updateQuantity(productId: number, delta: number): void {
+    const item = this.items().find(i => i.product_id === productId);
+    if (!item) return;
     const newQty = item.quantity + delta;
-    if (newQty < 1) {
-      this.removeItem(item);
-      return;
-    }
-    if (newQty > item.stock) return;
-    this.cartSvc.updateQuantity(item.product_id, newQty);
+    if (newQty < 1) { this.removeItem(productId); return; }
+    this.cart.updateQuantity(productId, newQty);
   }
 
-  removeItem(item: CartItem): void {
-    this.cartSvc.removeItem(item.product_id);
-    this.toast.info(`${item.name} removed from cart`);
+  removeItem(productId: number): void {
+    this.cart.removeItem(productId);
+    this._toast('Item removed from cart.');
   }
 
-  applyCoupon(): void {
-    const code = this.couponCode().trim().toUpperCase();
-    if (!code) return;
-    this.isApplyingCoupon.set(true);
-    setTimeout(() => {
-      if (code === 'RURAL10') {
-        const disc = Math.round(this.subtotal() * 0.10);
-        this.couponDiscount.set(disc);
-        this.couponApplied.set(true);
-        this.toast.success(`Coupon applied! You saved ${this.fmt(disc)}`);
-      } else {
-        this.toast.error('Invalid or expired coupon code');
-      }
-      this.isApplyingCoupon.set(false);
-    }, 600);
+  clearCart(): void {
+    if (!confirm('Clear all items from cart?')) return;
+    this.cart.clear();
   }
 
-  removeCoupon(): void {
-    this.couponApplied.set(false);
-    this.couponDiscount.set(0);
-    this.couponCode.set('');
-  }
-
-  checkout(): void {
+  /** Place order — requires login */
+  placeOrder(): void {
     if (!this.api.isLoggedIn()) {
-      this.ui.openAuth('login');
+      this.router.navigate(['/login']);
       return;
     }
-    this.router.navigate(['/checkout']);
+    if (this.items().length === 0) return;
+
+    this.placingOrder = true;
+    this.api.placeOrder({
+      deliveryAddress: 'Default Address',
+      paymentMethod:   'cod',
+      items: this.items().map(i => ({ product_id: i.product_id, quantity: i.quantity }))
+    }).subscribe({
+      next: () => {
+        this.placingOrder = false;
+        this.cart.clear();
+        this._toast('Order placed successfully! 🎉');
+        setTimeout(() => this.router.navigate(['/dashboard'], { queryParams: { section: 'orders' } }), 1500);
+      },
+      error: (err) => {
+        this.placingOrder = false;
+        this._toast(err.error?.message || 'Failed to place order. Please try again.', true);
+      }
+    });
   }
 
-  fmt(n: number): string {
-    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(n);
+  private _toast(msg: string, isError = false): void {
+    this.toastMsg  = msg;
+    this.showToast = true;
+    setTimeout(() => { this.showToast = false; }, 2500);
   }
 }

@@ -14,7 +14,6 @@ const wishlistRoutes      = require('./routes/wishlist.routes');
 const addressRoutes       = require('./routes/address.routes');
 const notificationRoutes  = require('./routes/notification.routes');
 const sellerRoutes        = require('./routes/seller.routes');
-const reviewRoutes        = require('./routes/review.routes');
 const errorHandler        = require('./middleware/error.middleware');
 const { sanitizeBody }    = require('./middleware/validate.middleware');
 const { sendError }       = require('./utils/response');
@@ -119,7 +118,6 @@ app.use('/api', wishlistRoutes);
 app.use('/api', addressRoutes);
 app.use('/api', notificationRoutes);
 app.use('/api', sellerRoutes);
-app.use('/api', reviewRoutes);
 
 // ── 9. Health check ───────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

@@ -1,226 +1,177 @@
-<div class="cart-page has-bottom-nav" id="page-cart">
-  <div class="cart-layout">
+// src/app/pages/cart/cart.html
+<app-navbar></app-navbar>
 
-    <!-- ── Left: Cart Items ── -->
-    <div class="cart-main">
-      <div class="cart-header">
-        <h1 class="cart-heading">
-          Shopping Cart
-          @if (cartSvc.itemCount() > 0) {
-            <span class="cart-count-badge">{{ cartSvc.itemCount() }}</span>
-          }
-        </h1>
-        @if (cartSvc.items().length > 0) {
-          <button class="cart-clear-btn" (click)="cartSvc.clear()">Clear All</button>
-        }
-      </div>
+<!-- Toast Notification -->
+<div class="cart-toast" *ngIf="showToast">{{ toastMsg }}</div>
 
-      @if (cartSvc.loading()) {
-        <div class="cart-skeleton-list">
-          @for (i of [1,2,3]; track i) {
-            <div class="cart-item-skeleton skeleton"></div>
-          }
-        </div>
-      } @else if (cartSvc.items().length === 0) {
-        <!-- Empty Cart -->
-        <div class="cart-empty" id="cart-empty-state">
-          <div class="cart-empty-icon">🛒</div>
-          <h2>Your cart is empty</h2>
-          <p>Looks like you haven't added anything yet. Let's fix that!</p>
-          <a routerLink="/products" class="cart-empty-cta">Browse Products</a>
-        </div>
-      } @else {
-        <!-- Cart Items List -->
-        <div class="cart-items-list" role="list">
-          @for (item of cartSvc.items(); track item.product_id) {
-            <div class="cart-item" role="listitem">
-              <!-- Product Image -->
-              <a [routerLink]="['/product-details', item.product_id]" class="cart-item-img-link">
-                <img
-                  [src]="item.image_url || placeholderImage"
-                  [alt]="item.name"
-                  class="cart-item-img"
-                  [attr.decoding]="'async'"
-                />
-              </a>
+<div class="page-bg">
+  <div class="cart-container">
 
-              <!-- Product Info -->
-              <div class="cart-item-info">
-                <a [routerLink]="['/product-details', item.product_id]" class="cart-item-name">
-                  {{ item.name }}
-                </a>
-                <p class="cart-item-unit">{{ item.unit }}</p>
-                <div class="cart-item-price-row">
-                  <span class="cart-item-price">{{ fmt(item.price) }}</span>
-                  @if (item.mrp > item.price) {
-                    <span class="cart-item-mrp">{{ fmt(item.mrp) }}</span>
-                    <span class="cart-item-savings">{{ fmt((item.mrp - item.price) * item.quantity) }} saved</span>
-                  }
-                </div>
-              </div>
+    <h1 class="page-title">Shopping Cart</h1>
 
-              <!-- Quantity + Remove -->
-              <div class="cart-item-actions">
-                <div class="cart-qty-control">
-                  <button
-                    class="cart-qty-btn"
-                    (click)="updateQty(item, -1)"
-                    [attr.aria-label]="'Decrease quantity of ' + item.name"
-                  >−</button>
-                  <span class="cart-qty-val" aria-live="polite">{{ item.quantity }}</span>
-                  <button
-                    class="cart-qty-btn"
-                    (click)="updateQty(item, +1)"
-                    [disabled]="item.quantity >= item.stock"
-                    [attr.aria-label]="'Increase quantity of ' + item.name"
-                  >+</button>
-                </div>
-                <button
-                  class="cart-remove-btn"
-                  (click)="removeItem(item)"
-                  [attr.aria-label]="'Remove ' + item.name + ' from cart'"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
-                    <path d="M10 11v6"/><path d="M14 11v6"/>
-                    <path d="M9 6V4h6v2"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-          }
-        </div>
-
-        <!-- Coupon -->
-        <div class="coupon-section">
-          <h3 class="coupon-label">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
-              <line x1="7" y1="7" x2="7.01" y2="7"/>
-            </svg>
-            Have a coupon?
-          </h3>
-          @if (!couponApplied()) {
-            <div class="coupon-row">
-              <input
-                type="text"
-                class="coupon-input"
-                placeholder="Enter coupon code (try RURAL10)"
-                [(ngModel)]="couponCode"
-                id="coupon-input"
-                aria-label="Coupon code"
-                [value]="couponCode()"
-                (input)="couponCode.set($any($event.target).value)"
-              />
-              <button
-                class="coupon-apply-btn"
-                (click)="applyCoupon()"
-                [disabled]="isApplyingCoupon() || !couponCode()"
-              >
-                {{ isApplyingCoupon() ? 'Applying...' : 'Apply' }}
-              </button>
-            </div>
-          } @else {
-            <div class="coupon-applied">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              <span>Coupon <strong>{{ couponCode() }}</strong> applied — saving {{ fmt(couponDiscount()) }}</span>
-              <button class="coupon-remove" (click)="removeCoupon()" aria-label="Remove coupon">×</button>
-            </div>
-          }
-        </div>
-      }
+    <!-- Loading state -->
+    <div class="cart-loading" *ngIf="loading()">
+      <div class="spinner spinner-primary"></div>
+      <p>Loading your cart...</p>
     </div>
 
-    <!-- ── Right: Order Summary ── -->
-    @if (cartSvc.items().length > 0) {
-      <aside class="cart-summary" aria-label="Order Summary">
-        <h2 class="summary-heading">Order Summary</h2>
+    <div class="cart-layout" *ngIf="!loading()">
 
-        <div class="summary-lines">
-          <div class="summary-line">
-            <span>Subtotal ({{ cartSvc.itemCount() }} items)</span>
-            <span>{{ fmt(subtotal()) }}</span>
+      <!-- ============================
+           CART ITEMS
+           ============================ -->
+      <div class="cart-main">
+        <div class="cart-card">
+
+          <!-- Cart header -->
+          <div class="cart-header">
+            <h2 class="cart-header-title">
+              My Cart
+              <span class="cart-count-badge">{{ itemCount() }} Items</span>
+            </h2>
+            <span class="cart-header-price-label">Price</span>
           </div>
-          @if (savings() > 0) {
-            <div class="summary-line summary-line--savings">
-              <span>Product Discount</span>
-              <span>−{{ fmt(savings()) }}</span>
+
+          <!-- Empty state -->
+          <div class="cart-empty" *ngIf="items().length === 0">
+            <div class="empty-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
             </div>
-          }
-          @if (couponDiscount() > 0) {
-            <div class="summary-line summary-line--savings">
-              <span>Coupon Discount</span>
-              <span>−{{ fmt(couponDiscount()) }}</span>
+            <p class="empty-title">Your cart is empty</p>
+            <p class="empty-sub">Add items from our store to get started</p>
+            <a routerLink="/products" class="btn-shop-now">Shop Now</a>
+          </div>
+
+          <!-- Items list -->
+          <div class="cart-items" *ngIf="items().length > 0">
+            <div class="cart-item" *ngFor="let item of items()">
+
+              <!-- Product Image -->
+              <div class="item-img-wrap">
+                <img [src]="item.image_url || 'https://placehold.co/100x100/f1f5f9/475569?text=Product'"
+                     [alt]="item.name" class="item-img" />
+              </div>
+
+              <!-- Product Details -->
+              <div class="item-details">
+                <div>
+                  <h3 class="item-name">{{ item.name }}</h3>
+                  <p class="item-volume">{{ item.unit }}</p>
+                  <span class="item-stock" *ngIf="item.stock > 0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    In Stock
+                  </span>
+                </div>
+
+                <!-- Actions -->
+                <div class="item-actions">
+                  <div class="qty-control">
+                    <button class="qty-btn" (click)="updateQuantity(item.product_id, -1)">−</button>
+                    <span class="qty-value">{{ item.quantity }}</span>
+                    <button class="qty-btn" (click)="updateQuantity(item.product_id, 1)">+</button>
+                  </div>
+                  <button class="remove-btn" (click)="removeItem(item.product_id)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                    Remove
+                  </button>
+                </div>
+              </div>
+
+              <!-- Price -->
+              <div class="item-price">₹{{ item.price * item.quantity }}</div>
+
             </div>
-          }
-          <div class="summary-line">
-            <span>Delivery</span>
-            @if (effectiveDelivery() === 0) {
-              <span class="delivery-free">FREE</span>
-            } @else {
-              <span>{{ fmt(effectiveDelivery()) }}</span>
-            }
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ============================
+           ORDER SUMMARY
+           ============================ -->
+      <div class="cart-sidebar">
+        <div class="summary-card">
+          <h2 class="summary-title">Order Summary</h2>
+
+          <div class="summary-rows">
+            <div class="summary-row">
+              <span>Subtotal ({{ itemCount() }} items)</span>
+              <span class="summary-val">₹{{ subtotal() }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Shipping</span>
+              <span class="summary-val">₹{{ shipping }}</span>
+            </div>
+          </div>
+
+          <div class="summary-divider"></div>
+
+          <div class="summary-total">
+            <span>Total</span>
+            <span class="total-amount">₹{{ total }}</span>
+          </div>
+
+          <button class="btn-checkout"
+                  [disabled]="items().length === 0 || placingOrder"
+                  (click)="placeOrder()">
+            <span *ngIf="!placingOrder">Proceed to Checkout</span>
+            <span *ngIf="placingOrder" class="spinner"></span>
+            <svg *ngIf="!placingOrder" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+
+          <!-- Trust badges -->
+          <div class="trust-badges">
+            <div class="trust-badge">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>Secure Payment Guarantee</span>
+            </div>
+            <div class="trust-badge">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0B4A9E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="13" x="1" y="3" rx="2" ry="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              <span>Fast Delivery to your Village</span>
+            </div>
+            <div class="trust-badge">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>100% Genuine Products</span>
+            </div>
           </div>
         </div>
 
-        <div class="summary-divider"></div>
-
-        <div class="summary-total">
-          <span>Total</span>
-          <span>{{ fmt(total()) }}</span>
-        </div>
-
-        @if (savings() > 0 || couponDiscount() > 0) {
-          <div class="summary-savings-banner">
-            🎉 You're saving {{ fmt(savings() + couponDiscount()) }} on this order!
-          </div>
-        }
-
-        @if (subtotal() < freeDeliveryThreshold && effectiveDelivery() > 0) {
-          <div class="free-delivery-progress">
-            <p class="fdp-text">
-              Add <strong>{{ fmt(freeDeliveryThreshold - subtotal()) }}</strong> more for free delivery
-            </p>
-            <div class="fdp-bar">
-              <div class="fdp-fill" [style.width.%]="(subtotal() / freeDeliveryThreshold) * 100"></div>
+        <!-- Delivery Type Selector -->
+        <div class="delivery-card">
+          <h3 class="delivery-title">Choose Delivery Type</h3>
+          <div class="delivery-options">
+            <div class="delivery-option">
+              <div class="delivery-option-radio selected"><div class="radio-dot"></div></div>
+              <div class="delivery-option-info">
+                <span class="delivery-option-name">Standard Delivery</span>
+                <span class="delivery-option-desc">Delivered in 3–5 days</span>
+              </div>
+              <span class="delivery-option-price">+₹40</span>
             </div>
           </div>
-        }
-
-        <button
-          class="checkout-btn"
-          (click)="checkout()"
-          id="btn-checkout"
-        >
-          Proceed to Checkout
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-          </svg>
-        </button>
-
-        <p class="secure-note">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-          </svg>
-          Secure checkout · SSL encrypted
-        </p>
-
-        <div class="payment-icons">
-          <span class="pay-icon">UPI</span>
-          <span class="pay-icon">VISA</span>
-          <span class="pay-icon">MC</span>
-          <span class="pay-icon">COD</span>
         </div>
-      </aside>
-    }
+      </div>
 
+    </div>
   </div>
 </div>
+
+<!-- Mobile Bottom Nav -->
+<nav class="bottom-nav">
+  <a routerLink="/home" class="nav-item">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Home</span>
+  </a>
+  <a routerLink="/products" class="nav-item">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+    <span>Categories</span>
+  </a>
+  <a routerLink="/cart" class="nav-item active-nav">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+    <span>Cart</span>
+  </a>
+  <a routerLink="/dashboard" class="nav-item">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+    <span>Account</span>
+  </a>
+</nav>

@@ -40,11 +40,6 @@ try {
       pass: (process.env.SMTP_PASS || '').replace(/\s+/g, ''),
       from: process.env.SMTP_FROM || process.env.SMTP_USER || '',
     },
-    passwordReset: {
-      secret:      process.env.PASSWORD_RESET_SECRET  || process.env.JWT_SECRET,
-      ttlMinutes:  parseInt(process.env.PASSWORD_RESET_TTL_MINUTES || '30', 10),
-      baseUrl:     process.env.BASE_URL || 'http://localhost:4200',
-    },
   };
 } catch (err) {
   // Fatal — log and exit immediately so the developer sees the problem

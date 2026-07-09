@@ -8,8 +8,6 @@ import {
 } from '@angular/common/http';
 import { catchError, throwError } from 'rxjs';
 import { Router } from '@angular/router';
-import { AuthStateService } from '../services/auth-state.service';
-import { SKIP_AUTH_INTERCEPTOR } from './auth.context';
 
 /**
  * Global HTTP interceptor that:
@@ -29,15 +27,10 @@ export const authInterceptor: HttpInterceptorFn = (
   req: HttpRequest<unknown>,
   next: HttpHandlerFn
 ) => {
-  if (req.context.get(SKIP_AUTH_INTERCEPTOR)) {
-    return next(req);
-  }
-
   const router = inject(Router);
-  const authState = inject(AuthStateService);
 
   // ── 1. Attach Bearer token if available ───────────────────────────────────
-  const token = authState.getToken();
+  const token = localStorage.getItem('token');
   const authReq = token
     ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
     : req;
@@ -52,18 +45,19 @@ export const authInterceptor: HttpInterceptorFn = (
       // We normalise this so every component sees a clean, friendly message.
       if (error.status === 0) {
         const networkError = new HttpErrorResponse({
-          error: { message: 'Unable to connect to the server. Please make sure the backend is running and try again.' },
-          status: 0,
+          error:      { message: 'Unable to connect to the server. Please make sure the backend is running and try again.' },
+          status:     0,
           statusText: 'Network Error',
-          url: error.url ?? undefined,
+          url:        error.url ?? undefined,
         });
         return throwError(() => networkError);
       }
 
       // ── 401 — Token expired or missing → force re-login ──────────────────
-      // ── 403 — Token tampered / invalid signature ──────────────────────────
-      if (error.status === 401 || error.status === 403) {
-        authState.clearSession();
+      if (error.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('customerName');
 
         const url = router.url;
         const isSellerRoute = url.startsWith('/seller-hub');

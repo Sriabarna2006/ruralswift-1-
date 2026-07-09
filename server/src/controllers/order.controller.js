@@ -51,43 +51,6 @@ class OrderController {
       next(err);
     }
   }
-
-  /**
-   * POST /api/orders/:id/cancel
-   * Allows the order owner to cancel while status is pending/confirmed.
-   */
-  async cancelOrder(req, res, next) {
-    try {
-      const orderId = parseInt(req.params.id);
-      if (!orderId || isNaN(orderId)) {
-        return sendError(res, 400, 'Invalid order ID.', 'VALIDATION_INVALID_ID');
-      }
-      const order = await orderService.cancelOrder(orderId, req.user.id);
-      return sendSuccess(res, 200, 'Order cancelled successfully.', { order });
-    } catch (err) {
-      if (err.message.includes('not found'))        return sendError(res, 404, err.message, 'ORDER_NOT_FOUND');
-      if (err.message.includes('Cannot cancel'))    return sendError(res, 400, err.message, 'ORDER_CANCEL_NOT_ALLOWED');
-      next(err);
-    }
-  }
-
-  /**
-   * GET /api/orders/track/:trackingNumber
-   * Public guest tracking — no auth required.
-   */
-  async trackByNumber(req, res, next) {
-    try {
-      const { trackingNumber } = req.params;
-      if (!trackingNumber || trackingNumber.trim() === '') {
-        return sendError(res, 400, 'Tracking number is required.', 'VALIDATION_REQUIRED_FIELD');
-      }
-      const order = await orderService.getOrderByTracking(trackingNumber);
-      return sendSuccess(res, 200, 'Order tracking info fetched.', { order });
-    } catch (err) {
-      if (err.message.includes('No order found')) return sendError(res, 404, err.message, 'ORDER_NOT_FOUND');
-      next(err);
-    }
-  }
 }
 
 module.exports = new OrderController();

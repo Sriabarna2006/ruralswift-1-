@@ -8,13 +8,13 @@ const authenticateToken = require('../middleware/auth.middleware');
 const { requireRole } = require('../middleware/auth.middleware');
 
 // All seller routes require authentication
-router.use('/seller', authenticateToken);
+router.use(authenticateToken);
 
 // ── POST /api/seller/register — any logged-in user can register as a seller ──
 router.post('/seller/register', sellerController.registerSeller);
 
 // All routes below require the 'seller' role
-router.use('/seller', requireRole('seller'));
+router.use(requireRole('seller'));
 
 // ── GET /api/seller/profile ──
 router.get('/seller/profile', sellerController.getProfile);
