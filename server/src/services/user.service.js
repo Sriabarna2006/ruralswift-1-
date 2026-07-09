@@ -71,16 +71,30 @@ class UserService {
     const { first_name, last_name, email, phone, password } = userData;
     const normalisedEmail = email.toLowerCase().trim();
 
+    // Check if a fully verified account already exists
     const existingUser = await userRepository.findByEmail(normalisedEmail);
     if (existingUser) {
+      // If the password matches, allow direct login
+      const isMatch = await bcrypt.compare(password, existingUser.password);
+      if (isMatch) {
+        const effectiveRole = await this._resolveRole(existingUser);
+        return {
+          directLogin: true,
+          token: this._generateToken({ ...existingUser, role: effectiveRole }),
+          user:  this._formatUserResponse(existingUser, effectiveRole),
+        };
+      }
       throw new Error('An account with this email already exists.');
     }
 
+    // If there is already a pending registration, just resend a fresh OTP
+    // (user may have lost their first OTP or it expired — no need to 409)
     const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
     const otp = crypto.randomInt(100000, 1000000).toString();
     const otpHash = await bcrypt.hash(otp, BCRYPT_ROUNDS);
     const otpExpiresAt = new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000);
 
+    // upsertPendingRegistration will INSERT or UPDATE if row already exists
     await userRepository.upsertPendingRegistration({
       firstName: (first_name || '').trim(),
       lastName: (last_name || '').trim(),
@@ -95,7 +109,6 @@ class UserService {
       await sendRegistrationOtp(normalisedEmail, otp);
       logger.info('Registration OTP sent', { email: normalisedEmail });
     } catch (err) {
-      // If mail fails, fall back to mock mode so the flow never breaks
       logger.warn('Failed to send registration OTP email. Falling back to mock mode.', { email: normalisedEmail, message: err.message });
       console.log(`\n\n[MAILER FALLBACK] Registration OTP for ${normalisedEmail} is: ${otp}\n\n`);
     }
@@ -277,6 +290,7 @@ class UserService {
     await userRepository.createResetToken(user.user_id, tokenHash, expiresAt);
 
     const resetLink = `${env.passwordReset.baseUrl}/reset-password?token=${rawToken}`;
+    console.log('\n*** [DEBUG] Reset Link:', resetLink, '\n');
     try {
       await sendPasswordResetEmail(normalisedEmail, resetLink);
       logger.info('Password reset email sent', { userId: user.user_id });
@@ -307,6 +321,14 @@ class UserService {
     await userRepository.markResetTokenUsed(tokenRow.id);
 
     logger.info('Password reset successful', { userId: tokenRow.user_id });
+
+    const user = await userRepository.findById(tokenRow.user_id);
+    const effectiveRole = await this._resolveRole(user);
+    return {
+      autoLogin: true,
+      token: this._generateToken({ ...user, role: effectiveRole }),
+      user:  this._formatUserResponse(user, effectiveRole),
+    };
   }
 }
 

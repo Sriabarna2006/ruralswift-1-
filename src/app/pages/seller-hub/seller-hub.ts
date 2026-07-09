@@ -5,7 +5,7 @@ import {
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService } from '../../services/api.service';
+import { ApiService, RegisterResponse, RegisterOtpResponse } from '../../services/api.service';
 import { SellerService, SellerDashboard, SellerOrder, SellerProfile } from '../../services/seller.service';
 import { Product } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
@@ -29,13 +29,21 @@ export class SellerHubComponent implements OnInit {
   public imageKit = inject(ImageKitService);
   public readonly placeholderImage = this.imageKit.placeholder();
 
-  // Auth
+  // Auth state
   public isAuthenticated  = signal(false);
+  public initLoading      = signal(true);   // true while checking session on load
   public isLoginMode      = signal(true);
-  public awaitingOtp      = signal(false);
+  /**
+   * Register steps:
+   *   'form'         → filling in account + business details
+   *   'otp'          → OTP sent, waiting for user to enter code
+   *   'seller-setup' → account verified, now saving seller profile
+   */
+  public regStep          = signal<'form' | 'otp' | 'seller-setup'>('form');
   public authLoading      = signal(false);
   public authError        = signal('');
   public authInfo         = signal('');
+  public isUnverified     = signal(false);  // 403 login — email not verified
 
   // UI
   public activeTab        = signal<SellerTab>('dashboard');
@@ -66,7 +74,7 @@ export class SellerHubComponent implements OnInit {
   public selectedImageName = signal('');
   public productError      = signal('');
 
-  // Auth form
+  // Auth form (account + business fields in one object)
   authForm = {
     fullName: '', businessName: '', gstNumber: '', phone: '',
     businessAddress: '', email: '', password: '', otp: '', terms: false
@@ -91,76 +99,129 @@ export class SellerHubComponent implements OnInit {
   ngOnInit(): void {
     if (this.api.isLoggedIn()) {
       this.tryOpenSellerHub();
+    } else {
+      this.initLoading.set(false);
     }
   }
 
+  /**
+   * Called when user is already logged in.
+   * Checks if they have a seller profile — if yes, open hub; if no, show auth wall
+   * with a helpful message that they need to register as a seller.
+   */
   private tryOpenSellerHub(): void {
     this.sellerSvc.getProfile().subscribe({
       next: (res) => {
         const profile = (res as any).data?.profile ?? null;
+        this.initLoading.set(false);
         if (profile) {
           this.sellerProfile.set(profile);
           this.isAuthenticated.set(true);
           this.loadDashboard();
+        } else {
+          // Logged in as customer but not a seller yet
+          this.isLoginMode.set(false);
+          this.authInfo.set('You are logged in as a customer. Fill in your business details below to become a seller.');
         }
       },
-      error: () => this.isAuthenticated.set(false)
+      error: (err) => {
+        this.initLoading.set(false);
+        const status = err.status;
+        if (status === 404 || status === 403) {
+          // No seller profile — nudge them to register as seller
+          this.isLoginMode.set(false);
+          this.authInfo.set('You are logged in as a customer. Fill in your business details below to become a seller.');
+        } else {
+          this.isAuthenticated.set(false);
+        }
+      }
     });
   }
 
-  handleAuth(event: Event): void {
-    event.preventDefault();
+  // ── STEP 1: Login ─────────────────────────────────────────────────────────
+
+  handleLogin(): void {
+    this.authError.set('');
+    this.authInfo.set('');
+    this.isUnverified.set(false);
+    this.authLoading.set(true);
+
+    this.api.login({ email: this.authForm.email, password: this.authForm.password }).subscribe({
+      next: (res) => {
+        this.authLoading.set(false);
+        this.api.saveSession(res.token, res.user);
+        this.tryOpenSellerHub();
+      },
+      error: (err) => {
+        this.authLoading.set(false);
+        const code = err.error?.code;
+        this.isUnverified.set(code === 'AUTH_EMAIL_NOT_VERIFIED');
+        this.authError.set(err.error?.message || 'Invalid credentials.');
+      }
+    });
+  }
+
+  // ── STEP 1: Register (send OTP) ────────────────────────────────────────────
+
+  handleRegister(): void {
     this.authError.set('');
     this.authInfo.set('');
     this.authLoading.set(true);
 
-    if (this.awaitingOtp()) {
-      this.api.verifyRegistrationOtp(this.authForm.email, this.authForm.otp).subscribe({
-        next: (res) => {
-          this.api.saveSession(res.token, res.user);
-          this.registerSellerProfile();
-        },
-        error: (err) => {
-          this.authLoading.set(false);
-          this.authError.set(err.error?.message || 'OTP verification failed.');
-        }
-      });
-      return;
-    }
-
-    if (this.isLoginMode()) {
-      this.api.login({ email: this.authForm.email, password: this.authForm.password }).subscribe({
-        next: (res) => {
-          this.authLoading.set(false);
+    const nameParts = this.authForm.fullName.trim().split(' ');
+    this.api.register({
+      first_name: nameParts[0] || '',
+      last_name:  nameParts.slice(1).join(' ') || '',
+      email:      this.authForm.email,
+      phone:      this.authForm.phone,
+      password:   this.authForm.password,
+    }).subscribe({
+      next: (res: RegisterResponse) => {
+        this.authLoading.set(false);
+        if ('directLogin' in res && res.directLogin) {
+          // Already a verified account with correct password
           this.api.saveSession(res.token, res.user);
           this.tryOpenSellerHub();
-        },
-        error: (err) => {
-          this.authLoading.set(false);
-          this.authError.set(err.error?.message || 'Invalid credentials.');
+        } else {
+          // OTP sent — move to OTP step
+          const otpRes = res as RegisterOtpResponse;
+          this.regStep.set('otp');
+          
+          const isResend = otpRes.message?.toLowerCase().includes('new otp') || false;
+          const msg = isResend 
+            ? `New OTP sent to ${otpRes.email}. Check your inbox!`
+            : `OTP sent to ${otpRes.email}. Enter the 6-digit code to continue.`;
+          this.authInfo.set(msg);
         }
-      });
-    } else {
-      const nameParts = this.authForm.fullName.trim().split(' ');
-      this.api.register({
-        first_name: nameParts[0] || '',
-        last_name:  nameParts.slice(1).join(' ') || '',
-        email:      this.authForm.email,
-        phone:      this.authForm.phone,
-        password:   this.authForm.password,
-      }).subscribe({
-        next: (res) => {
-          this.authLoading.set(false);
-          this.awaitingOtp.set(true);
-          this.authInfo.set(`OTP sent to ${res.email}. Verify to complete seller registration.`);
-        },
-        error: (err) => {
-          this.authLoading.set(false);
-          this.authError.set(err.error?.message || 'Registration failed.');
-        }
-      });
-    }
+      },
+      error: (err) => {
+        this.authLoading.set(false);
+        this.authError.set(err.error?.message || 'Registration failed.');
+      }
+    });
   }
+
+  // ── STEP 2: Verify OTP ────────────────────────────────────────────────────
+
+  handleVerifyOtp(): void {
+    this.authError.set('');
+    this.authLoading.set(true);
+
+    this.api.verifyRegistrationOtp(this.authForm.email, this.authForm.otp).subscribe({
+      next: (res) => {
+        // Account created & verified — save session, then save seller profile
+        this.api.saveSession(res.token, res.user);
+        this.regStep.set('seller-setup');
+        this.registerSellerProfile();
+      },
+      error: (err) => {
+        this.authLoading.set(false);
+        this.authError.set(err.error?.message || 'OTP verification failed.');
+      }
+    });
+  }
+
+  // ── STEP 3: Save Seller Profile ────────────────────────────────────────────
 
   private registerSellerProfile(): void {
     this.sellerSvc.register({
@@ -169,27 +230,52 @@ export class SellerHubComponent implements OnInit {
       business_address: this.authForm.businessAddress,
     }).subscribe({
       next: (res) => {
+        // Update the stored session role to 'seller'
         const stored = this.api.getStoredUser();
         if (stored) this.api.saveSession(this.api.getToken() || '', { ...stored, role: 'seller' });
         this.sellerProfile.set((res as any).data?.profile ?? null);
         this.isAuthenticated.set(true);
         this.authLoading.set(false);
-        this.awaitingOtp.set(false);
+        this.regStep.set('form');
         this.authInfo.set('');
+        this.toast.success('Seller account created! Welcome to the Seller Hub.');
         this.loadDashboard();
       },
       error: (err) => {
         this.authLoading.set(false);
-        this.authError.set(err.error?.message || 'Seller setup failed.');
+        this.authError.set(err.error?.message || 'Seller profile setup failed. Please try again.');
+        // Roll back to OTP step so they can try again
+        this.regStep.set('otp');
       }
     });
+  }
+
+  // ── Unified form submit dispatcher ────────────────────────────────────────
+
+  handleAuth(event: Event): void {
+    event.preventDefault();
+    if (this.isLoginMode()) {
+      this.handleLogin();
+    } else if (this.regStep() === 'otp') {
+      this.handleVerifyOtp();
+    } else {
+      this.handleRegister();
+    }
+  }
+
+  /** Resend OTP from the OTP step */
+  resendOtp(): void {
+    this.authError.set('');
+    this.regStep.set('form');
+    this.handleRegister();
   }
 
   logout(): void {
     this.api.clearSession();
     this.isAuthenticated.set(false);
     this.isLoginMode.set(true);
-    this.awaitingOtp.set(false);
+    this.regStep.set('form');
+    this.isUnverified.set(false);
     this.authError.set('');
     this.authInfo.set('');
     this.activeTab.set('dashboard');

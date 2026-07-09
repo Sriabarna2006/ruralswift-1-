@@ -4,3 +4,231 @@
    ============================================= */
 
 @import "../login/login.css";
+
+/* ── Full-page gradient (same as login) ── */
+.auth-page {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--accent) 100%);
+}
+
+.auth-left, .auth-right {
+  background: transparent !important;
+}
+
+/* ── Subheading under main heading ── */
+.auth-subheading {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: -8px 0 4px;
+}
+
+/* ── Name row ── */
+.name-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 480px) {
+  .name-row { grid-template-columns: 1fr; }
+}
+
+/* ── Strength bar ── */
+.strength-bar {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.strength-bar span {
+  flex: 1;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--surface-border);
+  transition: background var(--transition-base);
+}
+
+.strength-bar span.weak   { background: var(--danger); }
+.strength-bar span.fair   { background: var(--warning); }
+.strength-bar span.strong { background: var(--accent); }
+
+.strength-label {
+  font-size: 11px;
+  margin-top: 5px;
+  font-weight: 600;
+}
+
+.strength-label.weak   { color: var(--danger); }
+.strength-label.fair   { color: var(--warning); }
+.strength-label.strong { color: var(--accent); }
+
+/* ── Alert styles ── */
+.auth-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+}
+
+.auth-alert--error {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.auth-alert .alert-link {
+  color: inherit;
+  text-decoration: underline;
+  font-weight: 700;
+}
+
+.auth-alert .alert-link:hover {
+  text-decoration: none;
+}
+
+.auth-alert--success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+/* ── Terms text ── */
+.terms-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 12px;
+  line-height: 1.5;
+}
+
+.terms-text a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* ══════════════════════════════════════════
+   OTP VERIFICATION SCREEN
+   ══════════════════════════════════════════ */
+
+.otp-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: slideUpFade 0.4s ease both;
+}
+
+/* Animated envelope icon */
+.otp-icon-wrap {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, var(--primary-dark), var(--accent));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  animation: pulse 2s ease-in-out infinite;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(0,0,0,0.18); }
+  50%       { transform: scale(1.07); box-shadow: 0 12px 32px rgba(0,0,0,0.28); }
+}
+
+.otp-icon {
+  font-size: 36px;
+  line-height: 1;
+}
+
+/* Description text */
+.otp-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.otp-email {
+  display: inline-block;
+  margin-top: 4px;
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 14px;
+  word-break: break-all;
+}
+
+/* OTP form — full width */
+.otp-screen .auth-form {
+  width: 100%;
+  text-align: left;
+}
+
+/* Large centered OTP input */
+.otp-input {
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5em !important;
+  text-align: center !important;
+}
+
+/* Hint text under OTP field */
+.otp-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  display: block;
+}
+
+/* Back / Resend row */
+.otp-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 16px;
+  gap: 12px;
+}
+
+.otp-back-btn {
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px 0;
+  font-family: var(--font-family);
+  transition: color var(--transition-base);
+}
+
+.otp-back-btn:hover {
+  color: var(--text-primary);
+}
+
+.otp-resend-btn {
+  background: none;
+  border: 1.5px solid var(--primary);
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-family);
+  padding: 6px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.otp-resend-btn:hover:not(:disabled) {
+  background: var(--primary);
+  color: #fff;
+}
+
+.otp-resend-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

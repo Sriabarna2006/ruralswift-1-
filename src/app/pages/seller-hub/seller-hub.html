@@ -1,128 +1,292 @@
 <div class="sh-page" id="page-seller-hub">
 
   @if (!isAuthenticated()) {
-    <!-- ── AUTH WALL ── -->
-    <div class="sh-auth-page">
-      <div class="sh-auth-left">
-        <div class="sh-auth-brand">
-          <div class="sh-brand-logo">🏪</div>
-          <h1 class="sh-brand-title">RuralSwift Seller Hub</h1>
-          <p class="sh-brand-sub">Reach millions of rural customers across India. Grow your business with us.</p>
+    <!-- ══════════════════════════════════════════════════
+         SELLER HUB — DARK BUSINESS PORTAL AUTH WALL
+         Completely distinct from customer register page
+    ══════════════════════════════════════════════════ -->
+    <div class="sh-portal-bg" id="seller-hub-auth">
+
+      <!-- Top portal header bar -->
+      <div class="sh-portal-topbar">
+        <div class="sh-portal-topbar-brand">
+          <span class="sh-portal-logo">🏪</span>
+          <span class="sh-portal-name">RuralSwift</span>
+          <span class="sh-portal-sep">|</span>
+          <span class="sh-portal-label">Seller Portal</span>
         </div>
-        <div class="sh-benefits">
-          @for (b of [
-            {icon:'🚀', text:'List products in minutes'},
-            {icon:'📦', text:'End-to-end order management'},
-            {icon:'📊', text:'Real-time analytics & insights'},
-            {icon:'💰', text:'Fast payouts — 2–3 business days'},
-          ]; track b.text) {
-            <div class="sh-benefit-item">
-              <span class="sh-benefit-icon">{{ b.icon }}</span>
-              <span class="sh-benefit-text">{{ b.text }}</span>
-            </div>
-          }
-        </div>
+        <a href="/home" class="sh-portal-back-link">← Back to Store</a>
       </div>
 
-      <div class="sh-auth-right">
-        <div class="sh-auth-card">
-          <!-- Tabs -->
-          @if (!awaitingOtp()) {
-            <div class="sh-auth-tabs">
-              <button
-                class="sh-auth-tab"
-                [class.active]="isLoginMode()"
-                (click)="isLoginMode.set(true); authError.set('')"
-              >Sign In</button>
-              <button
-                class="sh-auth-tab"
-                [class.active]="!isLoginMode()"
-                (click)="isLoginMode.set(false); authError.set('')"
-              >Register</button>
+      <!-- Main content: left info + right form -->
+      <div class="sh-portal-body">
+
+        <!-- LEFT: Business info panel -->
+        <div class="sh-portal-info">
+          <div class="sh-portal-badge">🏢 Business Platform</div>
+          <h1 class="sh-portal-title">Grow Your Business<br/>with RuralSwift</h1>
+          <p class="sh-portal-sub">
+            India's fastest-growing rural commerce network.
+            List products, manage orders, and receive payouts —
+            all from one powerful dashboard.
+          </p>
+
+          <!-- Stats -->
+          <div class="sh-portal-stats">
+            <div class="sh-portal-stat">
+              <span class="sh-portal-stat-val">50K+</span>
+              <span class="sh-portal-stat-lbl">Active Sellers</span>
             </div>
-          }
+            <div class="sh-portal-stat-div"></div>
+            <div class="sh-portal-stat">
+              <span class="sh-portal-stat-val">₹0</span>
+              <span class="sh-portal-stat-lbl">Listing Fee</span>
+            </div>
+            <div class="sh-portal-stat-div"></div>
+            <div class="sh-portal-stat">
+              <span class="sh-portal-stat-val">2–3 Days</span>
+              <span class="sh-portal-stat-lbl">Payout Time</span>
+            </div>
+          </div>
 
-          <h2 class="sh-auth-heading">
-            @if (awaitingOtp()) { Verify Your Email }
-            @else if (isLoginMode()) { Welcome Back }
-            @else { Create Seller Account }
-          </h2>
-
-          @if (authError()) {
-            <div class="sh-auth-error">⚠️ {{ authError() }}</div>
-          }
-          @if (authInfo()) {
-            <div class="sh-auth-info">ℹ️ {{ authInfo() }}</div>
-          }
-
-          <form (ngSubmit)="handleAuth($event)" class="sh-auth-form" id="seller-auth-form">
-            @if (awaitingOtp()) {
-              <!-- OTP step -->
-              <div class="sh-form-field">
-                <label for="seller-otp">Enter OTP sent to {{ authForm.email }}</label>
-                <input id="seller-otp" type="text" inputmode="numeric" class="sh-form-input"
-                  placeholder="6-digit OTP" [(ngModel)]="authForm.otp" name="otp" required maxlength="6" />
+          <!-- Feature list -->
+          <ul class="sh-portal-features">
+            <li>
+              <span class="sh-pf-icon">✅</span>
+              <div>
+                <strong>List in minutes</strong>
+                <span>Upload photos, set price, go live instantly</span>
               </div>
-            } @else if (isLoginMode()) {
-              <div class="sh-form-field">
-                <label for="seller-email">Email Address</label>
-                <input id="seller-email" type="email" class="sh-form-input" placeholder="you@business.com"
-                  [(ngModel)]="authForm.email" name="email" required />
+            </li>
+            <li>
+              <span class="sh-pf-icon">✅</span>
+              <div>
+                <strong>Full order control</strong>
+                <span>Confirm, pack, and ship from one screen</span>
               </div>
-              <div class="sh-form-field">
-                <label for="seller-password">Password</label>
-                <input id="seller-password" type="password" class="sh-form-input" placeholder="Your password"
-                  [(ngModel)]="authForm.password" name="password" required />
+            </li>
+            <li>
+              <span class="sh-pf-icon">✅</span>
+              <div>
+                <strong>Live analytics</strong>
+                <span>Revenue, stock alerts, and customer data</span>
+              </div>
+            </li>
+            <li>
+              <span class="sh-pf-icon">✅</span>
+              <div>
+                <strong>Fast payouts</strong>
+                <span>Direct bank transfer in 2–3 business days</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- RIGHT: Auth form card -->
+        <div class="sh-portal-form-wrap">
+          <div class="sh-portal-card">
+
+            @if (initLoading()) {
+              <div class="sh-portal-loading">
+                <div class="sh-portal-spinner"></div>
+                <p>Checking your session…</p>
               </div>
             } @else {
-              <!-- Register -->
-              <div class="sh-form-grid">
-                <div class="sh-form-field">
-                  <label for="seller-fullname">Full Name</label>
-                  <input id="seller-fullname" type="text" class="sh-form-input" placeholder="Ramesh Kumar"
-                    [(ngModel)]="authForm.fullName" name="fullName" required />
-                </div>
-                <div class="sh-form-field">
-                  <label for="seller-phone">Phone</label>
-                  <input id="seller-phone" type="tel" class="sh-form-input" placeholder="9876543210"
-                    [(ngModel)]="authForm.phone" name="phone" required />
-                </div>
-                <div class="sh-form-field sh-form-field--full">
-                  <label for="seller-reg-email">Email Address</label>
-                  <input id="seller-reg-email" type="email" class="sh-form-input" placeholder="you@business.com"
-                    [(ngModel)]="authForm.email" name="email" required />
-                </div>
-                <div class="sh-form-field sh-form-field--full">
-                  <label for="seller-biz-name">Business Name</label>
-                  <input id="seller-biz-name" type="text" class="sh-form-input" placeholder="Your Store Name"
-                    [(ngModel)]="authForm.businessName" name="businessName" required />
-                </div>
-                <div class="sh-form-field">
-                  <label for="seller-gst">GST Number (optional)</label>
-                  <input id="seller-gst" type="text" class="sh-form-input" placeholder="GST number"
-                    [(ngModel)]="authForm.gstNumber" name="gstNumber" />
-                </div>
-                <div class="sh-form-field">
-                  <label for="seller-biz-addr">Business Address</label>
-                  <input id="seller-biz-addr" type="text" class="sh-form-input" placeholder="City, State"
-                    [(ngModel)]="authForm.businessAddress" name="businessAddress" />
-                </div>
-                <div class="sh-form-field sh-form-field--full">
-                  <label for="seller-reg-pwd">Password</label>
-                  <input id="seller-reg-pwd" type="password" class="sh-form-input" placeholder="Create password"
-                    [(ngModel)]="authForm.password" name="password" required minlength="8" />
-                </div>
-              </div>
-            }
 
-            <button type="submit" class="sh-auth-submit" [disabled]="authLoading()" id="btn-seller-submit">
-              @if (authLoading()) { Processing… }
-              @else if (awaitingOtp()) { Verify & Continue }
-              @else if (isLoginMode()) { Sign In to Dashboard }
-              @else { Create Seller Account }
-            </button>
-          </form>
+              <!-- Step indicator -->
+              <div class="sh-portal-steps">
+                <div class="sh-portal-step" [class.active]="regStep() === 'form' || isLoginMode()">
+                  <span>1</span> Account
+                </div>
+                @if (!isLoginMode()) {
+                  <div class="sh-portal-step-line"></div>
+                  <div class="sh-portal-step" [class.active]="regStep() === 'otp' || regStep() === 'seller-setup'">
+                    <span>2</span> Verify
+                  </div>
+                  <div class="sh-portal-step-line"></div>
+                  <div class="sh-portal-step" [class.active]="regStep() === 'seller-setup'">
+                    <span>3</span> Go Live
+                  </div>
+                }
+              </div>
+
+              <!-- Heading -->
+              <div class="sh-portal-card-header">
+                @if (regStep() === 'otp') {
+                  <h2>📧 Verify Your Email</h2>
+                  <p>We sent a 6-digit code to <strong>{{ authForm.email }}</strong></p>
+                } @else if (regStep() === 'seller-setup') {
+                  <h2>⚙️ Setting Up Your Store</h2>
+                  <p>Creating your seller profile, please wait…</p>
+                } @else if (isLoginMode()) {
+                  <h2>Welcome Back, Seller</h2>
+                  <p>Sign in to your seller dashboard</p>
+                } @else {
+                  <h2>Create Seller Account</h2>
+                  <p>Fill in your details to start selling</p>
+                }
+              </div>
+
+              <!-- Mode tabs (only on form step) -->
+              @if (regStep() === 'form') {
+                <div class="sh-portal-tabs">
+                  <button class="sh-ptab" [class.active]="isLoginMode()"
+                    (click)="isLoginMode.set(true); authError.set(''); authInfo.set(''); isUnverified.set(false)">
+                    Sign In
+                  </button>
+                  <button class="sh-ptab" [class.active]="!isLoginMode()"
+                    (click)="isLoginMode.set(false); authError.set(''); authInfo.set('')">
+                    Register
+                  </button>
+                </div>
+              }
+
+              <!-- Alerts -->
+              @if (authError()) {
+                <div class="sh-portal-alert sh-portal-alert--error">
+                  ⚠️ {{ authError() }}
+                  @if (isUnverified()) {
+                    <span class="sh-alert-action">
+                      <a (click)="isLoginMode.set(false); regStep.set('form'); authError.set(''); isUnverified.set(false)">
+                        Switch to Register to resend OTP →
+                      </a>
+                    </span>
+                  }
+                </div>
+              }
+              @if (authInfo()) {
+                <div class="sh-portal-alert sh-portal-alert--info">
+                  ℹ️ {{ authInfo() }}
+                </div>
+              }
+
+              <!-- Form -->
+              <form (ngSubmit)="handleAuth($event)" class="sh-portal-form" id="seller-auth-form">
+
+                @if (regStep() === 'otp') {
+                  <!-- OTP step -->
+                  <div class="sh-pfield">
+                    <label for="seller-otp">Verification Code</label>
+                    <input id="seller-otp" type="text" inputmode="numeric"
+                      class="sh-pinput sh-pinput--otp"
+                      placeholder="• • • • • •"
+                      [(ngModel)]="authForm.otp" name="otp"
+                      required maxlength="6" autocomplete="one-time-code" />
+                    <span class="sh-pfield-hint">Check your spam folder if you don't see it.</span>
+                  </div>
+
+                } @else if (regStep() === 'seller-setup') {
+                  <div class="sh-portal-setup-spinner">
+                    <div class="sh-portal-spinner"></div>
+                    <span>Creating your seller profile…</span>
+                  </div>
+
+                } @else if (isLoginMode()) {
+                  <!-- Login form -->
+                  <div class="sh-pfield">
+                    <label for="seller-email">Business Email</label>
+                    <input id="seller-email" type="email" class="sh-pinput"
+                      placeholder="you@business.com"
+                      [(ngModel)]="authForm.email" name="email"
+                      required autocomplete="email" />
+                  </div>
+                  <div class="sh-pfield">
+                    <label for="seller-password">Password</label>
+                    <input id="seller-password" type="password" class="sh-pinput"
+                      placeholder="Your password"
+                      [(ngModel)]="authForm.password" name="password"
+                      required autocomplete="current-password" />
+                  </div>
+
+                } @else {
+                  <!-- Register form: account + business details -->
+                  <p class="sh-pgroup-label">👤 Account Details</p>
+                  <div class="sh-pgrid">
+                    <div class="sh-pfield">
+                      <label for="seller-fullname">Full Name</label>
+                      <input id="seller-fullname" type="text" class="sh-pinput"
+                        placeholder="Ramesh Kumar"
+                        [(ngModel)]="authForm.fullName" name="fullName"
+                        required autocomplete="name" />
+                    </div>
+                    <div class="sh-pfield">
+                      <label for="seller-phone">Phone</label>
+                      <input id="seller-phone" type="tel" class="sh-pinput"
+                        placeholder="9876543210"
+                        [(ngModel)]="authForm.phone" name="phone"
+                        required autocomplete="tel" />
+                    </div>
+                  </div>
+                  <div class="sh-pfield">
+                    <label for="seller-reg-email">Email Address</label>
+                    <input id="seller-reg-email" type="email" class="sh-pinput"
+                      placeholder="you@business.com"
+                      [(ngModel)]="authForm.email" name="email"
+                      required autocomplete="email" />
+                  </div>
+                  <div class="sh-pfield">
+                    <label for="seller-reg-pwd">Password</label>
+                    <input id="seller-reg-pwd" type="password" class="sh-pinput"
+                      placeholder="Create a strong password (min 6 chars)"
+                      [(ngModel)]="authForm.password" name="password"
+                      required minlength="6" autocomplete="new-password" />
+                  </div>
+
+                  <p class="sh-pgroup-label" style="margin-top:4px;">🏪 Business Details</p>
+                  <div class="sh-pfield">
+                    <label for="seller-biz-name">Business / Store Name</label>
+                    <input id="seller-biz-name" type="text" class="sh-pinput"
+                      placeholder="e.g. Kumar Kirana Store"
+                      [(ngModel)]="authForm.businessName" name="businessName"
+                      required />
+                  </div>
+                  <div class="sh-pgrid">
+                    <div class="sh-pfield">
+                      <label for="seller-gst">GST Number <span style="opacity:.6;">(optional)</span></label>
+                      <input id="seller-gst" type="text" class="sh-pinput"
+                        placeholder="22AAAAA0000A1Z5"
+                        [(ngModel)]="authForm.gstNumber" name="gstNumber" />
+                    </div>
+                    <div class="sh-pfield">
+                      <label for="seller-biz-addr">Business Location</label>
+                      <input id="seller-biz-addr" type="text" class="sh-pinput"
+                        placeholder="City, State"
+                        [(ngModel)]="authForm.businessAddress" name="businessAddress" />
+                    </div>
+                  </div>
+                }
+
+                @if (regStep() !== 'seller-setup') {
+                  <button type="submit" class="sh-portal-submit" [disabled]="authLoading()" id="btn-seller-submit">
+                    @if (authLoading()) {
+                      <span class="sh-portal-spinner sh-portal-spinner--sm"></span> Processing…
+                    } @else if (regStep() === 'otp') {
+                      ✓ Verify & Activate Account
+                    } @else if (isLoginMode()) {
+                      Sign In to Seller Dashboard →
+                    } @else {
+                      Create Seller Account & Continue →
+                    }
+                  </button>
+                }
+              </form>
+
+              <!-- OTP actions -->
+              @if (regStep() === 'otp') {
+                <div class="sh-portal-otp-actions">
+                  <button (click)="regStep.set('form'); authError.set('')" [disabled]="authLoading()">
+                    ← Change details
+                  </button>
+                  <button (click)="resendOtp()" [disabled]="authLoading()">
+                    ↩ Resend OTP
+                  </button>
+                </div>
+              }
+
+            }
+          </div>
         </div>
+
       </div>
     </div>
 

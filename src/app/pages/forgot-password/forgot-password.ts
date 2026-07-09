@@ -21,6 +21,7 @@ type FPStep = 'email' | 'sent';
 export class ForgotPasswordComponent {
   private toast  = inject(ToastService);
   private router = inject(Router);
+  private api    = inject(ApiService);
 
   public step       = signal<FPStep>('email');
   public email      = signal('');
@@ -36,11 +37,16 @@ export class ForgotPasswordComponent {
     this.isLoading.set(true);
     this.errorMsg.set('');
 
-    // Simulate — replace with real API call when endpoint available
-    setTimeout(() => {
-      this.isLoading.set(false);
-      this.step.set('sent');
-      this.toast.success('Reset link sent! Check your inbox.');
-    }, 1200);
+    this.api.forgotPassword(emailVal).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        this.step.set('sent');
+        this.toast.success('Reset link sent! Check your inbox.');
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        this.errorMsg.set(err.error?.message || 'Failed to send reset link. Please try again.');
+      }
+    });
   }
 }

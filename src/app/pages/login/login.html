@@ -2,109 +2,76 @@
 <div class="auth-page">
 
   <!-- ═══ LEFT PANEL ═══ -->
-  <div class="auth-panel">
-
-    <div class="panel-logo">
-      <i class="bi bi-truck"></i>
-      <span>RuralSwift</span>
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="brand-logo">🏪</div>
+      <div class="auth-portal-badge">🛒 Customer Account</div>
+      <h1 class="brand-title">RuralSwift</h1>
+      <p class="brand-sub">Shop from thousands of rural products and get fast deliveries right to your doorstep.</p>
     </div>
-
-    <div class="panel-content">
-      <h1>Deliver to Every <span>Village</span></h1>
-      <p>Fast, reliable deliveries connecting rural India with everything they need.</p>
-
-      <div class="panel-badges">
-        <div class="badge-item">
-          <i class="bi bi-shield-check-fill"></i>
-          <span>100% Secure Payments</span>
-        </div>
-        <div class="badge-item">
-          <i class="bi bi-truck"></i>
-          <span>Same-Day Delivery Available</span>
-        </div>
-        <div class="badge-item">
-          <i class="bi bi-headset"></i>
-          <span>24/7 Customer Support</span>
-        </div>
+    <div class="benefits">
+      <div class="benefit-item">
+        <span class="benefit-icon">🛡️</span>
+        <span class="benefit-text">100% Secure Payments</span>
+      </div>
+      <div class="benefit-item">
+        <span class="benefit-icon">🚚</span>
+        <span class="benefit-text">Same-Day Delivery Available</span>
+      </div>
+      <div class="benefit-item">
+        <span class="benefit-icon">🎧</span>
+        <span class="benefit-text">24/7 Customer Support</span>
       </div>
     </div>
-
   </div>
 
   <!-- ═══ RIGHT FORM ═══ -->
-  <div class="auth-form-side">
+  <div class="auth-right">
+    <div class="auth-card">
+      
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active">Sign In</button>
+        <button class="auth-tab" routerLink="/register">Register</button>
+      </div>
 
-    <div class="form-header">
-      <h2>Welcome back 👋</h2>
-      <p>Sign in to your RuralSwift account</p>
-    </div>
+      <h2 class="auth-heading">Welcome Back</h2>
 
-    <!-- Alert -->
-    <div *ngIf="errorMessage" class="auth-alert error">
-      <i class="bi bi-exclamation-circle-fill"></i>
-      {{ errorMessage }}
-    </div>
+      <div *ngIf="errorMessage" class="auth-error">
+        ⚠️ {{ errorMessage }}
+        <span *ngIf="isUnverified" style="display: block; margin-top: 6px; font-size: 13px;">
+          Haven't received it?
+          <a routerLink="/register" class="alert-link" style="color: var(--primary); font-weight: 600; text-decoration: none;">Re-enter your details to resend OTP →</a>
+        </span>
+      </div>
 
-    <form (ngSubmit)="login()" #loginForm="ngForm">
-
-      <!-- Email -->
-      <div class="form-group">
-        <label for="email">Email Address</label>
-        <div class="input-wrap">
-          <input
-            id="email"
-            type="email"
-            name="email"
-            [(ngModel)]="email"
-            placeholder="you@example.com"
-            autocomplete="email"
-            required>
-          <i class="bi bi-envelope-fill"></i>
+      <form (ngSubmit)="login()" #loginForm="ngForm" class="auth-form">
+        
+        <div class="form-field">
+          <label for="email">Email Address</label>
+          <input id="email" type="email" class="form-input" placeholder="rural@example.com"
+            [(ngModel)]="email" name="email" required autocomplete="email" />
         </div>
-      </div>
-
-      <!-- Password -->
-      <div class="form-group">
-        <label for="password">Password</label>
-        <div class="input-wrap">
-          <input
-            id="password"
-            [type]="showPassword ? 'text' : 'password'"
-            name="password"
-            [(ngModel)]="password"
-            placeholder="Enter your password"
-            autocomplete="current-password"
-            required>
-          <i class="bi bi-lock-fill"></i>
-          <button type="button" class="pwd-toggle" (click)="showPassword = !showPassword">
-            <i [class]="showPassword ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'"></i>
-          </button>
+        
+        <div class="form-field">
+          <label for="password">Password</label>
+          <input id="password" type="password" class="form-input" placeholder="Your password"
+            [(ngModel)]="password" name="password" required autocomplete="current-password" />
         </div>
-      </div>
 
-      <!-- Remember & Forgot -->
-      <div class="auth-options">
-        <label class="remember-wrap">
-          <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe">
-          <span>Remember me</span>
-        </label>
-        <a routerLink="/forgot-password" class="forgot-link">Forgot Password?</a>
-      </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 8px 0;">
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); cursor: pointer;">
+            <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" style="accent-color: var(--primary);">
+            <span>Remember me</span>
+          </label>
+          <a routerLink="/forgot-password" style="font-size: 13px; color: var(--primary); font-weight: 600; text-decoration: none;">Forgot Password?</a>
+        </div>
 
-      <!-- Submit -->
-      <button type="submit" class="auth-btn" [disabled]="isLoading">
-        <div *ngIf="isLoading" class="spinner"></div>
-        <span>{{ isLoading ? 'Signing in...' : 'Sign In' }}</span>
-        <i *ngIf="!isLoading" class="bi bi-arrow-right"></i>
-      </button>
-
-    </form>
-
-    <div class="auth-footer">
-      Don't have an account?
-      <a routerLink="/register">Create one free</a>
+        <button type="submit" class="auth-submit" [disabled]="isLoading">
+          {{ isLoading ? 'Processing...' : 'Sign In to Dashboard' }}
+        </button>
+      </form>
     </div>
-
   </div>
 
 </div>

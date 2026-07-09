@@ -44,6 +44,13 @@ class UserController {
       }
 
       const result = await userService.registerUser({ first_name, last_name, email, phone, password });
+
+      // directLogin = existing verified account with correct password → treat as login (200)
+      if (result.directLogin) {
+        return sendSuccess(res, 200, 'Login successful.', result);
+      }
+
+      // Normal new registration → OTP sent (201)
       return sendSuccess(res, 201, 'Registration OTP sent. Please verify your email.', result);
 
     } catch (err) {
@@ -139,12 +146,20 @@ class UserController {
         message:   err.message,
       });
 
-      // Always return a generic message — never reveal email vs. password specifics
+      // Unverified account — not a security risk to surface; user registered deliberately
+      if (err.message.includes('verify your email')) {
+        return sendError(
+          res, 403,
+          'Your email address is not verified. Please check your inbox for the OTP.',
+          'AUTH_EMAIL_NOT_VERIFIED'
+        );
+      }
+
+      // Wrong credentials — always use generic message (anti-enumeration)
       if (
         err.message.includes('Invalid') ||
         err.message.includes('not found') ||
-        err.message.includes('password') ||
-        err.message.includes('verify your email')
+        err.message.includes('password')
       ) {
         return sendError(res, 401, 'Invalid email or password.', ErrorCodes.AUTH_INVALID_CREDENTIALS);
       }
@@ -277,8 +292,8 @@ class UserController {
       if (!password || password.length < 8) {
         return sendError(res, 400, 'Password must be at least 8 characters.', ErrorCodes.VALIDATION_WEAK_PASSWORD);
       }
-      await userService.resetPassword(token.trim(), password);
-      return sendSuccess(res, 200, 'Password reset successful. You can now log in with your new password.');
+      const result = await userService.resetPassword(token.trim(), password);
+      return sendSuccess(res, 200, 'Password reset successful.', result);
     } catch (err) {
       logger.error('Reset password error', { requestId: req.id, message: err.message });
       if (err.message.includes('invalid or has expired')) {

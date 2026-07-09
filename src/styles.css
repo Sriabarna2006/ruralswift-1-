@@ -155,20 +155,7 @@ app-root {
   flex: 1;
 }
 
-@media (max-width: 767px) {
-  .app-scroll-viewport {
-    position: fixed;
-    inset: var(--mobile-header-h) 0 var(--bottom-nav-h) 0;
-    height: calc(100dvh - var(--mobile-header-h) - var(--bottom-nav-h));
-    left: 0;
-    right: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    min-height: 0;
-  }
-}
+
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar {
@@ -512,14 +499,7 @@ input[type='number'] {
   position: relative;
 }
 
-@media (max-width: 767px) {
-  .app-scroll-viewport {
-    margin-top: var(--mobile-header-h);
-    padding-bottom: var(--bottom-nav-h);
-    height: calc(100dvh - var(--mobile-header-h));
-    overflow-y: auto;
-  }
-}
+
 
 /* ── Body flex layout ── */
 body {
