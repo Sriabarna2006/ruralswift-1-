@@ -15,7 +15,7 @@
           <span class="sh-portal-sep">|</span>
           <span class="sh-portal-label">Seller Portal</span>
         </div>
-        <a href="/home" class="sh-portal-back-link">← Back to Store</a>
+        <a routerLink="/home" class="sh-portal-back-link">← Back to Store</a>
       </div>
 
       <!-- Main content: left info + right form -->
@@ -191,7 +191,10 @@
                       required autocomplete="email" />
                   </div>
                   <div class="sh-pfield">
-                    <label for="seller-password">Password</label>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                      <label for="seller-password">Password</label>
+                      <a routerLink="/forgot-password" style="font-size: 11px; font-weight: 700; color: #a78bfa; text-decoration: none;">Forgot Password?</a>
+                    </div>
                     <input id="seller-password" type="password" class="sh-pinput"
                       placeholder="Your password"
                       [(ngModel)]="authForm.password" name="password"

@@ -7,7 +7,9 @@ import { ApiService, CartItem } from './api.service';
 @Injectable({ providedIn: 'root' })
 export class CartService {
 
-  private readonly baseUrl = 'http://localhost:3000/api';
+  private readonly baseUrl = typeof window !== 'undefined' && window.location.origin.includes('localhost')
+    ? 'http://localhost:3000/api'
+    : '/api';
 
   // Reactive signal-based cart state — server-side only
   private _items   = signal<CartItem[]>([]);

@@ -49,7 +49,7 @@ export class NavbarComponent {
     if (this.api.isLoggedIn()) {
       this.router.navigate(['/account']);
     } else {
-      this.ui.openAuth('login');
+      this.router.navigate(['/login']);
     }
   }
 

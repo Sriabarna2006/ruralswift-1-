@@ -52,8 +52,7 @@ export class AccountComponent implements OnInit {
 
   ngOnInit(): void {
     if (!this.api.isLoggedIn()) {
-      this.ui.openAuth('login');
-      this.router.navigate(['/home']);
+      this.router.navigate(['/login']);
       return;
     }
 

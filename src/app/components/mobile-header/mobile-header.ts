@@ -37,7 +37,7 @@ export class MobileHeaderComponent {
     if (this.api.isLoggedIn()) {
       this.ui.openDrawer('account');
     } else {
-      this.ui.openAuth('login');
+      this.router.navigate(['/login']);
     }
   }
 

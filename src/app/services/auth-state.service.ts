@@ -8,7 +8,9 @@ import type { ProfileResponse, UserProfile } from './api.service';
   providedIn: 'root'
 })
 export class AuthStateService {
-  private readonly baseUrl = 'http://localhost:3000/api';
+  private readonly baseUrl = typeof window !== 'undefined' && window.location.origin.includes('localhost')
+    ? 'http://localhost:3000/api'
+    : '/api';
   private readonly tokenKey = 'token';
   private readonly userKey = 'user';
   private readonly customerNameKey = 'customerName';

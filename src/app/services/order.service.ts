@@ -7,7 +7,9 @@ import { ApiService, Order, ApiResponse } from './api.service';
 @Injectable({ providedIn: 'root' })
 export class OrderService {
 
-  private readonly baseUrl = 'http://localhost:3000/api';
+  private readonly baseUrl = typeof window !== 'undefined' && window.location.origin.includes('localhost')
+    ? 'http://localhost:3000/api'
+    : '/api';
 
   constructor(private http: HttpClient, private api: ApiService) {}
 

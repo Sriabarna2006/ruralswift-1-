@@ -2,7 +2,7 @@
 import {
   Component, OnInit, ChangeDetectionStrategy, inject, signal, HostListener
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, RegisterResponse, RegisterOtpResponse } from '../../services/api.service';
@@ -16,7 +16,7 @@ type SellerTab = 'dashboard' | 'inventory' | 'add-product' | 'orders' | 'setting
 @Component({
   selector: 'app-seller-hub',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './seller-hub.html',
   styleUrl: './seller-hub.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

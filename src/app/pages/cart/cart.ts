@@ -98,7 +98,7 @@ export class CartComponent implements OnInit {
 
   checkout(): void {
     if (!this.api.isLoggedIn()) {
-      this.ui.openAuth('login');
+      this.router.navigate(['/login']);
       return;
     }
     this.router.navigate(['/checkout']);

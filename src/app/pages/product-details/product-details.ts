@@ -80,13 +80,13 @@ export class ProductDetailsComponent implements OnInit {
   buyNow(): void {
     const p = this.product();
     if (!p) return;
-    if (!this.api.isLoggedIn()) { this.ui.openAuth('login'); return; }
+    if (!this.api.isLoggedIn()) { this.router.navigate(['/login']); return; }
     this.cart.addItem(p.product_id, this.quantity());
     this.router.navigate(['/cart']);
   }
 
   toggleWishlist(): void {
-    if (!this.api.isLoggedIn()) { this.ui.openAuth('login'); return; }
+    if (!this.api.isLoggedIn()) { this.router.navigate(['/login']); return; }
     const p = this.product();
     if (!p) return;
     const call = this.inWishlist()
