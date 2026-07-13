@@ -30,6 +30,7 @@ app.use(helmet());
 const allowedOrigins = [
   'http://localhost:4200',
   'https://ruralshift-test.netlify.app',
+  'https://ruralswift-1.vercel.app',
 ];
 
 app.use(cors({
