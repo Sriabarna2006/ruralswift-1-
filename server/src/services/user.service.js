@@ -1,7 +1,7 @@
 // server/src/services/user.service.js
 'use strict';
 
-const bcrypt         = require('bcrypt');
+const bcrypt         = require('bcryptjs');
 const jwt            = require('jsonwebtoken');
 const crypto         = require('crypto');
 const userRepository = require('../repositories/user.repository');
