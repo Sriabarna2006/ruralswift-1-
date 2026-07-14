@@ -14,6 +14,7 @@ import { BottomNavComponent } from './components/bottom-nav/bottom-nav';
 import { DrawerComponent } from './components/drawer/drawer';
 import { AuthOverlayComponent } from './components/auth-overlay/auth-overlay';
 import { ToastComponent } from './components/toast/toast';
+import { AddressModalComponent } from './components/address-modal/address-modal';
 
 import { UiService } from './services/ui.service';
 import { CartService } from './services/cart.service';
@@ -33,6 +34,7 @@ import { AuthStateService } from './services/auth-state.service';
     DrawerComponent,
     AuthOverlayComponent,
     ToastComponent,
+    AddressModalComponent,
   ],
   templateUrl: './app.html',
   styleUrl: './app.css',

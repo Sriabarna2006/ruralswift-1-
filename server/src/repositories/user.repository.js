@@ -16,7 +16,7 @@ class UserRepository {
   async findByEmail(email) {
     try {
       const result = await query(
-        `SELECT user_id, name, email, phone, password, address, gender, avatar_url, role, is_email_verified, created_at
+        `SELECT user_id, name, email, phone, password, address, gender, date_of_birth, avatar_url, role, is_email_verified, created_at
          FROM users
          WHERE email = $1
          LIMIT 1`,
@@ -39,7 +39,7 @@ class UserRepository {
   async findById(userId) {
     try {
       const result = await query(
-        `SELECT user_id, name, email, phone, address, gender, avatar_url, role, is_email_verified, created_at
+        `SELECT user_id, name, email, phone, address, gender, date_of_birth, avatar_url, role, is_email_verified, created_at
          FROM users
          WHERE user_id = $1
          LIMIT 1`,
@@ -79,7 +79,7 @@ class UserRepository {
       const result = await query(
         `INSERT INTO users (name, email, phone, password, is_email_verified)
          VALUES ($1, $2, $3, $4, TRUE)
-         RETURNING user_id, name, email, phone, address, gender, avatar_url, role, is_email_verified, created_at`,
+         RETURNING user_id, name, email, phone, address, gender, date_of_birth, avatar_url, role, is_email_verified, created_at`,
         [name, email, phone || '', hashedPassword]
       );
       return result.rows[0];
@@ -166,7 +166,7 @@ class UserRepository {
       const result = await client.query(
         `INSERT INTO users (name, email, phone, password, is_email_verified)
          VALUES ($1, $2, $3, $4, TRUE)
-         RETURNING user_id, name, email, phone, address, gender, avatar_url, role, is_email_verified, created_at`,
+         RETURNING user_id, name, email, phone, address, gender, date_of_birth, avatar_url, role, is_email_verified, created_at`,
         [name, email, (pending.phone || '').trim(), pending.password_hash]
       );
       
@@ -199,7 +199,7 @@ class UserRepository {
         UPDATE users
         SET    ${setClause}
         WHERE  user_id = $${values.length}
-        RETURNING user_id, name, email, phone, address, gender, avatar_url, role, is_email_verified, created_at
+        RETURNING user_id, name, email, phone, address, gender, date_of_birth, avatar_url, role, is_email_verified, created_at
       `;
       const result = await query(sql, values);
       return result.rows[0]; // undefined if no row was updated
@@ -229,7 +229,7 @@ class UserRepository {
       const result = await query(
         `UPDATE users SET avatar_url = $1, updated_at = NOW()
          WHERE user_id = $2
-         RETURNING user_id, name, email, phone, address, gender, avatar_url, role, is_email_verified, created_at`,
+         RETURNING user_id, name, email, phone, address, gender, date_of_birth, avatar_url, role, is_email_verified, created_at`,
         [avatarUrl, userId]
       );
       return result.rows[0];

@@ -1,6 +1,6 @@
 // src/app/pages/product-listing/product-listing.ts
 import {
-  Component, OnInit, ChangeDetectionStrategy, inject, signal
+  Component, OnInit, ChangeDetectionStrategy, inject, signal, ChangeDetectorRef
 } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -31,6 +31,7 @@ export class ProductListingComponent implements OnInit {
   public totalCount = signal(0);
   public currentPage = signal(1);
   public totalPages  = signal(1);
+  private cdr = inject(ChangeDetectorRef);
 
   public searchQuery       = signal('');
   public selectedCategory  = signal('All');
@@ -82,9 +83,11 @@ export class ProductListingComponent implements OnInit {
         this.totalCount.set(res.data?.pagination?.total ?? items.length);
         this.totalPages.set(res.data?.pagination?.totalPages ?? 1);
         this.isLoading.set(false);
+        this.cdr.markForCheck();
       },
       error: () => {
         this.isLoading.set(false);
+        this.cdr.markForCheck();
         this.toast.error('Could not load products. Please try again.');
       }
     });

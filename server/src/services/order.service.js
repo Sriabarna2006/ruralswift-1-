@@ -25,6 +25,13 @@ class OrderService {
   }
 
   async updateOrderStatus(orderId, status, extra = {}) {
+    if (status === 'delivered') {
+      const order = await orderRepo.findById(orderId);
+      if (!order) throw new Error('Order not found.');
+      if (order.delivery_otp && extra.deliveryOtp !== order.delivery_otp) {
+        throw new Error('Invalid Delivery OTP.');
+      }
+    }
     const order = await orderRepo.updateStatus(orderId, status, extra);
     if (!order) throw new Error('Order not found.');
     return order;

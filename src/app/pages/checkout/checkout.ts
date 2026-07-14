@@ -1,13 +1,15 @@
 // src/app/pages/checkout/checkout.ts
 import {
-  Component, OnInit, ChangeDetectionStrategy, inject, signal, computed
+  Component, OnInit, ChangeDetectionStrategy, inject, signal, computed, DestroyRef
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, Address, Order } from '../../services/api.service';
 import { CartService } from '../../services/cart.service';
 import { ToastService } from '../../services/toast.service';
+import { UiService } from '../../services/ui.service';
 import { ImageKitService } from '../../services/imagekit.service';
 
 type CheckoutStep = 'address' | 'payment' | 'review' | 'success';
@@ -25,6 +27,8 @@ export class CheckoutComponent implements OnInit {
   public cart   = inject(CartService);
   private toast  = inject(ToastService);
   private router = inject(Router);
+  public ui     = inject(UiService);
+  private destroyRef = inject(DestroyRef);
   public imageKit = inject(ImageKitService);
   public readonly placeholderImage = this.imageKit.placeholder();
 
@@ -74,8 +78,22 @@ export class CheckoutComponent implements OnInit {
         this.selectedAddr.set(def);
       }
     });
-  }
 
+    this.ui.addressSaved.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(() => {
+      this.api.getAddresses().subscribe({
+        next: res => {
+          const addrs = res.data?.addresses ?? [];
+          this.addresses.set(addrs);
+          if (!this.selectedAddr() && addrs.length > 0) {
+            const def = addrs.find(a => a.is_default) ?? addrs[0] ?? null;
+            this.selectedAddr.set(def);
+          }
+        }
+      });
+    });
+  }
   goToStep(s: CheckoutStep): void { this.step.set(s); }
 
   nextStep(): void {
@@ -88,6 +106,22 @@ export class CheckoutComponent implements OnInit {
         return;
       }
       this.step.set('review');
+    }
+  }
+
+  openAddressModal(title = 'Add New Address', address: any = null): void {
+    this.ui.openAddressModal(title, address);
+  }
+
+  deleteAddress(id: number): void {
+    if (confirm('Are you sure you want to delete this address?')) {
+      this.api.deleteAddress(id).subscribe({
+        next: () => {
+          this.toast.success('Address deleted successfully');
+          this.ui.addressSaved.next(); // trigger refresh
+        },
+        error: () => this.toast.error('Failed to delete address')
+      });
     }
   }
 

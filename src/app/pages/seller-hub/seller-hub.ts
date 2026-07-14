@@ -1,6 +1,6 @@
 // src/app/pages/seller-hub/seller-hub.ts
 import {
-  Component, OnInit, ChangeDetectionStrategy, inject, signal, HostListener
+  Component, OnInit, ChangeDetectionStrategy, inject, signal, HostListener, ChangeDetectorRef
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -26,6 +26,7 @@ export class SellerHubComponent implements OnInit {
   private sellerSvc = inject(SellerService);
   private toast     = inject(ToastService);
   private router    = inject(Router);
+  private cdr       = inject(ChangeDetectorRef);
   public imageKit = inject(ImageKitService);
   public readonly placeholderImage = this.imageKit.placeholder();
 
@@ -336,9 +337,13 @@ export class SellerHubComponent implements OnInit {
           lowStock:       d.lowStockCount  ?? 0,
         });
         this.dashLoading.set(false);
+        this.cdr.markForCheck();
         this.loadOrders();
       },
-      error: () => this.dashLoading.set(false)
+      error: () => {
+        this.dashLoading.set(false);
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -348,8 +353,12 @@ export class SellerHubComponent implements OnInit {
       next: (res) => {
         this.inventory.set((res as any).data?.products ?? []);
         this.invLoading.set(false);
+        this.cdr.markForCheck();
       },
-      error: () => this.invLoading.set(false)
+      error: () => {
+        this.invLoading.set(false);
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -359,8 +368,12 @@ export class SellerHubComponent implements OnInit {
       next: (res) => {
         this.sellerOrders.set((res as any).data?.orders ?? []);
         this.ordersLoading.set(false);
+        this.cdr.markForCheck();
       },
-      error: () => this.ordersLoading.set(false)
+      error: () => {
+        this.ordersLoading.set(false);
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -380,11 +393,13 @@ export class SellerHubComponent implements OnInit {
       next: () => {
         this.productSaving.set(false);
         this.productStep.set(4); // Move to Success Step
+        this.cdr.markForCheck();
         this.loadInventory();
       },
       error: (err) => {
         this.productSaving.set(false);
         this.productError.set(err.error?.message || 'Failed to add product.');
+        this.cdr.markForCheck();
       }
     });
   }
@@ -418,11 +433,53 @@ export class SellerHubComponent implements OnInit {
     });
   }
 
-  shipOrder(orderId: number): void {
-    this.sellerSvc.updateOrderStatus(orderId, 'shipped').subscribe({
-      next: () => { this.toast.success('Order marked as shipped.'); this.loadOrders(); },
-      error: () => this.toast.error('Failed to update order status.')
+  advanceOrderStatus(orderId: number, currentStatus: string): void {
+    const nextStatusMap: Record<string, string> = {
+      pending: 'confirmed',
+      confirmed: 'packed',
+      packed: 'shipped',
+      shipped: 'out_for_delivery',
+      out_for_delivery: 'delivered'
+    };
+    
+    const nextStatus = nextStatusMap[currentStatus?.toLowerCase()];
+    if (!nextStatus) return;
+
+    if (nextStatus === 'delivered') {
+      const otp = window.prompt('Please enter the 6-digit Delivery OTP provided by the customer to mark this order as delivered:');
+      if (otp === null) return; // cancelled
+      if (!otp.trim()) {
+        this.toast.error('Delivery OTP is required to mark an order as delivered.');
+        return;
+      }
+      this.sellerSvc.updateOrderStatus(orderId, nextStatus, { deliveryOtp: otp.trim() }).subscribe({
+        next: () => { 
+          this.toast.success(`Order marked as delivered!`); 
+          this.loadOrders(); 
+        },
+        error: (err) => this.toast.error(err.error?.message || 'Failed to update order status.')
+      });
+      return;
+    }
+
+    this.sellerSvc.updateOrderStatus(orderId, nextStatus).subscribe({
+      next: () => { 
+        this.toast.success(`Order marked as ${nextStatus.replace(/_/g, ' ')}`); 
+        this.loadOrders(); 
+      },
+      error: (err) => this.toast.error(err.error?.message || 'Failed to update order status.')
     });
+  }
+
+  getNextActionLabel(currentStatus: string): string {
+    const actionMap: Record<string, string> = {
+      pending: 'Confirm Order',
+      confirmed: 'Mark Packed',
+      packed: 'Mark Shipped',
+      shipped: 'Out for Delivery',
+      out_for_delivery: 'Mark Delivered'
+    };
+    return actionMap[currentStatus?.toLowerCase()] || 'Update Status';
   }
 
   private resetProductForm(): void {

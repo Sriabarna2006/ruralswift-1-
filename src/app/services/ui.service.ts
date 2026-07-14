@@ -1,6 +1,7 @@
 // src/app/services/ui.service.ts
 // Controls global UI state: drawers, modals, auth overlay, loading screen
 import { Injectable, signal } from '@angular/core';
+import { Subject } from 'rxjs';
 
 export type DrawerMode = 'nav' | 'account' | null;
 
@@ -25,6 +26,8 @@ export class UiService {
   // Address modal
   readonly addressModalOpen = signal(false);
   readonly addressModalTitle = signal('Add New Address');
+  readonly addressToEdit = signal<any>(null);
+  readonly addressSaved = new Subject<void>();
 
   // ── Loading ──────────────────────────────────────────────────
   hideLoading(): void {
@@ -75,8 +78,9 @@ export class UiService {
   }
 
   // ── Address Modal ────────────────────────────────────────────
-  openAddressModal(title = 'Add New Address'): void {
+  openAddressModal(title = 'Add New Address', address: any = null): void {
     this.addressModalTitle.set(title);
+    this.addressToEdit.set(address);
     this.addressModalOpen.set(true);
     document.body.classList.add('scroll-locked');
   }

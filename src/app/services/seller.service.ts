@@ -108,7 +108,7 @@ export class SellerService {
   }
 
   /** Update order status */
-  updateOrderStatus(orderId: number, status: string, trackingNumber?: string): Observable<ApiResponse> {
-    return this.api.updateSellerOrderStatus(orderId, status, trackingNumber);
+  updateOrderStatus(orderId: number, status: string, options?: { trackingNumber?: string, deliveryOtp?: string }): Observable<ApiResponse> {
+    return this.api.updateSellerOrderStatus(orderId, status, options?.trackingNumber, options?.deliveryOtp);
   }
 }

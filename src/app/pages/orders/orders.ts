@@ -1,5 +1,5 @@
 // src/app/pages/orders/orders.ts
-import { Component, OnInit, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService, Order } from '../../services/api.service';
@@ -20,15 +20,18 @@ export class OrdersComponent implements OnInit {
 
   public orders = signal<Order[]>([]);
   public isLoading = signal(true);
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     this.api.getOrders().subscribe({
       next: (res) => {
         this.orders.set(res.data?.orders ?? []);
         this.isLoading.set(false);
+        this.cdr.markForCheck();
       },
       error: () => {
         this.isLoading.set(false);
+        this.cdr.markForCheck();
       }
     });
   }

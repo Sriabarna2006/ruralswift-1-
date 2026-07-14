@@ -17,7 +17,7 @@ class OrderRepository {
 
     const { rows } = await pool.query(
       `SELECT o.order_id, o.status, o.total, o.payment_status, o.payment_method,
-              o.delivery_address, o.tracking_number, o.delivered_at, o.created_at,
+              o.delivery_address, o.tracking_number, o.delivery_otp, o.delivered_at, o.created_at,
               json_agg(json_build_object(
                 'product_id', oi.product_id, 'quantity', oi.quantity,
                 'unit_price', oi.unit_price, 'name', p.name, 'image_url', p.image_url
@@ -76,11 +76,12 @@ class OrderRepository {
       }
 
       // Insert order
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const { rows: [order] } = await client.query(
-        `INSERT INTO orders (user_id, total, delivery_address, payment_method, notes, status, payment_status)
-         VALUES ($1, $2, $3, $4, $5, 'pending', 'pending')
+        `INSERT INTO orders (user_id, total, delivery_address, payment_method, notes, status, payment_status, delivery_otp)
+         VALUES ($1, $2, $3, $4, $5, 'pending', 'pending', $6)
          RETURNING *`,
-        [userId, total.toFixed(2), deliveryAddress, paymentMethod, notes]
+        [userId, total.toFixed(2), deliveryAddress, paymentMethod, notes, otp]
       );
 
       // Insert order items + decrement stock
@@ -111,6 +112,7 @@ class OrderRepository {
     let idx = 2;
 
     if (extra.trackingNumber) { sets.push(`tracking_number = $${idx++}`); values.push(extra.trackingNumber); }
+    if (extra.deliveryOtp) { sets.push(`delivery_otp = $${idx++}`); values.push(extra.deliveryOtp); }
     if (status === 'delivered') { sets.push(`delivered_at = NOW()`); }
 
     values.push(orderId);
@@ -169,15 +171,15 @@ class OrderRepository {
     const { rows } = await pool.query(
       `SELECT o.order_id, o.status, o.total, o.delivery_address,
               o.tracking_number, o.payment_method, o.created_at, o.delivered_at,
-              o.cancelled_at, o.updated_at,
+              o.cancelled_at, o.updated_at, o.delivery_otp,
               json_agg(json_build_object(
                 'product_id', oi.product_id, 'quantity', oi.quantity,
                 'unit_price', oi.unit_price, 'name', p.name, 'image_url', p.image_url
-              )) AS items
+               )) AS items
        FROM orders o
        LEFT JOIN order_items oi ON oi.order_id   = o.order_id
        LEFT JOIN products p     ON p.product_id  = oi.product_id
-       WHERE o.tracking_number = $1
+       WHERE o.tracking_number = $1 OR o.order_id::text = $1
        GROUP BY o.order_id
        LIMIT 1`,
       [trackingNumber]

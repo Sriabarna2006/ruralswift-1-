@@ -41,12 +41,13 @@ class OrderController {
   /** Admin / Seller — update order status */
   async updateStatus(req, res, next) {
     try {
-      const { status, trackingNumber } = req.body;
+      const { status, trackingNumber, deliveryOtp } = req.body;
       if (!status) return sendError(res, 400, 'status is required.', 'VALIDATION_ERROR');
-      const order = await orderService.updateOrderStatus(parseInt(req.params.id), status, { trackingNumber });
+      const order = await orderService.updateOrderStatus(parseInt(req.params.id), status, { trackingNumber, deliveryOtp });
       return sendSuccess(res, 200, 'Order status updated.', { data: { order } });
     } catch (err) {
       if (err.message.includes('not found')) return sendError(res, 404, err.message, 'ORDER_NOT_FOUND');
+      if (err.message.includes('Invalid Delivery OTP')) return sendError(res, 400, err.message, 'INVALID_OTP');
       if (err.message.includes('Invalid status')) return sendError(res, 400, err.message, 'VALIDATION_ERROR');
       next(err);
     }

@@ -35,6 +35,7 @@ class UserService {
       phone:      user.phone  || '',
       address:    user.address || '',
       gender:     user.gender  || '',
+      date_of_birth: user.date_of_birth ? new Date(user.date_of_birth).toISOString().split('T')[0] : '',
       avatar_url: user.avatar_url || '',
       role:       resolvedRole,
       is_email_verified: !!user.is_email_verified,
@@ -207,7 +208,7 @@ class UserService {
    * updated (to merge first/last names), avoiding an unnecessary DB call otherwise.
    */
   async updateProfile(userId, updateData) {
-    const { first_name, last_name, email, phone, address, gender } = updateData;
+    const { first_name, last_name, email, phone, address, gender, date_of_birth } = updateData;
 
     const fields = [];
     const values = [];
@@ -235,6 +236,10 @@ class UserService {
     if (phone   !== undefined) { fields.push(`phone   = $${index++}`); values.push(String(phone).trim()); }
     if (address !== undefined) { fields.push(`address = $${index++}`); values.push(String(address).trim()); }
     if (gender  !== undefined) { fields.push(`gender  = $${index++}`); values.push(String(gender).trim()); }
+    if (date_of_birth !== undefined) {
+      fields.push(`date_of_birth = $${index++}`);
+      values.push(date_of_birth ? String(date_of_birth).trim() : null);
+    }
 
     if (fields.length === 0) {
       throw new Error('No fields provided to update.');

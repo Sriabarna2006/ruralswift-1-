@@ -16,7 +16,7 @@ router.get('/addresses', async (req, res, next) => {
       `SELECT * FROM addresses WHERE user_id = $1 ORDER BY is_default DESC, created_at DESC`,
       [req.user.id]
     );
-    sendSuccess(res, 200, 'Addresses fetched.', { addresses: rows });
+    sendSuccess(res, 200, 'Addresses fetched.', { data: { addresses: rows } });
   } catch (err) { next(err); }
 });
 
@@ -38,7 +38,7 @@ router.post('/addresses', async (req, res, next) => {
         [req.user.id, label || 'Home', full_name || '', phone || '', address_line1, address_line2 || '', city || '', state || '', pincode || '', !!is_default]
       );
       await client.query('COMMIT');
-      sendSuccess(res, 201, 'Address added.', { address: rows[0] });
+      sendSuccess(res, 201, 'Address added.', { data: { address: rows[0] } });
     } catch (e) { await client.query('ROLLBACK'); throw e; } finally { client.release(); }
   } catch (err) { next(err); }
 });
@@ -60,7 +60,7 @@ router.put('/addresses/:id', async (req, res, next) => {
       );
       await client.query('COMMIT');
       if (!rows[0]) return sendError(res, 404, 'Address not found.', 'NOT_FOUND');
-      sendSuccess(res, 200, 'Address updated.', { address: rows[0] });
+      sendSuccess(res, 200, 'Address updated.', { data: { address: rows[0] } });
     } catch (e) { await client.query('ROLLBACK'); throw e; } finally { client.release(); }
   } catch (err) { next(err); }
 });
@@ -73,7 +73,7 @@ router.delete('/addresses/:id', async (req, res, next) => {
       [parseInt(req.params.id), req.user.id]
     );
     if (!rows[0]) return sendError(res, 404, 'Address not found.', 'NOT_FOUND');
-    sendSuccess(res, 200, 'Address deleted.', {});
+    sendSuccess(res, 200, 'Address deleted.', { data: {} });
   } catch (err) { next(err); }
 });
 
@@ -90,7 +90,7 @@ router.put('/addresses/:id/default', async (req, res, next) => {
       );
       await client.query('COMMIT');
       if (!rows[0]) return sendError(res, 404, 'Address not found.', 'NOT_FOUND');
-      sendSuccess(res, 200, 'Default address updated.', { address: rows[0] });
+      sendSuccess(res, 200, 'Default address updated.', { data: { address: rows[0] } });
     } catch (e) { await client.query('ROLLBACK'); throw e; } finally { client.release(); }
   } catch (err) { next(err); }
 });

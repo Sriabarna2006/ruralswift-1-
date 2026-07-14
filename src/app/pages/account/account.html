@@ -167,7 +167,7 @@
               <div class="empty-icon">📦</div>
               <h3>No orders yet</h3>
               <p>Your orders will appear here once you make a purchase</p>
-              <button class="btn-primary-action" routerLink="/products">Start Shopping</button>
+              <button class="btn-primary-action" (click)="goToShop()">Start Shopping</button>
             </div>
           } @else {
             <div class="orders-list">
@@ -200,7 +200,12 @@
                   <div class="order-card-footer">
                     <span class="order-total">{{ fmt(order.total) }}</span>
                     <div class="order-actions">
-                      <button class="order-action-btn">Track Order</button>
+                      @if (order.delivery_otp && order.status !== 'delivered' && order.status !== 'cancelled') {
+                        <span style="font-size: 0.85rem; font-weight: 600; color: #4338ca; background: #eef2ff; padding: 4px 8px; border-radius: 4px; margin-right: 8px;">
+                          OTP: {{ order.delivery_otp }}
+                        </span>
+                      }
+                      <a routerLink="/order-tracking" [queryParams]="{ orderId: order.order_id }" class="order-action-btn" style="text-decoration:none; text-align:center; display:inline-block;">Track Order</a>
                       @if (order.status === 'pending') {
                         <button class="order-action-btn order-action-btn--danger">Cancel</button>
                       }
@@ -222,7 +227,7 @@
               <div class="empty-icon">❤️</div>
               <h3>Your wishlist is empty</h3>
               <p>Save items you love and come back to purchase them anytime</p>
-              <button class="btn-primary-action" routerLink="/products">Browse Products</button>
+              <button class="btn-primary-action" (click)="goToShop()">Browse Products</button>
             </div>
           } @else {
             <div class="wishlist-grid">
@@ -272,8 +277,9 @@
                   </p>
                   <p class="addr-phone">{{ addr.phone }}</p>
                   <div class="addr-actions">
-                    <button class="addr-btn" (click)="openAddressModal('Edit Address')">Edit</button>
+                    <button class="addr-btn" (click)="openAddressModal('Edit Address', addr)">Edit</button>
                     @if (!addr.is_default) {
+                      <button class="addr-btn" (click)="deleteAddress(addr.id)">Delete</button>
                       <button class="addr-btn">Set Default</button>
                     }
                   </div>
@@ -292,7 +298,7 @@
             <div class="empty-icon">💳</div>
             <h3>No payment methods saved</h3>
             <p>Add a card or UPI ID for one-tap checkout</p>
-            <button class="btn-primary-action">Add Payment Method</button>
+            <button class="btn-primary-action" (click)="comingSoon()">Add Payment Method</button>
           </div>
         </section>
       }

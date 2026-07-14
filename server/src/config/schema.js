@@ -148,6 +148,7 @@ async function createTables() {
     await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status   VARCHAR(30)  DEFAULT 'pending'`);
     await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method   VARCHAR(30)  DEFAULT 'cod'`);
     await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number  VARCHAR(100) DEFAULT ''`);
+    await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_otp     VARCHAR(10)  DEFAULT ''`);
     await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS updated_at       TIMESTAMP    DEFAULT NOW()`);
 
     // ── 6. order_items ───────────────────────────────────────────────────────

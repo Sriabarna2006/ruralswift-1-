@@ -396,8 +396,10 @@
                             </span>
                           </td>
                           <td>
-                            @if (order.status === 'confirmed' || order.status === 'packed') {
-                              <button class="sh-action-btn" (click)="shipOrder(order.order_id)">Ship</button>
+                            @if (order.status !== 'delivered' && order.status !== 'cancelled') {
+                              <button class="sh-action-btn" (click)="advanceOrderStatus(order.order_id, order.status)">
+                                {{ getNextActionLabel(order.status) }}
+                              </button>
                             }
                           </td>
                         </tr>
@@ -691,8 +693,10 @@
                           </span>
                         </td>
                         <td>
-                          @if (order.status === 'confirmed' || order.status === 'packed') {
-                            <button class="sh-action-btn" (click)="shipOrder(order.order_id)">Mark Shipped</button>
+                          @if (order.status !== 'delivered' && order.status !== 'cancelled') {
+                            <button class="sh-action-btn" (click)="advanceOrderStatus(order.order_id, order.status)">
+                              {{ getNextActionLabel(order.status) }}
+                            </button>
                           }
                         </td>
                       </tr>

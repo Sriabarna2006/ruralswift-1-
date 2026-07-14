@@ -81,6 +81,7 @@ export interface Order {
   items:            OrderItem[];
   created_at:       string;
   delivered_at?:    string;
+  delivery_otp?:    string;
 }
 
 export interface Address {
@@ -256,7 +257,7 @@ export class ApiService {
   // ── Profile ────────────────────────────────────────────────────────────────
 
   getProfile(): Observable<ProfileResponse> {
-    return this.http.get<ProfileResponse>(`${this.baseUrl}/profile`).pipe(
+    return this.http.get<ProfileResponse>(`${this.baseUrl}/profile?_t=${Date.now()}`).pipe(
       map(res => ({ ...res, user: this.normalizeUser(res.user) }))
     );
   }
@@ -312,7 +313,7 @@ export class ApiService {
   // ── Cart ──────────────────────────────────────────────────────────────────
 
   getCart(): Observable<ApiResponse<CartResponse>> {
-    return this.http.get<ApiResponse<CartResponse>>(`${this.baseUrl}/cart`).pipe(
+    return this.http.get<ApiResponse<CartResponse>>(`${this.baseUrl}/cart?_t=${Date.now()}`).pipe(
       map(res => ({ ...res, data: res.data ? this.normalizeCart(res.data) : res.data }))
     );
   }
@@ -361,7 +362,7 @@ export class ApiService {
   // ── Wishlist ──────────────────────────────────────────────────────────────
 
   getWishlist(): Observable<ApiResponse<{ items: any[] }>> {
-    return this.http.get<ApiResponse<{ items: any[] }>>(`${this.baseUrl}/wishlist`).pipe(
+    return this.http.get<ApiResponse<{ items: any[] }>>(`${this.baseUrl}/wishlist?_t=${Date.now()}`).pipe(
       map(res => ({ ...res, data: res.data ? { items: res.data.items.map(item => this.normalizeAnyImageItem(item)) } : res.data }))
     );
   }
@@ -377,7 +378,7 @@ export class ApiService {
   // ── Addresses ─────────────────────────────────────────────────────────────
 
   getAddresses(): Observable<ApiResponse<{ addresses: Address[] }>> {
-    return this.http.get<ApiResponse<{ addresses: Address[] }>>(`${this.baseUrl}/addresses`);
+    return this.http.get<ApiResponse<{ addresses: Address[] }>>(`${this.baseUrl}/addresses?_t=${Date.now()}`);
   }
 
   addAddress(data: Partial<Address>): Observable<ApiResponse<{ address: Address }>> {
@@ -432,8 +433,8 @@ export class ApiService {
     );
   }
 
-  updateSellerOrderStatus(orderId: number, status: string, trackingNumber?: string): Observable<ApiResponse> {
-    return this.http.put<ApiResponse>(`${this.baseUrl}/seller/orders/${orderId}/status`, { status, trackingNumber });
+  updateSellerOrderStatus(orderId: number, status: string, trackingNumber?: string, deliveryOtp?: string): Observable<ApiResponse> {
+    return this.http.put<ApiResponse>(`${this.baseUrl}/seller/orders/${orderId}/status`, { status, trackingNumber, deliveryOtp });
   }
 
   private normalizeProductsResponse(res: ApiResponse<{ products: Product[]; pagination: Pagination }>): ApiResponse<{ products: Product[]; pagination: Pagination }> {

@@ -1,8 +1,9 @@
 // src/app/pages/account/account.ts
 import {
-  Component, OnInit, ChangeDetectionStrategy, inject, signal
+  Component, OnInit, ChangeDetectionStrategy, inject, signal, DestroyRef
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, UserProfile, Order, Address } from '../../services/api.service';
@@ -15,7 +16,7 @@ type AccountTab = 'profile' | 'orders' | 'wishlist' | 'addresses' | 'payments' |
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './account.html',
   styleUrl: './account.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,6 +28,7 @@ export class AccountComponent implements OnInit {
   private ui     = inject(UiService);
   private toast  = inject(ToastService);
   public imageKit = inject(ImageKitService);
+  private destroyRef = inject(DestroyRef);
   public readonly placeholderImage = this.imageKit.placeholder();
 
   public activeTab   = signal<AccountTab>('profile');
@@ -65,6 +67,14 @@ export class AccountComponent implements OnInit {
     });
 
     this.loadAll();
+
+    this.ui.addressSaved.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(() => {
+      this.api.getAddresses().subscribe({
+        next: (res) => this.addresses.set(res.data?.addresses ?? [])
+      });
+    });
   }
 
   private loadAll(): void {
@@ -130,8 +140,28 @@ export class AccountComponent implements OnInit {
     this.toast.success('Signed out successfully');
   }
 
-  openAddressModal(title = 'Add New Address'): void {
-    this.ui.openAddressModal(title);
+  goToShop(): void {
+    this.router.navigate(['/products']);
+  }
+
+  comingSoon(): void {
+    this.toast.info('This feature is coming soon!');
+  }
+
+  openAddressModal(title = 'Add New Address', address: any = null): void {
+    this.ui.openAddressModal(title, address);
+  }
+
+  deleteAddress(id: number): void {
+    if (confirm('Are you sure you want to delete this address?')) {
+      this.api.deleteAddress(id).subscribe({
+        next: () => {
+          this.toast.success('Address deleted successfully');
+          this.ui.addressSaved.next(); // trigger refresh
+        },
+        error: () => this.toast.error('Failed to delete address')
+      });
+    }
   }
 
   get userInitials(): string {
