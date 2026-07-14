@@ -224,6 +224,7 @@ app-root {
   }
 }
 
+
 /* ── Form number inputs ── */
 input[type='number']::-webkit-inner-spin-button,
 input[type='number']::-webkit-outer-spin-button {
@@ -515,6 +516,7 @@ body {
     padding-bottom: var(--bottom-nav-h);
   }
 }
+
 
 /* ── Skeleton Loader ── */
 .skeleton {
