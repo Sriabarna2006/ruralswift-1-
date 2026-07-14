@@ -10,14 +10,14 @@ class OrderController {
     try {
       const { status, page = 1, limit = 10 } = req.query;
       const orders = await orderService.getUserOrders(req.user.id, { status, page: parseInt(page), limit: parseInt(limit) });
-      return sendSuccess(res, 200, 'Orders fetched.', { orders });
+      return sendSuccess(res, 200, 'Orders fetched.', { data: { orders } });
     } catch (err) { next(err); }
   }
 
   async getOrder(req, res, next) {
     try {
       const order = await orderService.getOrder(parseInt(req.params.id), req.user.id);
-      return sendSuccess(res, 200, 'Order fetched.', { order });
+      return sendSuccess(res, 200, 'Order fetched.', { data: { order } });
     } catch (err) {
       if (err.message.includes('not found')) return sendError(res, 404, err.message, 'ORDER_NOT_FOUND');
       next(err);
@@ -28,7 +28,7 @@ class OrderController {
     try {
       const { deliveryAddress, paymentMethod, notes, items } = req.body;
       const order = await orderService.placeOrder(req.user.id, { deliveryAddress, paymentMethod, notes, items });
-      return sendSuccess(res, 201, 'Order placed successfully.', { order });
+      return sendSuccess(res, 201, 'Order placed successfully.', { data: { order } });
     } catch (err) {
       if (err.message.includes('required') || err.message.includes('must contain'))
         return sendError(res, 400, err.message, 'VALIDATION_ERROR');
@@ -44,7 +44,7 @@ class OrderController {
       const { status, trackingNumber } = req.body;
       if (!status) return sendError(res, 400, 'status is required.', 'VALIDATION_ERROR');
       const order = await orderService.updateOrderStatus(parseInt(req.params.id), status, { trackingNumber });
-      return sendSuccess(res, 200, 'Order status updated.', { order });
+      return sendSuccess(res, 200, 'Order status updated.', { data: { order } });
     } catch (err) {
       if (err.message.includes('not found')) return sendError(res, 404, err.message, 'ORDER_NOT_FOUND');
       if (err.message.includes('Invalid status')) return sendError(res, 400, err.message, 'VALIDATION_ERROR');
@@ -63,7 +63,7 @@ class OrderController {
         return sendError(res, 400, 'Invalid order ID.', 'VALIDATION_INVALID_ID');
       }
       const order = await orderService.cancelOrder(orderId, req.user.id);
-      return sendSuccess(res, 200, 'Order cancelled successfully.', { order });
+      return sendSuccess(res, 200, 'Order cancelled successfully.', { data: { order } });
     } catch (err) {
       if (err.message.includes('not found'))        return sendError(res, 404, err.message, 'ORDER_NOT_FOUND');
       if (err.message.includes('Cannot cancel'))    return sendError(res, 400, err.message, 'ORDER_CANCEL_NOT_ALLOWED');
@@ -82,7 +82,7 @@ class OrderController {
         return sendError(res, 400, 'Tracking number is required.', 'VALIDATION_REQUIRED_FIELD');
       }
       const order = await orderService.getOrderByTracking(trackingNumber);
-      return sendSuccess(res, 200, 'Order tracking info fetched.', { order });
+      return sendSuccess(res, 200, 'Order tracking info fetched.', { data: { order } });
     } catch (err) {
       if (err.message.includes('No order found')) return sendError(res, 404, err.message, 'ORDER_NOT_FOUND');
       next(err);

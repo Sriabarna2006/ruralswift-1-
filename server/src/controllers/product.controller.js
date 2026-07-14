@@ -19,7 +19,7 @@ class ProductController {
         limit: Math.min(parseInt(limit) || 20, 100),
         isApproved: true
       });
-      return sendSuccess(res, 200, 'Products fetched.', result);
+      return sendSuccess(res, 200, 'Products fetched.', { data: result });
     } catch (err) {
       next(err);
     }
@@ -29,7 +29,7 @@ class ProductController {
   async categories(req, res, next) {
     try {
       const categories = await productService.getCategories();
-      return sendSuccess(res, 200, 'Categories fetched.', { categories });
+      return sendSuccess(res, 200, 'Categories fetched.', { data: { categories } });
     } catch (err) {
       next(err);
     }
@@ -39,7 +39,7 @@ class ProductController {
   async get(req, res, next) {
     try {
       const product = await productService.getProduct(parseInt(req.params.id));
-      return sendSuccess(res, 200, 'Product fetched.', { product });
+      return sendSuccess(res, 200, 'Product fetched.', { data: { product } });
     } catch (err) {
       if (err.message.includes('not found')) return sendError(res, 404, err.message, 'PRODUCT_NOT_FOUND');
       next(err);
@@ -50,7 +50,7 @@ class ProductController {
   async create(req, res, next) {
     try {
       const product = await productService.createProduct(req.user.id, req.body);
-      return sendSuccess(res, 201, 'Product listed successfully and is now live!', { product });
+      return sendSuccess(res, 201, 'Product listed successfully and is now live!', { data: { product } });
     } catch (err) {
       if (err.message.includes('required')) return sendError(res, 400, err.message, 'VALIDATION_ERROR');
       next(err);
@@ -61,7 +61,7 @@ class ProductController {
   async update(req, res, next) {
     try {
       const product = await productService.updateProduct(parseInt(req.params.id), req.user.id, req.body);
-      return sendSuccess(res, 200, 'Product updated.', { product });
+      return sendSuccess(res, 200, 'Product updated.', { data: { product } });
     } catch (err) {
       if (err.message.includes('not found') || err.message.includes('permission'))
         return sendError(res, 404, err.message, 'PRODUCT_NOT_FOUND');

@@ -9,7 +9,7 @@ class CartController {
   async getCart(req, res, next) {
     try {
       const data = await cartService.getCart(req.user.id);
-      return sendSuccess(res, 200, 'Cart fetched.', data);
+      return sendSuccess(res, 200, 'Cart fetched.', { data });
     } catch (err) { next(err); }
   }
 
@@ -18,7 +18,7 @@ class CartController {
       const { product_id, quantity = 1 } = req.body;
       if (!product_id) return sendError(res, 400, 'product_id is required.', 'VALIDATION_ERROR');
       const item = await cartService.addItem(req.user.id, parseInt(product_id), parseInt(quantity));
-      return sendSuccess(res, 201, 'Item added to cart.', { item });
+      return sendSuccess(res, 201, 'Item added to cart.', { data: { item } });
     } catch (err) {
       if (err.message.includes('not found') || err.message.includes('unavailable'))
         return sendError(res, 404, err.message, 'PRODUCT_NOT_FOUND');
@@ -33,7 +33,7 @@ class CartController {
       const { quantity } = req.body;
       if (quantity === undefined) return sendError(res, 400, 'quantity is required.', 'VALIDATION_ERROR');
       const item = await cartService.updateQuantity(req.user.id, parseInt(req.params.productId), parseInt(quantity));
-      return sendSuccess(res, 200, 'Cart updated.', { item });
+      return sendSuccess(res, 200, 'Cart updated.', { data: { item } });
     } catch (err) {
       if (err.message.includes('stock')) return sendError(res, 400, err.message, 'OUT_OF_STOCK');
       next(err);

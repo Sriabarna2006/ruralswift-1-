@@ -65,7 +65,7 @@
 @media (min-width: 768px) {
   .shop-categories {
     padding: 16px 24px;
-    top: 100px;
+    top: 0;
   }
 }
 

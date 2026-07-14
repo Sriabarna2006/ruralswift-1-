@@ -65,6 +65,10 @@ export class SellerHubComponent implements OnInit {
   public ordersLoading    = signal(false);
   public productSaving    = signal(false);
 
+  // Add Product Wizard State
+  public productStep      = signal<1 | 2 | 3 | 4>(1);
+
+
   // Product form
   public newProduct = {
     name: '', brand: '', description: '', category: '',
@@ -375,9 +379,7 @@ export class SellerHubComponent implements OnInit {
     } as any).subscribe({
       next: () => {
         this.productSaving.set(false);
-        this.toast.success('Product listed successfully!');
-        this.resetProductForm();
-        this.setTab('inventory');
+        this.productStep.set(4); // Move to Success Step
         this.loadInventory();
       },
       error: (err) => {
@@ -430,6 +432,7 @@ export class SellerHubComponent implements OnInit {
     };
     this.selectedImageName.set('');
     this.productError.set('');
+    this.productStep.set(1);
   }
 
   private resizeImage(file: File, maxSize: number, quality: number): Promise<string> {
