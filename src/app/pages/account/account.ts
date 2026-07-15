@@ -144,7 +144,7 @@ export class AccountComponent implements OnInit {
     if (confirm('Are you sure you want to become a Delivery Partner? This will give you access to the Driver Dashboard.')) {
       this.api.becomeDriver().subscribe({
         next: (res) => {
-          this.user.set(res.data?.user || res.user);
+          this.user.set(res.data?.user || (res as any).user);
           // Re-store user in local storage so guards know about the new role
           localStorage.setItem('rs_user', JSON.stringify(this.user()));
           this.toast.success('You are now a Delivery Partner!');

@@ -55,7 +55,7 @@ export class DriverDashboardComponent implements OnInit, AfterViewInit {
     this.api.becomeDriver().subscribe({
       next: (res) => {
         this.isDriver.set(true);
-        const updatedUser = res.data?.user || res.user;
+        const updatedUser = res.data?.user || (res as any).user;
         localStorage.setItem('rs_user', JSON.stringify(updatedUser));
         this.toast.success('Welcome to RuralSwift Logistics!');
         this.isUpgrading.set(false);

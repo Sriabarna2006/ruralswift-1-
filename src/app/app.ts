@@ -12,7 +12,6 @@ import { NavbarComponent } from './components/navbar/navbar';
 import { MobileHeaderComponent } from './components/mobile-header/mobile-header';
 import { BottomNavComponent } from './components/bottom-nav/bottom-nav';
 import { DrawerComponent } from './components/drawer/drawer';
-import { AuthOverlayComponent } from './components/auth-overlay/auth-overlay';
 import { ToastComponent } from './components/toast/toast';
 import { AddressModalComponent } from './components/address-modal/address-modal';
 
@@ -32,7 +31,6 @@ import { AuthStateService } from './services/auth-state.service';
     MobileHeaderComponent,
     BottomNavComponent,
     DrawerComponent,
-    AuthOverlayComponent,
     ToastComponent,
     AddressModalComponent,
   ],
