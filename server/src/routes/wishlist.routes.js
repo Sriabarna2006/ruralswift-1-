@@ -21,7 +21,7 @@ router.get('/wishlist', async (req, res, next) => {
        ORDER BY w.added_at DESC`,
       [req.user.id]
     );
-    sendSuccess(res, 200, 'Wishlist fetched.', { items: rows });
+    sendSuccess(res, 200, 'Wishlist fetched.', { data: { items: rows } });
   } catch (err) { next(err); }
 });
 
@@ -35,7 +35,7 @@ router.post('/wishlist', async (req, res, next) => {
        ON CONFLICT (user_id, product_id) DO NOTHING RETURNING *`,
       [req.user.id, parseInt(product_id)]
     );
-    sendSuccess(res, 201, 'Added to wishlist.', { item: rows[0] || null });
+    sendSuccess(res, 201, 'Added to wishlist.', { data: { item: rows[0] || null } });
   } catch (err) { next(err); }
 });
 

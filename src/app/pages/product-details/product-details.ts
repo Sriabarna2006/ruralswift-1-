@@ -43,6 +43,15 @@ export class ProductDetailsComponent implements OnInit {
       next: (res) => {
         this.product.set(res.data?.product ?? null);
         this.isLoading.set(false);
+        
+        if (this.api.isLoggedIn()) {
+          this.api.getWishlist().subscribe({
+            next: (wRes) => {
+              const items = wRes.data?.items ?? [];
+              this.inWishlist.set(items.some((item: any) => item.product_id === id));
+            }
+          });
+        }
       },
       error: () => {
         this.isLoading.set(false);
