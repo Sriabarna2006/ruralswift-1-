@@ -38,6 +38,7 @@ export class OrderTrackingComponent implements OnInit {
   public error      = signal('');
   public order      = signal<Order | null>(null);
   public timeline   = signal<TimelineStep[]>([]);
+  public fastTrack  = signal<{ standard: number, optimized: number, saved: number, unit: string } | null>(null);
 
   @ViewChild('trackingMap') mapContainer?: ElementRef;
   private map?: L.Map;
@@ -73,6 +74,22 @@ export class OrderTrackingComponent implements OnInit {
       next: (res) => {
         const o = res.data?.order;
         if (!o) { this.isLoading.set(false); this.error.set('Order not found.'); return; }
+        
+        // --- RuralSwift FastTrack Optimization Logic ---
+        // For presentation: dynamically show how RuralSwift cuts down delivery time.
+        // We use the order.id to pseudo-randomly pick long, medium, or short distances.
+        const idVal = o.order_id || 1;
+        if (idVal % 3 === 0) {
+          // Simulate Long-Distance Village Delivery
+          this.fastTrack.set({ standard: 8, optimized: 5, saved: 3, unit: 'Days' });
+        } else if (idVal % 3 === 1) {
+          // Simulate Inter-city/District Delivery
+          this.fastTrack.set({ standard: 48, optimized: 24, saved: 24, unit: 'Hours' });
+        } else {
+          // Simulate Near/Local Village Delivery
+          this.fastTrack.set({ standard: 45, optimized: 20, saved: 25, unit: 'Mins' });
+        }
+        
         this.order.set(o);
         this.timeline.set(this.buildTimeline(o));
         this.isLoading.set(false);
@@ -104,7 +121,23 @@ export class OrderTrackingComponent implements OnInit {
       let date = '', time = '';
       if (completed) {
         const d = new Date(base);
-        d.setHours(d.getHours() + i * 6);
+        
+        // Calculate the optimized spread between steps based on FastTrack
+        const fTrack = this.fastTrack();
+        let optimizedHours = 30; // Default ~1.25 days
+        
+        if (fTrack) {
+          if (fTrack.unit === 'Days') optimizedHours = fTrack.optimized * 24;
+          else if (fTrack.unit === 'Hours') optimizedHours = fTrack.optimized;
+          else if (fTrack.unit === 'Mins') optimizedHours = fTrack.optimized / 60;
+        }
+        
+        const hoursPerStep = optimizedHours / (this.STATUSES.length - 1);
+        
+        // Add calculated time to the base date
+        const extraMs = i * hoursPerStep * 60 * 60 * 1000;
+        d.setTime(d.getTime() + extraMs);
+        
         if (s.key === 'delivered' && o.delivered_at) {
           const dd = new Date(o.delivered_at);
           date = dd.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -222,8 +255,14 @@ export class OrderTrackingComponent implements OnInit {
         // OSRM returns GeoJSON coordinates as [Lng, Lat], Leaflet uses [Lat, Lng]
         const coordinates = routeData.routes[0].geometry.coordinates.map((coord: number[]) => [coord[1], coord[0]]);
         
-        // Draw the real road route
-        const routeLine = L.polyline(coordinates, { color: '#4338ca', weight: 4 }).addTo(this.map!);
+        // Draw the real road route (Styled to look exactly like Google Maps routes)
+        const routeLine = L.polyline(coordinates, { 
+          color: '#00a8ff', // Google Maps vibrant blue
+          weight: 6, 
+          opacity: 0.8,
+          lineJoin: 'round',
+          lineCap: 'round'
+        }).addTo(this.map!);
         this.map.fitBounds(routeLine.getBounds(), { padding: [30, 30] });
 
         // Simulate Live Movement along the actual roads (takes 15 mins)
@@ -259,7 +298,7 @@ export class OrderTrackingComponent implements OnInit {
     } catch (err) {
       console.error('OSRM Routing failed:', err);
       // Fallback to straight line if OSRM fails
-      const routeLine = L.polyline([[driverLat, driverLng], [baseLat, baseLng]], { color: '#4338ca', weight: 4, dashArray: '5, 10' }).addTo(this.map);
+      const routeLine = L.polyline([[driverLat, driverLng], [baseLat, baseLng]], { color: '#00a8ff', weight: 6, dashArray: '10, 10', opacity: 0.8 }).addTo(this.map);
       this.map.fitBounds(L.latLngBounds([[driverLat, driverLng], [baseLat, baseLng]]), { padding: [30, 30] });
     }
   }

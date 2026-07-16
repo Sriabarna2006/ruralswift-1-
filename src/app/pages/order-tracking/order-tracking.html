@@ -63,6 +63,31 @@
   @if (order() && !isLoading()) {
     <div class="ot-container" aria-label="Order details">
 
+      <!-- FastTrack Optimization Badge -->
+      @if (fastTrack()) {
+        <div class="ot-fasttrack-card">
+          <div class="ot-ft-header">
+            <span class="ot-ft-icon">🚀</span>
+            <h3 class="ot-ft-title">RuralSwift FastTrack Enabled</h3>
+          </div>
+          <p class="ot-ft-desc">We routed this delivery through our optimized rural logistics network!</p>
+          <div class="ot-ft-stats">
+            <div class="ot-ft-stat">
+              <span class="ot-ft-stat-label">Standard Delivery</span>
+              <span class="ot-ft-stat-val line-through">{{ fastTrack()!.standard }} {{ fastTrack()!.unit }}</span>
+            </div>
+            <div class="ot-ft-stat highlight">
+              <span class="ot-ft-stat-label">Our Optimized ETA</span>
+              <span class="ot-ft-stat-val">{{ fastTrack()!.optimized }} {{ fastTrack()!.unit }}</span>
+            </div>
+            <div class="ot-ft-stat success">
+              <span class="ot-ft-stat-label">Time Saved</span>
+              <span class="ot-ft-stat-val">{{ fastTrack()!.saved }} {{ fastTrack()!.unit }}</span>
+            </div>
+          </div>
+        </div>
+      }
+
       <!-- Status Card -->
       <div class="ot-status-card">
         <div class="ot-status-left">
