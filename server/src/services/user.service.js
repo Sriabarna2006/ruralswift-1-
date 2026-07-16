@@ -7,8 +7,8 @@ const crypto         = require('crypto');
 const userRepository = require('../repositories/user.repository');
 const env            = require('../config/env');
 const logger         = require('../utils/logger');
+const { pool }       = require('../config/db');
 const { sendRegistrationOtp, sendPasswordResetEmail } = require('../utils/mailer');
-
 const BCRYPT_ROUNDS  = 10;
 const OTP_TTL_MINUTES = 10;
 

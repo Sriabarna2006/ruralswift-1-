@@ -222,15 +222,16 @@ class SellerRepository {
       values.push(parseInt(limit), offset);
 
       const { rows } = await pool.query(
-        `SELECT DISTINCT
-                o.order_id, o.status, o.total, o.delivery_address,
+        `SELECT o.order_id, o.status, o.total, o.delivery_address,
                 o.tracking_number, o.created_at,
-                u.name AS customer_name, u.phone AS customer_phone
+                u.name AS customer_name, u.phone AS customer_phone,
+                bool_or(p.category = 'Medicine & Health') AS has_medicine
          FROM orders o
          JOIN order_items oi ON oi.order_id   = o.order_id
          JOIN products p     ON p.product_id  = oi.product_id
          JOIN users u        ON u.user_id     = o.user_id
          WHERE ${conditions.join(' AND ')}
+         GROUP BY o.order_id, u.name, u.phone
          ORDER BY o.created_at DESC
          LIMIT $${idx++} OFFSET $${idx++}`,
         values

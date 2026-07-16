@@ -103,6 +103,17 @@
         </div>
       </div>
 
+      <!-- Live Map (Only if out for delivery) -->
+      @if (order()!.status === 'out_for_delivery') {
+        <div class="ot-map-wrap">
+          <div class="ot-map-header">
+            <span class="ot-map-title">🛵 Live Delivery Map</span>
+            <span style="font-size: 12px; opacity: 0.9;">Driver is on the way!</span>
+          </div>
+          <div #trackingMap class="leaflet-map-tracking"></div>
+        </div>
+      }
+
       <!-- Timeline Vertical -->
       <div class="ot-layout">
         <div class="ot-timeline-wrap">

@@ -32,11 +32,18 @@ class DeliveryService {
     // 3. Fetch Orders
     // We only want orders that haven't been delivered or cancelled yet.
     const ordersRes = await pool.query(
-      `SELECT order_id, delivery_address, status FROM orders WHERE order_id = ANY($1) AND status NOT IN ('delivered', 'cancelled')`,
+      `SELECT order_id, user_id, delivery_address, status FROM orders WHERE order_id = ANY($1) AND status NOT IN ('delivered', 'cancelled')`,
       [orderIds]
     );
 
     if (ordersRes.rowCount === 0) throw new Error('No valid orders found to batch.');
+
+    // 3.5 Prevent driver from delivering their own order
+    // (TEMPORARILY DISABLED for testing so you can assign orders to your active account)
+    // const selfOrder = ordersRes.rows.find(o => o.user_id == driverId);
+    // if (selfOrder) {
+    //   throw new Error(`Conflict of interest: Driver cannot be assigned to deliver their own order (Order #${selfOrder.order_id}).`);
+    // }
 
     // 4. Assign mock coordinates to orders for the TSP algorithm
     // In production, the lat/long would be saved on the order or fetched from the address table.

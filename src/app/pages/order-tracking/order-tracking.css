@@ -543,3 +543,35 @@
   margin-bottom: 24px;
   line-height: 1.6;
 }
+
+/* Live Map */
+.ot-map-wrap {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.ot-map-header {
+  padding: 16px;
+  background: linear-gradient(90deg, var(--primary-dark), var(--accent));
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ot-map-title {
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.leaflet-map-tracking {
+  height: 300px;
+  width: 100%;
+  z-index: 1;
+}

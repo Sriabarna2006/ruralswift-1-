@@ -387,7 +387,14 @@
                     <tbody>
                       @for (order of sellerOrders().slice(0, 5); track order.order_id) {
                         <tr>
-                          <td>#{{ order.order_id }}</td>
+                          <td>
+                            #{{ order.order_id }}
+                            @if (order.has_medicine) {
+                              <span style="font-size: 10px; background: #fee2e2; color: #dc2626; padding: 2px 6px; border-radius: 4px; margin-left: 4px; font-weight: bold; border: 1px solid #fecaca; vertical-align: middle;">
+                                🚨 PRIORITY
+                              </span>
+                            }
+                          </td>
                           <td>{{ order.customer_name || '—' }}</td>
                           <td>{{ fmt(order.total) }}</td>
                           <td>
@@ -706,7 +713,15 @@
                               (change)="toggleOrderSelection(order.order_id)" />
                           }
                         </td>
-                        <td><strong>#{{ order.order_id }}</strong></td>
+                        <td>
+                          <strong>#{{ order.order_id }}</strong>
+                          @if (order.has_medicine) {
+                            <br>
+                            <span style="font-size: 10px; background: #fee2e2; color: #dc2626; padding: 2px 6px; border-radius: 4px; margin-top: 4px; font-weight: bold; border: 1px solid #fecaca; display: inline-block;">
+                              🚨 PRIORITY
+                            </span>
+                          }
+                        </td>
                         <td>{{ order.customer_name || '—' }}</td>
                         <td>{{ order.created_at | date:'dd MMM yyyy' }}</td>
                         <td>{{ fmt(order.total) }}</td>

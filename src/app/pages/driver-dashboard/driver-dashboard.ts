@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
 import * as L from 'leaflet';
@@ -8,7 +8,7 @@ import * as L from 'leaflet';
 @Component({
   selector: 'app-driver-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './driver-dashboard.html',
   styleUrl: './driver-dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush

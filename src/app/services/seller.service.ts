@@ -24,6 +24,7 @@ export interface SellerOrder {
   created_at:       string;
   customer_name:    string;
   customer_phone:   string;
+  has_medicine?:    boolean;
 }
 
 export interface SellerProfile {

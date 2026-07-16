@@ -1,12 +1,13 @@
 // src/app/pages/order-tracking/order-tracking.ts
 import {
-  Component, OnInit, ChangeDetectionStrategy, inject, signal
+  Component, OnInit, ChangeDetectionStrategy, inject, signal, ViewChild, ElementRef
 } from '@angular/core';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, Order } from '../../services/api.service';
 import { ImageKitService } from '../../services/imagekit.service';
+import * as L from 'leaflet';
 
 interface TimelineStep {
   label:     string;
@@ -37,6 +38,9 @@ export class OrderTrackingComponent implements OnInit {
   public error      = signal('');
   public order      = signal<Order | null>(null);
   public timeline   = signal<TimelineStep[]>([]);
+
+  @ViewChild('trackingMap') mapContainer?: ElementRef;
+  private map?: L.Map;
 
   private readonly STATUSES = [
     { key: 'pending',          label: 'Order Placed',      emoji: '📦' },
@@ -72,6 +76,9 @@ export class OrderTrackingComponent implements OnInit {
         this.order.set(o);
         this.timeline.set(this.buildTimeline(o));
         this.isLoading.set(false);
+        if (o.status === 'out_for_delivery') {
+          setTimeout(() => this.initMap(), 100);
+        }
       },
       error: (err) => {
         this.isLoading.set(false);
@@ -133,5 +140,127 @@ export class OrderTrackingComponent implements OnInit {
       pending: 'status--pending', out_for_delivery: 'status--shipped',
     };
     return m[status?.toLowerCase()] ?? 'status--pending';
+  }
+
+  async geocodeAddress(address: string): Promise<[number, number] | null> {
+    try {
+      // 1. Try full address
+      let query = encodeURIComponent(address);
+      let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+      let data = await res.json();
+      
+      if (data && data.length > 0) {
+        return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+      }
+
+      // 2. Fallback: Try extracting a 6-digit Indian PIN code
+      const pinMatch = address.match(/\b\d{6}\b/);
+      if (pinMatch) {
+        query = encodeURIComponent(`${pinMatch[0]}, India`);
+        res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+        data = await res.json();
+        if (data && data.length > 0) {
+          return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+        }
+      }
+
+      // 3. Fallback: Try just the last two words (usually city, state)
+      const parts = address.split(',').map(p => p.trim()).filter(p => p.length > 0);
+      if (parts.length >= 2) {
+        const shortAddress = parts.slice(-2).join(', ');
+        query = encodeURIComponent(shortAddress);
+        res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+        data = await res.json();
+        if (data && data.length > 0) {
+          return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+        }
+      }
+
+    } catch (err) {
+      console.error('Geocoding failed', err);
+    }
+    return null;
+  }
+
+  async initMap(): Promise<void> {
+    if (!this.mapContainer) return;
+    if (this.map) { this.map.remove(); }
+    
+    // Default to New Delhi
+    let baseLat = 28.6139;
+    let baseLng = 77.2090;
+
+    // Try to get real coordinates from the delivery address
+    const orderData = this.order();
+    if (orderData && orderData.delivery_address) {
+      const coords = await this.geocodeAddress(orderData.delivery_address);
+      if (coords) {
+        baseLat = coords[0];
+        baseLng = coords[1];
+      }
+    }
+    
+    this.map = L.map(this.mapContainer.nativeElement).setView([baseLat, baseLng], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(this.map);
+    
+    // Calculate a starting point for the driver (e.g., a few km away)
+    let driverLat = baseLat - 0.015;
+    let driverLng = baseLng - 0.015;
+    
+    const driverMarker = L.marker([driverLat, driverLng]).addTo(this.map).bindPopup('🛵 Driver Location').openPopup();
+    const homeMarker = L.marker([baseLat, baseLng]).addTo(this.map).bindPopup('🏠 Delivery Address');
+    
+    // Fetch real road route from OSRM (Open Source Routing Machine)
+    try {
+      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${driverLng},${driverLat};${baseLng},${baseLat}?overview=full&geometries=geojson`;
+      const routeRes = await fetch(osrmUrl);
+      const routeData = await routeRes.json();
+      
+      if (routeData.routes && routeData.routes.length > 0) {
+        // OSRM returns GeoJSON coordinates as [Lng, Lat], Leaflet uses [Lat, Lng]
+        const coordinates = routeData.routes[0].geometry.coordinates.map((coord: number[]) => [coord[1], coord[0]]);
+        
+        // Draw the real road route
+        const routeLine = L.polyline(coordinates, { color: '#4338ca', weight: 4 }).addTo(this.map!);
+        this.map.fitBounds(routeLine.getBounds(), { padding: [30, 30] });
+
+        // Simulate Live Movement along the actual roads (takes 15 mins)
+        const totalPoints = coordinates.length;
+        const totalDurationMs = 15 * 60 * 1000; // 15 minutes
+        const updateIntervalMs = 2000; // 2 seconds
+        const totalSteps = totalDurationMs / updateIntervalMs;
+        const pointsPerStep = totalPoints / totalSteps;
+        
+        let currentProgress = 0;
+        
+        const animate = () => {
+          if (currentProgress >= totalPoints - 1 || !this.map) {
+            driverMarker.setLatLng([baseLat, baseLng]);
+            return;
+          }
+          
+          currentProgress += pointsPerStep;
+          const pointIndex = Math.min(Math.floor(currentProgress), totalPoints - 1);
+          const currentPoint = coordinates[pointIndex];
+          
+          driverMarker.setLatLng([currentPoint[0], currentPoint[1]]);
+          
+          // Update the route line to shrink behind the driver
+          const remainingPath = coordinates.slice(pointIndex);
+          routeLine.setLatLngs(remainingPath);
+          
+          setTimeout(animate, updateIntervalMs);
+        };
+        
+        setTimeout(animate, 1000);
+      }
+    } catch (err) {
+      console.error('OSRM Routing failed:', err);
+      // Fallback to straight line if OSRM fails
+      const routeLine = L.polyline([[driverLat, driverLng], [baseLat, baseLng]], { color: '#4338ca', weight: 4, dashArray: '5, 10' }).addTo(this.map);
+      this.map.fitBounds(L.latLngBounds([[driverLat, driverLng], [baseLat, baseLng]]), { padding: [30, 30] });
+    }
   }
 }
