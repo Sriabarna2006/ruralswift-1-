@@ -1,10 +1,9 @@
 /* ═══════════════════════════════════════════════════════════
-   DRIVER APP — Standalone dark logistics theme
+   DRIVER APP — Clean white logistics theme (Amazon Flex style)
    Completely independent from customer / seller CSS
 ════════════════════════════════════════════════════════════ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
-/* ── Reset for this page ── */
 .dapp, .dportal {
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -16,8 +15,8 @@
 
 .dapp {
   min-height: 100vh;
-  background: #0d1117;
-  color: #e2e8f0;
+  background: #f0f4f8;
+  color: #1a202c;
   display: flex;
   flex-direction: column;
 }
@@ -28,11 +27,12 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
-  background: #161b22;
-  border-bottom: 1px solid #30363d;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
 .dapp-logo {
@@ -46,7 +46,7 @@
 .dapp-logo-name {
   font-size: 15px;
   font-weight: 800;
-  color: #fff;
+  color: #1a202c;
   letter-spacing: -0.3px;
   display: block;
   line-height: 1;
@@ -55,7 +55,7 @@
 .dapp-logo-tag {
   font-size: 10px;
   font-weight: 700;
-  color: #3b82f6;
+  color: #2563eb;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   display: block;
@@ -65,8 +65,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #1e293b;
-  border: 1px solid #334155;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
   border-radius: 100px;
   padding: 5px 12px;
   font-size: 12px;
@@ -74,7 +74,11 @@
   color: #64748b;
 }
 
-.dapp-gps-live { border-color: #22c55e40; color: #22c55e; background: #052e1640; }
+.dapp-gps-live {
+  border-color: #bbf7d0;
+  color: #16a34a;
+  background: #f0fdf4;
+}
 
 .dapp-gps-dot {
   width: 7px;
@@ -112,7 +116,7 @@
 .dapp-list-title {
   font-size: clamp(20px, 5vw, 28px);
   font-weight: 900;
-  color: #f1f5f9;
+  color: #1a202c;
   margin: 0;
   letter-spacing: -0.5px;
 }
@@ -127,9 +131,9 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #94a3b8;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
   padding: 8px 14px;
   border-radius: 8px;
   font-size: 13px;
@@ -138,9 +142,14 @@
   transition: all 0.2s;
   white-space: nowrap;
   flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 
-.dapp-refresh-btn:hover { background: #273344; color: #e2e8f0; }
+.dapp-refresh-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #1a202c;
+}
 
 /* ── Runs grid ── */
 .dapp-runs-grid {
@@ -159,8 +168,8 @@
 
 /* ── Run Card ── */
 .dapp-run-card {
-  background: #161b22;
-  border: 1px solid #21262d;
+  background: #fff;
+  border: 1px solid #e2e8f0;
   border-radius: 14px;
   padding: 18px;
   cursor: pointer;
@@ -168,13 +177,13 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 
 .dapp-run-card:hover {
-  border-color: #3b82f6;
-  background: #1a2235;
+  border-color: #2563eb;
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
 }
 
 .dapp-run-card-top {
@@ -184,26 +193,26 @@
 }
 
 .dapp-run-id {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 900;
-  color: #f1f5f9;
+  color: #1a202c;
   letter-spacing: -0.5px;
 }
 
-.dapp-run-hashtag { color: #3b82f6; }
+.dapp-run-hashtag { color: #2563eb; }
 
 .dapp-run-status {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  padding: 3px 9px;
+  padding: 3px 10px;
   border-radius: 100px;
   border: 1px solid;
 }
 
-.dapp-status-pending { background: #451a0320; color: #fb923c; border-color: #fb923c40; }
-.dapp-status-active  { background: #05260e20; color: #22c55e; border-color: #22c55e40; }
+.dapp-status-pending { background: #fffbeb; color: #d97706; border-color: #fde68a; }
+.dapp-status-active  { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
 
 .dapp-run-stops-row {
   display: flex;
@@ -211,7 +220,7 @@
   gap: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: #3b82f6;
+  color: #2563eb;
 }
 
 .dapp-run-addresses {
@@ -242,26 +251,25 @@
   margin-top: 1px;
 }
 
-.dapp-run-addr-txt { color: #94a3b8; line-height: 1.4; }
-
-.dapp-run-addr-more { font-size: 11px; color: #475569; font-style: italic; padding-left: 28px; }
+.dapp-run-addr-txt { color: #64748b; line-height: 1.4; }
+.dapp-run-addr-more { font-size: 11px; color: #94a3b8; font-style: italic; padding-left: 28px; }
 
 .dapp-run-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-top: 4px;
-  border-top: 1px solid #21262d;
+  border-top: 1px solid #f1f5f9;
   padding-top: 12px;
 }
 
-.dapp-run-date { font-size: 11px; color: #475569; }
+.dapp-run-date { font-size: 11px; color: #94a3b8; }
 
 .dapp-start-btn {
   display: flex;
   align-items: center;
   gap: 5px;
-  background: #3b82f6;
+  background: #2563eb;
   color: #fff;
   border: none;
   padding: 7px 14px;
@@ -272,16 +280,16 @@
   transition: background 0.2s;
 }
 
-.dapp-start-btn:hover { background: #2563eb; }
+.dapp-start-btn:hover { background: #1d4ed8; }
 
 /* ── Skeleton ── */
 .dapp-run-skeleton {
   height: 220px;
-  background: linear-gradient(90deg, #161b22 25%, #1e2a3a 50%, #161b22 75%);
+  background: linear-gradient(90deg, #f8fafc 25%, #e9eef4 50%, #f8fafc 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 14px;
-  border: 1px solid #21262d;
+  border: 1px solid #e2e8f0;
 }
 
 @keyframes shimmer {
@@ -293,10 +301,13 @@
 .dapp-empty {
   text-align: center;
   padding: 64px 24px;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
 }
 
 .dapp-empty-icon { font-size: 56px; margin-bottom: 16px; }
-.dapp-empty h3 { font-size: 18px; font-weight: 700; color: #e2e8f0; margin: 0 0 8px; }
+.dapp-empty h3 { font-size: 18px; font-weight: 700; color: #1a202c; margin: 0 0 8px; }
 .dapp-empty p  { font-size: 14px; color: #64748b; line-height: 1.6; }
 
 /* ══════════════════════════════════════════════
@@ -315,14 +326,15 @@
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: #161b22;
-  border-bottom: 1px solid #21262d;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
 
 .dapp-back-btn {
-  background: #21262d;
-  border: 1px solid #30363d;
-  color: #94a3b8;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
   width: 38px;
   height: 38px;
   border-radius: 50%;
@@ -334,7 +346,7 @@
   transition: all 0.2s;
 }
 
-.dapp-back-btn:hover { background: #2d333b; color: #e2e8f0; }
+.dapp-back-btn:hover { background: #e2e8f0; color: #1a202c; }
 
 .dapp-run-subbar-info { flex: 1; }
 
@@ -342,13 +354,13 @@
   display: block;
   font-size: 16px;
   font-weight: 800;
-  color: #f1f5f9;
+  color: #1a202c;
   letter-spacing: -0.3px;
 }
 
 .dapp-run-subbar-stops {
   font-size: 12px;
-  color: #64748b;
+  color: #94a3b8;
 }
 
 .dapp-run-subbar-live {
@@ -357,18 +369,22 @@
   gap: 6px;
   font-size: 12px;
   font-weight: 700;
-  color: #22c55e;
+  color: #16a34a;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 4px 10px;
+  border-radius: 100px;
 }
 
 .dapp-live-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: #22c55e;
   animation: gps-pulse 1s ease-in-out infinite;
 }
 
-/* ── MAP — fills screen, responsive height ── */
+/* ── MAP — responsive height ── */
 .dapp-map-wrap {
   position: relative;
   width: 100%;
@@ -414,21 +430,22 @@
   position: absolute;
   bottom: 8px;
   left: 8px;
-  background: rgba(13,17,23,0.8);
+  background: rgba(255,255,255,0.85);
   backdrop-filter: blur(6px);
-  color: #94a3b8;
+  color: #64748b;
   font-size: 10px;
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 6px;
   pointer-events: none;
   z-index: 1000;
+  border: 1px solid #e2e8f0;
 }
 
 /* ── Stops Section ── */
 .dapp-stops-section {
   padding: 16px;
-  background: #0d1117;
+  background: #f0f4f8;
 }
 
 .dapp-stops-header {
@@ -441,15 +458,15 @@
 .dapp-stops-title {
   font-size: 15px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: #1a202c;
   margin: 0;
 }
 
 .dapp-stops-count {
   font-size: 12px;
   color: #64748b;
-  background: #161b22;
-  border: 1px solid #21262d;
+  background: #fff;
+  border: 1px solid #e2e8f0;
   padding: 3px 10px;
   border-radius: 100px;
 }
@@ -461,18 +478,19 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  background: #161b22;
-  border: 1px solid #21262d;
+  background: #fff;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 14px;
   transition: border-color 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 
-.dapp-stop-card:hover { border-color: #334155; }
+.dapp-stop-card:hover { border-color: #93c5fd; }
 
 .dapp-stop-delivered {
   opacity: 0.5;
-  border-color: #22c55e20 !important;
+  border-color: #bbf7d0 !important;
 }
 
 .dapp-stop-num {
@@ -489,14 +507,14 @@
   flex-shrink: 0;
 }
 
-.dapp-stop-num-done { background: #22c55e; }
+.dapp-stop-num-done { background: #16a34a; }
 
 .dapp-stop-body { flex: 1; min-width: 0; }
 
 .dapp-stop-order {
   font-size: 13px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #1a202c;
   margin-bottom: 4px;
 }
 
@@ -512,7 +530,7 @@
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  color: #f59e0b;
+  color: #d97706;
   font-weight: 600;
   margin-top: 5px;
 }
@@ -526,7 +544,7 @@
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  background: #10b981;
+  background: #16a34a;
   color: #fff;
   border: none;
   padding: 8px 12px;
@@ -538,7 +556,7 @@
   white-space: nowrap;
 }
 
-.dapp-deliver-btn:hover { background: #059669; transform: scale(1.05); }
+.dapp-deliver-btn:hover { background: #15803d; transform: scale(1.05); }
 
 .dapp-delivered-badge {
   display: flex;
@@ -546,7 +564,7 @@
   align-items: center;
   gap: 2px;
   font-size: 11px;
-  color: #22c55e;
+  color: #16a34a;
   font-weight: 700;
   text-align: center;
 }
@@ -557,7 +575,7 @@
 
 .dportal {
   min-height: 100vh;
-  background: linear-gradient(145deg, #0a1628 0%, #0d2137 40%, #0a2a1e 100%);
+  background: linear-gradient(145deg, #0f2851 0%, #1a3a6e 50%, #0d4f3c 100%);
   display: flex;
   flex-direction: column;
 }
@@ -567,7 +585,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 24px;
-  background: rgba(0,0,0,0.3);
+  background: rgba(0,0,0,0.2);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
@@ -598,7 +616,6 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0;
   overflow: auto;
 }
 
@@ -664,9 +681,7 @@
 .dportal-stat { text-align: center; padding: 0 20px; }
 .dportal-stat:first-child { padding-left: 0; }
 .dportal-stat:last-child  { padding-right: 0; }
-
 .dportal-stat-div { width: 1px; height: 32px; background: rgba(255,255,255,0.12); flex-shrink: 0; }
-
 .dportal-stat-val { display: block; font-size: 20px; font-weight: 900; color: #6ee7b7; }
 .dportal-stat-lbl { display: block; font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
 
@@ -685,25 +700,9 @@
   gap: 14px;
 }
 
-.dportal-feat-icon {
-  font-size: 20px;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.dportal-features strong {
-  display: block;
-  font-size: 14px;
-  color: rgba(255,255,255,0.9);
-  font-weight: 700;
-  margin-bottom: 3px;
-}
-
-.dportal-features span {
-  font-size: 13px;
-  color: rgba(255,255,255,0.45);
-  line-height: 1.5;
-}
+.dportal-feat-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.dportal-features strong { display: block; font-size: 14px; color: rgba(255,255,255,0.9); font-weight: 700; margin-bottom: 3px; }
+.dportal-features span { font-size: 13px; color: rgba(255,255,255,0.45); line-height: 1.5; }
 
 .dportal-card-wrap {
   display: flex;
@@ -722,22 +721,20 @@
 }
 
 .dportal-card {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: #fff;
   border-radius: 20px;
   padding: 32px 28px;
   width: 100%;
   max-width: 400px;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.4);
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
 .dportal-card-icon { font-size: 40px; text-align: center; }
-.dportal-card-title { font-size: 22px; font-weight: 900; color: #fff; letter-spacing: -0.5px; text-align: center; margin: 0; }
-.dportal-card-sub { font-size: 14px; color: rgba(255,255,255,0.45); text-align: center; line-height: 1.6; margin: 0; }
+.dportal-card-title { font-size: 22px; font-weight: 900; color: #1a202c; letter-spacing: -0.5px; text-align: center; margin: 0; }
+.dportal-card-sub { font-size: 14px; color: #64748b; text-align: center; line-height: 1.6; margin: 0; }
 
 .dportal-cta {
   display: flex;
@@ -745,7 +742,7 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, #16a34a, #15803d);
   color: #fff;
   border: none;
   padding: 14px 20px;
@@ -754,7 +751,7 @@
   font-weight: 800;
   cursor: pointer;
   transition: opacity 0.2s, transform 0.15s;
-  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 4px 20px rgba(22, 163, 74, 0.35);
 }
 
 .dportal-cta:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
@@ -771,23 +768,14 @@
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.dportal-signin-note {
-  font-size: 13px;
-  color: rgba(255,255,255,0.4);
-  text-align: center;
-  margin: 0;
-}
+.dportal-signin-note { font-size: 13px; color: #64748b; text-align: center; margin: 0; }
 
 .dportal-card-features {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  border-top: 1px solid rgba(255,255,255,0.07);
+  border-top: 1px solid #f1f5f9;
   padding-top: 14px;
 }
 
-.dportal-card-features span {
-  font-size: 12px;
-  color: rgba(255,255,255,0.4);
-  font-weight: 500;
-}
+.dportal-card-features span { font-size: 12px; color: #94a3b8; font-weight: 500; }
