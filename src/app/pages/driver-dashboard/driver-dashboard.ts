@@ -27,6 +27,8 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
   public isLoading = signal(true);
   public activeRun = signal<any | null>(null);
   public stopEtas = signal<string[]>([]);
+  public completedDeliveries = signal<any[]>([]);
+  public activeTab = signal<'runs' | 'completed'>('runs');
 
   // Auth & State
   public isAuthenticated = signal(false);
@@ -48,6 +50,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
 
     if (this.isAuthenticated() && this.isDriver()) {
       this.loadRuns();
+      this.loadCompletedDeliveries();
     } else {
       this.isLoading.set(false);
     }
@@ -320,13 +323,62 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     this.api.updateDriverOrderStatus(orderId, 'delivered', otp).subscribe({
       next: () => {
         this.toast.success('Order delivered successfully!');
-        this.loadRuns();
-        this.activeRun.set(null);
-        this.stopGpsTracking();
+        
+        // Reload driver runs and keep active run if there are remaining stops
+        this.api.getDriverRuns().subscribe({
+          next: (resUpdated) => {
+            const updatedRuns = resUpdated.data?.runs || [];
+            this.runs.set(updatedRuns);
+            
+            // Reload completed deliveries list
+            this.loadCompletedDeliveries();
+
+            const currentActive = this.activeRun();
+            if (currentActive) {
+              const freshRun = updatedRuns.find((r: any) => r.id === currentActive.id);
+              if (freshRun) {
+                if (freshRun.status === 'completed') {
+                  this.activeRun.set(null);
+                  this.stopGpsTracking();
+                  if (this.map) { this.map.remove(); }
+                  this.toast.success('Awesome! Delivery run is complete!');
+                } else {
+                  // Keep driver on active run screen with remaining stops
+                  this.activeRun.set(freshRun);
+                  setTimeout(() => { this.initMap(freshRun); }, 150);
+                }
+              } else {
+                this.activeRun.set(null);
+                this.stopGpsTracking();
+                if (this.map) { this.map.remove(); }
+              }
+            }
+          }
+        });
       },
       error: (err) => {
         this.toast.error(err.error?.message || 'Failed to verify OTP.');
       }
     });
+  }
+
+  loadCompletedDeliveries() {
+    this.api.getCompletedDeliveries().subscribe({
+      next: (res) => {
+        this.completedDeliveries.set(res.data?.deliveries || []);
+      },
+      error: () => {
+        this.toast.error('Failed to load completed deliveries.');
+      }
+    });
+  }
+
+  setTab(tab: 'runs' | 'completed') {
+    this.activeTab.set(tab);
+    if (tab === 'completed') {
+      this.loadCompletedDeliveries();
+    } else {
+      this.loadRuns();
+    }
   }
 }

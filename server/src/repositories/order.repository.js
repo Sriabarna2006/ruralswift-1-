@@ -113,7 +113,10 @@ class OrderRepository {
 
     if (extra.trackingNumber) { sets.push(`tracking_number = $${idx++}`); values.push(extra.trackingNumber); }
     if (extra.deliveryOtp) { sets.push(`delivery_otp = $${idx++}`); values.push(extra.deliveryOtp); }
-    if (status === 'delivered') { sets.push(`delivered_at = NOW()`); }
+    if (status === 'delivered') {
+      sets.push(`delivered_at = NOW()`);
+      sets.push(`payment_status = 'paid'`);
+    }
 
     values.push(orderId);
     const { rows } = await pool.query(

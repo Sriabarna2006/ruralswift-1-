@@ -780,3 +780,173 @@
 }
 
 .dportal-card-features span { font-size: 12px; color: #94a3b8; font-weight: 500; }
+
+/* ── Driver Dashboard Tabs ── */
+.dapp-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 2px;
+}
+
+.dapp-tab-btn {
+  background: none;
+  border: none;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.dapp-tab-btn:hover {
+  color: #1a202c;
+}
+
+.dapp-tab-btn.dapp-tab-active {
+  color: #2563eb;
+}
+
+.dapp-tab-btn.dapp-tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #2563eb;
+  border-radius: 3px;
+}
+
+/* ── Completed Deliveries Section ── */
+.dapp-completed-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dapp-completed-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 600px) {
+  .dapp-completed-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .dapp-completed-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.dapp-completed-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.dapp-completed-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 10px;
+}
+
+.dapp-completed-order-no {
+  font-size: 15px;
+  font-weight: 800;
+  color: #16a34a;
+}
+
+.dapp-completed-date {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.dapp-completed-address {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dapp-completed-address-lbl,
+.dapp-completed-items-lbl {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+
+.dapp-completed-address p {
+  margin: 0;
+  font-size: 12px;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.dapp-completed-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dapp-completed-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dapp-completed-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.dapp-completed-item-img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background-color: #fff;
+}
+
+.dapp-completed-item-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dapp-completed-item-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dapp-completed-item-qty {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+

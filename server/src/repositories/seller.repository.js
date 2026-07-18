@@ -253,7 +253,10 @@ class SellerRepository {
     let idx = 2;
 
     if (trackingNumber) { sets.push(`tracking_number = $${idx++}`); values.push(trackingNumber); }
-    if (status === 'delivered') sets.push(`delivered_at = NOW()`);
+    if (status === 'delivered') {
+      sets.push(`delivered_at = NOW()`);
+      sets.push(`payment_status = 'paid'`);
+    }
     if (status === 'cancelled') sets.push(`cancelled_at = NOW()`);
 
     values.push(orderId);

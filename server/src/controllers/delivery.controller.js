@@ -90,6 +90,15 @@ class DeliveryController {
       next(err);
     }
   }
+
+  async getCompletedDeliveries(req, res, next) {
+    try {
+      const deliveries = await deliveryService.getCompletedDeliveries(req.user.id);
+      return sendSuccess(res, 200, 'Completed deliveries fetched.', { data: { deliveries } });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new DeliveryController();

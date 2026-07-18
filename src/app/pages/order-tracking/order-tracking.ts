@@ -193,8 +193,10 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
           if (deliverCoords) {
             const distKm = this.distanceKm(d.lat, d.lng, deliverCoords[0], deliverCoords[1]);
             const etaMins = Math.round((distKm / 30) * 60); // 30 km/h avg rural speed
-            const earliest = new Date(Date.now() + (etaMins - 10) * 60000);
-            const latest = new Date(Date.now() + (etaMins + 15) * 60000);
+            const minMins = Math.max(1, etaMins - 5);
+            const maxMins = etaMins + 10;
+            const earliest = new Date(Date.now() + minMins * 60000);
+            const latest = new Date(Date.now() + maxMins * 60000);
             this.etaWindow.set({
               etaMins,
               earliest: earliest.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
@@ -378,7 +380,22 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
             if (progress >= totalPoints - 1 || !this.map) return;
             progress += pointsPerStep;
             const idx = Math.min(Math.floor(progress), totalPoints - 1);
-            this.driverMarker?.setLatLng(coordinates[idx]);
+            const currentPos = coordinates[idx];
+            this.driverMarker?.setLatLng(currentPos);
+
+            // Update simulated ETA
+            const distKm = this.distanceKm(currentPos[0], currentPos[1], deliveryLat, deliveryLng);
+            const etaMins = Math.round((distKm / 30) * 60);
+            const minMins = Math.max(1, etaMins - 5);
+            const maxMins = etaMins + 10;
+            const earliest = new Date(Date.now() + minMins * 60000);
+            const latest = new Date(Date.now() + maxMins * 60000);
+            this.etaWindow.set({
+              etaMins,
+              earliest: earliest.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+              latest: latest.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+            });
+
             setTimeout(animate, 2000);
           };
           setTimeout(animate, 1000);

@@ -34,74 +34,126 @@
         <div class="dapp-list-header">
           <div>
             <h1 class="dapp-list-title">My Deliveries</h1>
-            <p class="dapp-list-sub">Today's optimized routes</p>
+            <p class="dapp-list-sub">Today's optimized routes & completed history</p>
           </div>
-          <button class="dapp-refresh-btn" (click)="loadRuns()">
+          <button class="dapp-refresh-btn" (click)="activeTab() === 'runs' ? loadRuns() : loadCompletedDeliveries()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
             Refresh
           </button>
         </div>
 
-        @if (isLoading()) {
-          <div class="dapp-runs-grid">
-            <div class="dapp-run-skeleton"></div>
-            <div class="dapp-run-skeleton"></div>
-            <div class="dapp-run-skeleton"></div>
-          </div>
-        } @else if (runs().length === 0) {
-          <div class="dapp-empty">
-            <div class="dapp-empty-icon">📦</div>
-            <h3>No active deliveries</h3>
-            <p>You don't have any runs assigned yet.<br>Check back soon!</p>
-          </div>
-        } @else {
-          <div class="dapp-runs-grid">
-            @for (run of runs(); track run.id) {
-              <div class="dapp-run-card" (click)="viewRun(run)">
-                <div class="dapp-run-card-top">
-                  <div class="dapp-run-id">
-                    <span class="dapp-run-hashtag">#</span>{{ run.id }}
-                  </div>
-                  <span class="dapp-run-status"
-                    [class.dapp-status-pending]="run.status === 'pending'"
-                    [class.dapp-status-active]="run.status === 'active'"
-                    [class.dapp-status-completed]="run.status === 'completed'">
-                    @if (run.status === 'completed') { ✅ Completed }
-                    @else if (run.status === 'active') { 🔵 Active }
-                    @else {
-                      @if (getDeliveredCount(run) > 0) {
-                        {{ getDeliveredCount(run) }}/{{ run.stops?.length }} Delivered
-                      } @else {
-                        Pending
-                      }
-                    }
-                  </span>
-                </div>
+        <!-- Tab Selector -->
+        <div class="dapp-tabs">
+          <button class="dapp-tab-btn" [class.dapp-tab-active]="activeTab() === 'runs'" (click)="setTab('runs')">
+            🛵 Active Runs
+          </button>
+          <button class="dapp-tab-btn" [class.dapp-tab-active]="activeTab() === 'completed'" (click)="setTab('completed')">
+            ✅ Completed ({{ completedDeliveries().length }})
+          </button>
+        </div>
 
-                <div class="dapp-run-stops-row">
-                  <span class="dapp-run-stops-icon">📍</span>
-                  <span class="dapp-run-stops-count">{{ run.stops?.length || 0 }} stops</span>
-                </div>
-
-                <div class="dapp-run-addresses">
-                  @for (stop of (run.stops || []).slice(0, 2); track stop.order_id) {
-                    <div class="dapp-run-addr-item">
-                      <span class="dapp-run-addr-num">{{ stop.sequence }}</span>
-                      <span class="dapp-run-addr-txt">{{ stop.address | slice:0:45 }}{{ stop.address?.length > 45 ? '…' : '' }}</span>
+        @if (activeTab() === 'runs') {
+          @if (isLoading()) {
+            <div class="dapp-runs-grid">
+              <div class="dapp-run-skeleton"></div>
+              <div class="dapp-run-skeleton"></div>
+              <div class="dapp-run-skeleton"></div>
+            </div>
+          } @else if (runs().length === 0) {
+            <div class="dapp-empty">
+              <div class="dapp-empty-icon">📦</div>
+              <h3>No active deliveries</h3>
+              <p>You don't have any runs assigned yet.<br>Check back soon!</p>
+            </div>
+          } @else {
+            <div class="dapp-runs-grid">
+              @for (run of runs(); track run.id) {
+                <div class="dapp-run-card" (click)="viewRun(run)">
+                  <div class="dapp-run-card-top">
+                    <div class="dapp-run-id">
+                      <span class="dapp-run-hashtag">#</span>{{ run.id }}
                     </div>
-                  }
-                  @if ((run.stops?.length || 0) > 2) {
-                    <div class="dapp-run-addr-more">+{{ run.stops.length - 2 }} more stops</div>
-                  }
-                </div>
+                    <span class="dapp-run-status"
+                      [class.dapp-status-pending]="run.status === 'pending'"
+                      [class.dapp-status-active]="run.status === 'active'"
+                      [class.dapp-status-completed]="run.status === 'completed'">
+                      @if (run.status === 'completed') { ✅ Completed }
+                      @else if (run.status === 'active') { 🔵 Active }
+                      @else {
+                        @if (getDeliveredCount(run) > 0) {
+                          {{ getDeliveredCount(run) }}/{{ run.stops?.length }} Delivered
+                        } @else {
+                          Pending
+                        }
+                      }
+                    </span>
+                  </div>
 
-                <div class="dapp-run-footer">
-                  <span class="dapp-run-date">{{ run.created_at | date:'d MMM, h:mm a' }}</span>
-                  <button class="dapp-start-btn">
-                    Start Run
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                  </button>
+                  <div class="dapp-run-stops-row">
+                    <span class="dapp-run-stops-icon">📍</span>
+                    <span class="dapp-run-stops-count">{{ run.stops?.length || 0 }} stops</span>
+                  </div>
+
+                  <div class="dapp-run-addresses">
+                    @for (stop of (run.stops || []).slice(0, 2); track stop.order_id) {
+                      <div class="dapp-run-addr-item">
+                        <span class="dapp-run-addr-num">{{ stop.sequence }}</span>
+                        <span class="dapp-run-addr-txt">{{ stop.address | slice:0:45 }}{{ stop.address?.length > 45 ? '…' : '' }}</span>
+                      </div>
+                    }
+                    @if ((run.stops?.length || 0) > 2) {
+                      <div class="dapp-run-addr-more">+{{ run.stops.length - 2 }} more stops</div>
+                    }
+                  </div>
+
+                  <div class="dapp-run-footer">
+                    <span class="dapp-run-date">{{ run.created_at | date:'d MMM, h:mm a' }}</span>
+                    <button class="dapp-start-btn">
+                      Start Run
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </button>
+                  </div>
                 </div>
+              }
+            </div>
+          }
+        } @else {
+          <!-- Completed Deliveries View -->
+          <div class="dapp-completed-section">
+            @if (completedDeliveries().length === 0) {
+              <div class="dapp-empty">
+                <div class="dapp-empty-icon">✅</div>
+                <h3>No completed deliveries</h3>
+                <p>Deliver assigned orders to see them listed here.</p>
+              </div>
+            } @else {
+              <div class="dapp-completed-grid">
+                @for (del of completedDeliveries(); track del.order_id) {
+                  <div class="dapp-completed-card">
+                    <div class="dapp-completed-card-header">
+                      <span class="dapp-completed-order-no">Order #{{ del.order_id }}</span>
+                      <span class="dapp-completed-date">{{ del.delivered_at | date:'d MMM, h:mm a' }}</span>
+                    </div>
+                    <div class="dapp-completed-address">
+                      <span class="dapp-completed-address-lbl">📍 Address</span>
+                      <p>{{ del.delivery_address }}</p>
+                    </div>
+                    <div class="dapp-completed-items">
+                      <span class="dapp-completed-items-lbl">📦 Delivered Products</span>
+                      <div class="dapp-completed-items-list">
+                        @for (item of del.items; track item.product_id) {
+                          <div class="dapp-completed-item">
+                            <img [src]="item.image_url || 'https://via.placeholder.com/150'" class="dapp-completed-item-img" alt="product image" />
+                            <div class="dapp-completed-item-details">
+                              <span class="dapp-completed-item-name">{{ item.name }}</span>
+                              <span class="dapp-completed-item-qty">Qty: {{ item.quantity }} • ₹{{ item.unit_price }} each</span>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
               </div>
             }
           </div>

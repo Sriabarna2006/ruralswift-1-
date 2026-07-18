@@ -101,10 +101,26 @@ class DeliveryService {
     try {
       await client.query('BEGIN');
       for (let i = 0; i < optimizedRoute.length; i++) {
+        const orderId = optimizedRoute[i].id;
+        const orderObj = ordersRes.rows.find(o => o.order_id === orderId);
+
         await client.query(
           `UPDATE orders SET delivery_run_id = $1, delivery_sequence = $2, status = 'out_for_delivery', updated_at = NOW() WHERE order_id = $3`,
-          [runId, i + 1, optimizedRoute[i].id]
+          [runId, i + 1, orderId]
         );
+
+        if (orderObj && orderObj.user_id) {
+          await client.query(
+            `INSERT INTO notifications (user_id, title, message, type)
+             VALUES ($1, $2, $3, $4)`,
+            [
+              orderObj.user_id,
+              '📦 Out for Delivery Today!',
+              `Great news! Your order #${orderId} is out for delivery today. Our delivery partner is on their way!`,
+              'delivery'
+            ]
+          );
+        }
       }
       await client.query('COMMIT');
     } catch (err) {
@@ -150,6 +166,29 @@ class DeliveryService {
       [orderId]
     );
     return rows[0] || null;
+  }
+
+  /** Get all completed deliveries (orders/products) for a driver */
+  async getCompletedDeliveries(driverId) {
+    const { rows } = await pool.query(
+      `SELECT o.order_id, o.delivered_at, o.delivery_address,
+              json_agg(json_build_object(
+                'product_id', oi.product_id,
+                'name', p.name,
+                'quantity', oi.quantity,
+                'unit_price', oi.unit_price,
+                'image_url', p.image_url
+              )) AS items
+       FROM orders o
+       INNER JOIN delivery_runs r ON o.delivery_run_id = r.id
+       INNER JOIN order_items oi ON oi.order_id = o.order_id
+       INNER JOIN products p ON p.product_id = oi.product_id
+       WHERE r.driver_id = $1 AND o.status = 'delivered'
+       GROUP BY o.order_id, o.delivered_at, o.delivery_address
+       ORDER BY o.delivered_at DESC`,
+      [driverId]
+    );
+    return rows;
   }
 }
 

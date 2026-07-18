@@ -451,6 +451,10 @@ export class ApiService {
     return this.http.get<ApiResponse<{ runs: any[] }>>(`${this.baseUrl}/delivery-runs`);
   }
 
+  getCompletedDeliveries(): Observable<ApiResponse<{ deliveries: any[] }>> {
+    return this.http.get<ApiResponse<{ deliveries: any[] }>>(`${this.baseUrl}/completed-deliveries`);
+  }
+
   updateDriverOrderStatus(orderId: number, status: string, deliveryOtp?: string): Observable<ApiResponse> {
     return this.http.put<ApiResponse>(`${this.baseUrl}/delivery-runs/orders/${orderId}/status`, { status, deliveryOtp });
   }
