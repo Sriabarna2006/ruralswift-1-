@@ -53,6 +53,11 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Returns how many stops in a run are already delivered */
+  getDeliveredCount(run: any): number {
+    return (run.stops || []).filter((s: any) => s.status === 'delivered').length;
+  }
+
   becomeDriver() {
     if (!this.isAuthenticated()) {
       this.router.navigate(['/login']);

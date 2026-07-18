@@ -62,8 +62,19 @@
                   <div class="dapp-run-id">
                     <span class="dapp-run-hashtag">#</span>{{ run.id }}
                   </div>
-                  <span class="dapp-run-status" [class.dapp-status-pending]="run.status === 'pending'" [class.dapp-status-active]="run.status === 'active'">
-                    {{ run.status }}
+                  <span class="dapp-run-status"
+                    [class.dapp-status-pending]="run.status === 'pending'"
+                    [class.dapp-status-active]="run.status === 'active'"
+                    [class.dapp-status-completed]="run.status === 'completed'">
+                    @if (run.status === 'completed') { ✅ Completed }
+                    @else if (run.status === 'active') { 🔵 Active }
+                    @else {
+                      @if (getDeliveredCount(run) > 0) {
+                        {{ getDeliveredCount(run) }}/{{ run.stops?.length }} Delivered
+                      } @else {
+                        Pending
+                      }
+                    }
                   </span>
                 </div>
 

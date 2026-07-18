@@ -211,8 +211,9 @@
   border: 1px solid;
 }
 
-.dapp-status-pending { background: #fffbeb; color: #d97706; border-color: #fde68a; }
-.dapp-status-active  { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+.dapp-status-pending   { background: #fffbeb; color: #d97706; border-color: #fde68a; }
+.dapp-status-active    { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+.dapp-status-completed { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
 
 .dapp-run-stops-row {
   display: flex;
