@@ -97,6 +97,10 @@ export class DriverDashboardComponent implements OnInit, AfterViewInit {
 
   backToList() {
     this.activeRun.set(null);
+    if (this.liveWatchId !== null) {
+      navigator.geolocation.clearWatch(this.liveWatchId);
+      this.liveWatchId = null;
+    }
     if (this.map) {
       this.map.remove();
     }
@@ -143,56 +147,147 @@ export class DriverDashboardComponent implements OnInit, AfterViewInit {
     return tryFetch(address + ', India');
   }
 
+  private liveWatchId: number | null = null;
+
+  getLivePosition(): Promise<GeolocationPosition> {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation not supported'));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      });
+    });
+  }
+
+  async drawOsrmRoute(map: L.Map, fromLat: number, fromLng: number, toLat: number, toLng: number): Promise<void> {
+    try {
+      const url = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.routes && data.routes.length > 0) {
+        const coords: [number, number][] = data.routes[0].geometry.coordinates.map(
+          (c: number[]) => [c[1], c[0]] as [number, number]
+        );
+        L.polyline(coords, {
+          color: '#1a73e8',
+          weight: 6,
+          opacity: 0.85,
+          lineJoin: 'round',
+          lineCap: 'round'
+        }).addTo(map);
+      }
+    } catch {
+      // Fallback to straight dashed line
+      L.polyline([[fromLat, fromLng], [toLat, toLng]], {
+        color: '#1a73e8', weight: 5, dashArray: '10, 8', opacity: 0.7
+      }).addTo(map);
+    }
+  }
+
   async initMap(run: any) {
-    if (this.map) {
-      this.map.remove();
+    if (this.map) { this.map.remove(); }
+    if (this.liveWatchId !== null) {
+      navigator.geolocation.clearWatch(this.liveWatchId);
+      this.liveWatchId = null;
     }
 
-    // Default to India center until geocoding resolves
-    this.map = L.map(this.mapContainer.nativeElement).setView([20.5937, 78.9629], 5);
+    // --- Step 1: Get driver's live GPS position ---
+    let driverLat = 20.5937;
+    let driverLng = 78.9629;
+    let hasLiveLocation = false;
 
+    try {
+      const pos = await this.getLivePosition();
+      driverLat = pos.coords.latitude;
+      driverLng = pos.coords.longitude;
+      hasLiveLocation = true;
+    } catch {
+      this.toast.error('📍 Could not get live location. Using last known position.');
+    }
+
+    // --- Step 2: Initialize map at driver's real location ---
+    this.map = L.map(this.mapContainer.nativeElement).setView([driverLat, driverLng], 14);
+
+    // Free OpenStreetMap tiles (no API key needed)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
     }).addTo(this.map);
 
+    // --- Step 3: Driver live location marker ---
+    const driverIcon = L.divIcon({
+      className: '',
+      html: `<div style="
+        background:#1a73e8;color:#fff;border-radius:50%;
+        width:40px;height:40px;display:flex;align-items:center;
+        justify-content:center;font-size:20px;
+        box-shadow:0 2px 8px rgba(26,115,232,0.5);
+        border:3px solid #fff;">🛵</div>`,
+      iconSize: [40, 40],
+      iconAnchor: [20, 20]
+    });
+
+    let driverMarker = L.marker([driverLat, driverLng], { icon: driverIcon })
+      .addTo(this.map)
+      .bindPopup(`<b>📍 Your Live Location</b>${hasLiveLocation ? '' : '<br><small>(Approximate)</small>'}`)
+      .openPopup();
+
+    // --- Step 4: Geocode & add stop markers ---
     const stops = run.stops || [];
-    if (stops.length === 0) return;
+    const stopCoords: [number, number][] = [];
 
-    const latlngs: L.LatLngTuple[] = [];
-
-    // Geocode each stop's real address
-    for (let index = 0; index < stops.length; index++) {
-      const stop = stops[index];
+    for (let i = 0; i < stops.length; i++) {
+      const stop = stops[i];
       const address = stop.address || stop.delivery_address || '';
-      let lat: number;
-      let lng: number;
+      let sLat = driverLat + (i + 1) * 0.01;
+      let sLng = driverLng + (i + 1) * 0.01;
 
       const coords = address ? await this.geocodeIndianAddress(address) : null;
+      if (coords) { [sLat, sLng] = coords; }
 
-      if (coords) {
-        [lat, lng] = coords;
-      } else {
-        // Last resort: India center with slight offset
-        lat = 20.5937 + (index * 0.01);
-        lng = 78.9629 + (index * 0.01);
-      }
+      stopCoords.push([sLat, sLng]);
 
-      latlngs.push([lat, lng]);
+      const stopIcon = L.divIcon({
+        className: '',
+        html: `<div style="
+          background:#ea4335;color:#fff;border-radius:50%;
+          width:36px;height:36px;display:flex;align-items:center;
+          justify-content:center;font-size:16px;font-weight:bold;
+          box-shadow:0 2px 8px rgba(234,67,53,0.5);
+          border:3px solid #fff;">${i + 1}</div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18]
+      });
 
-      L.marker([lat, lng])
+      L.marker([sLat, sLng], { icon: stopIcon })
         .addTo(this.map)
-        .bindPopup(`<b>Stop ${index + 1}</b><br>${address || 'Delivery Location'}`)
-        .openPopup();
+        .bindPopup(`<b>Stop ${i + 1}</b><br>${address || 'Delivery Location'}`);
+
+      // Draw OSRM road route from driver to this stop
+      await this.drawOsrmRoute(this.map, driverLat, driverLng, sLat, sLng);
     }
 
-    // Draw route line
-    if (latlngs.length > 1) {
-      L.polyline(latlngs, { color: '#4338ca', weight: 4, lineJoin: 'round' }).addTo(this.map);
+    // --- Step 5: Fit map to show driver + all stops ---
+    const allPoints: [number, number][] = [[driverLat, driverLng], ...stopCoords];
+    if (allPoints.length > 1) {
+      this.map.fitBounds(L.latLngBounds(allPoints), { padding: [50, 50] });
     }
 
-    // Fit map to all markers
-    if (latlngs.length > 0) {
-      this.map.fitBounds(L.latLngBounds(latlngs), { padding: [40, 40] });
+    // --- Step 6: Watch live GPS and update driver marker in real time ---
+    if (hasLiveLocation && navigator.geolocation) {
+      this.liveWatchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          const newLat = pos.coords.latitude;
+          const newLng = pos.coords.longitude;
+          driverMarker.setLatLng([newLat, newLng]);
+        },
+        () => {},
+        { enableHighAccuracy: true, maximumAge: 3000 }
+      );
     }
   }
 
