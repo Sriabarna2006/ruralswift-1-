@@ -106,12 +106,42 @@ class UserService {
       otpExpiresAt,
     });
 
+    const hasSmtpConfig = !!(env.smtp && env.smtp.user && env.smtp.pass && env.smtp.from);
+
+    if (hasSmtpConfig) {
+      const dns = require('dns').promises;
+      const domain = normalisedEmail.split('@')[1];
+      try {
+        const mxRecords = await dns.resolveMx(domain);
+        if (!mxRecords || mxRecords.length === 0) {
+          const err = new Error('The email domain does not have valid mail server records (MX). Please use an active email.');
+          err.status = 400;
+          throw err;
+        }
+      } catch (dnsErr) {
+        if (dnsErr.status === 400) {
+          throw dnsErr;
+        }
+        logger.warn('MX record lookup failed', { domain, error: dnsErr.message });
+        const err = new Error('The email domain is invalid or inactive. Please provide an active email.');
+        err.status = 400;
+        throw err;
+      }
+    }
+
     try {
       await sendRegistrationOtp(normalisedEmail, otp);
       logger.info('Registration OTP sent', { email: normalisedEmail });
     } catch (err) {
-      logger.warn('Failed to send registration OTP email. Falling back to mock mode.', { email: normalisedEmail, message: err.message });
-      console.log(`\n\n[MAILER FALLBACK] Registration OTP for ${normalisedEmail} is: ${otp}\n\n`);
+      if (hasSmtpConfig) {
+        logger.error('Failed to send registration OTP email', { email: normalisedEmail, error: err.message });
+        const mailErr = new Error('Failed to send verification email. Please check if your email address is correct and active.');
+        mailErr.status = 400;
+        throw mailErr;
+      } else {
+        logger.warn('Failed to send registration OTP email. Falling back to mock mode.', { email: normalisedEmail, message: err.message });
+        console.log(`\n\n[MAILER FALLBACK] Registration OTP for ${normalisedEmail} is: ${otp}\n\n`);
+      }
     }
 
     return {
