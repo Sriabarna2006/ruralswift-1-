@@ -1,7 +1,7 @@
 // src/app/services/api.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, timeout } from 'rxjs';
 import { ImageKitService } from './imagekit.service';
 import { AuthStateService } from './auth-state.service';
 
@@ -225,6 +225,8 @@ export class ApiService {
     return this.http.post<RegisterResponse>(
       `${this.baseUrl}/auth/register`,
       { ...data, email: data.email.trim().toLowerCase() }
+    ).pipe(
+      timeout(30000) // 30s — prevents infinite hang if SMTP/DNS is slow
     );
   }
 

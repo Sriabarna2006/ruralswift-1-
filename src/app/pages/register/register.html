@@ -7,9 +7,9 @@
       <div class="brand-logo">🏪</div>
       <div class="auth-portal-badge">🛒 Customer Account</div>
       <h1 class="brand-title">RuralSwift</h1>
-      <p class="brand-sub">{{ otpStep ? 'One last step — verify your email to activate your account.' : 'Join thousands of happy customers getting fast deliveries right to their doorstep.' }}</p>
+      <p class="brand-sub">Join thousands of happy customers getting fast deliveries right to their doorstep.</p>
     </div>
-    <div class="benefits" *ngIf="!otpStep">
+    <div class="benefits">
       <div class="benefit-item">
         <span class="benefit-icon">🆓</span>
         <span class="benefit-text">Free Account — No Hidden Fees</span>
@@ -23,173 +23,93 @@
         <span class="benefit-text">Trusted by 50,000+ Customers</span>
       </div>
     </div>
-    <!-- OTP Left Panel Extra Info -->
-    <div class="benefits" *ngIf="otpStep">
-      <div class="benefit-item">
-        <span class="benefit-icon">📧</span>
-        <span class="benefit-text">OTP sent to <strong>{{ pendingEmail }}</strong></span>
-      </div>
-      <div class="benefit-item">
-        <span class="benefit-icon">⏱️</span>
-        <span class="benefit-text">OTP expires in 10 minutes</span>
-      </div>
-      <div class="benefit-item">
-        <span class="benefit-icon">🔒</span>
-        <span class="benefit-text">Secure 6-digit verification code</span>
-      </div>
-    </div>
   </div>
 
   <!-- ═══ RIGHT FORM ═══ -->
   <div class="auth-right">
     <div class="auth-card">
 
-      <!-- ── REGISTRATION FORM ── -->
-      <ng-container *ngIf="!otpStep">
-        <div class="auth-tabs">
-          <button class="auth-tab" routerLink="/login">Sign In</button>
-          <button class="auth-tab active">Register</button>
-        </div>
+      <div class="auth-tabs">
+        <button class="auth-tab" routerLink="/login">Sign In</button>
+        <button class="auth-tab active">Register</button>
+      </div>
 
-        <h2 class="auth-heading">Create your account 🚀</h2>
-        <p class="auth-subheading">Fill in your details to get started</p>
+      <h2 class="auth-heading">Create your account 🚀</h2>
+      <p class="auth-subheading">Fill in your details to get started</p>
 
-        <!-- Error / Success alerts -->
-        <div *ngIf="errorMessage" class="auth-alert auth-alert--error">
-          <span class="alert-icon">⚠️</span>
-          <span>
-            {{ errorMessage }}
-            <span *ngIf="isEmailExistsError" style="display: block; margin-top: 6px;">
-              Would you like to <a routerLink="/login" class="alert-link">Sign In</a> or <a routerLink="/forgot-password" class="alert-link">Reset Password</a>?
-            </span>
+      <!-- Error / Success alerts -->
+      <div *ngIf="errorMessage" class="auth-alert auth-alert--error">
+        <span class="alert-icon">⚠️</span>
+        <span>
+          {{ errorMessage }}
+          <span *ngIf="isEmailExistsError" style="display: block; margin-top: 6px;">
+            Would you like to <a routerLink="/login" class="alert-link">Sign In</a> or <a routerLink="/forgot-password" class="alert-link">Reset Password</a>?
           </span>
+        </span>
+      </div>
+      <div *ngIf="successMessage" class="auth-alert auth-alert--success">
+        <span class="alert-icon">✅</span> {{ successMessage }}
+      </div>
+
+      <form (ngSubmit)="register()" #registerForm="ngForm" class="auth-form">
+
+        <div class="name-row">
+          <div class="form-field">
+            <label for="firstName">First Name</label>
+            <input id="firstName" type="text" class="form-input" placeholder="First name"
+              [(ngModel)]="firstName" name="firstName" required autocomplete="given-name" />
+          </div>
+          <div class="form-field">
+            <label for="lastName">Last Name</label>
+            <input id="lastName" type="text" class="form-input" placeholder="Last name"
+              [(ngModel)]="lastName" name="lastName" autocomplete="family-name" />
+          </div>
         </div>
-        <div *ngIf="successMessage" class="auth-alert auth-alert--success">
-          <span class="alert-icon">✅</span> {{ successMessage }}
+
+        <div class="form-field">
+          <label for="email">Email Address</label>
+          <input id="email" type="email" class="form-input" placeholder="you@example.com"
+            [(ngModel)]="email" name="email" required autocomplete="email" />
         </div>
 
-        <form (ngSubmit)="register()" #registerForm="ngForm" class="auth-form">
-
-          <div class="name-row">
-            <div class="form-field">
-              <label for="firstName">First Name</label>
-              <input id="firstName" type="text" class="form-input" placeholder="First name"
-                [(ngModel)]="firstName" name="firstName" required autocomplete="given-name" />
-            </div>
-            <div class="form-field">
-              <label for="lastName">Last Name</label>
-              <input id="lastName" type="text" class="form-input" placeholder="Last name"
-                [(ngModel)]="lastName" name="lastName" autocomplete="family-name" />
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label for="email">Email Address</label>
-            <input id="email" type="email" class="form-input" placeholder="you@example.com"
-              [(ngModel)]="email" name="email" required autocomplete="email" />
-          </div>
-
-          <div class="form-field">
-            <label for="phone">Mobile Number</label>
-            <input id="phone" type="tel" class="form-input" placeholder="+91 00000 00000"
-              [(ngModel)]="phone" name="phone" autocomplete="tel" />
-          </div>
-
-          <div class="form-field">
-            <label for="password">Password</label>
-            <input id="password" [type]="showPassword ? 'text' : 'password'" class="form-input" placeholder="Min. 6 characters"
-              [(ngModel)]="password" name="password" required autocomplete="new-password" (input)="checkStrength()" />
-
-            <!-- Strength Bar -->
-            <div *ngIf="password" class="strength-bar">
-              <span [class]="strengthClass(1)"></span>
-              <span [class]="strengthClass(2)"></span>
-              <span [class]="strengthClass(3)"></span>
-              <span [class]="strengthClass(4)"></span>
-            </div>
-            <div *ngIf="password" class="strength-label" [class]="passwordStrength">
-              {{ strengthText }}
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label for="confirmPassword">Confirm Password</label>
-            <input id="confirmPassword" [type]="showConfirm ? 'text' : 'password'" class="form-input" placeholder="Re-enter your password"
-              [(ngModel)]="confirmPassword" name="confirmPassword" required autocomplete="new-password" />
-          </div>
-
-          <button type="submit" class="auth-submit" [disabled]="isLoading">
-            <span *ngIf="!isLoading">Create Account →</span>
-            <span *ngIf="isLoading" class="btn-spinner">⏳ Creating account...</span>
-          </button>
-
-          <p class="terms-text">
-            By creating an account you agree to our
-            <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
-          </p>
-        </form>
-      </ng-container>
-
-      <!-- ── OTP VERIFICATION SCREEN ── -->
-      <ng-container *ngIf="otpStep">
-        <div class="otp-screen">
-
-          <!-- Icon -->
-          <div class="otp-icon-wrap">
-            <div class="otp-icon">📩</div>
-          </div>
-
-          <h2 class="auth-heading">Check your email</h2>
-          <p class="otp-desc">
-            We sent a <strong>6-digit verification code</strong> to<br/>
-            <span class="otp-email">{{ pendingEmail }}</span>
-          </p>
-
-          <!-- Error / Success alerts -->
-          <div *ngIf="errorMessage" class="auth-alert auth-alert--error">
-            <span class="alert-icon">⚠️</span> {{ errorMessage }}
-          </div>
-          <div *ngIf="successMessage" class="auth-alert auth-alert--success">
-            <span class="alert-icon">✅</span> {{ successMessage }}
-          </div>
-
-          <form (ngSubmit)="verifyOtp()" #otpForm="ngForm" class="auth-form">
-
-            <div class="form-field">
-              <label for="otp">Verification Code</label>
-              <input
-                id="otp"
-                type="text"
-                class="form-input otp-input"
-                placeholder="Enter 6-digit code"
-                [(ngModel)]="otp"
-                name="otp"
-                required
-                inputmode="numeric"
-                maxlength="6"
-                autocomplete="one-time-code" />
-              <span class="otp-hint">Check your spam folder if you don't see it</span>
-            </div>
-
-            <button type="submit" class="auth-submit" [disabled]="isLoading">
-              <span *ngIf="!isLoading">Verify & Activate Account ✓</span>
-              <span *ngIf="isLoading" class="btn-spinner">⏳ Verifying...</span>
-            </button>
-
-          </form>
-
-          <!-- Back / Resend -->
-          <div class="otp-actions">
-            <button class="otp-back-btn" (click)="otpStep = false; otp = ''; errorMessage = ''; successMessage = ''">
-              ← Change details
-            </button>
-            <button class="otp-resend-btn" [disabled]="isLoading" (click)="register()">
-              Resend OTP
-            </button>
-          </div>
-
+        <div class="form-field">
+          <label for="phone">Mobile Number</label>
+          <input id="phone" type="tel" class="form-input" placeholder="+91 00000 00000"
+            [(ngModel)]="phone" name="phone" autocomplete="tel" />
         </div>
-      </ng-container>
+
+        <div class="form-field">
+          <label for="password">Password</label>
+          <input id="password" type="password" class="form-input" placeholder="Min. 6 characters"
+            [(ngModel)]="password" name="password" required autocomplete="new-password" (input)="checkStrength()" />
+          <!-- Strength Bar -->
+          <div *ngIf="password" class="strength-bar">
+            <span [class]="strengthClass(1)"></span>
+            <span [class]="strengthClass(2)"></span>
+            <span [class]="strengthClass(3)"></span>
+            <span [class]="strengthClass(4)"></span>
+          </div>
+          <div *ngIf="password" class="strength-label" [class]="passwordStrength">
+            {{ strengthText }}
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="confirmPassword">Confirm Password</label>
+          <input id="confirmPassword" type="password" class="form-input" placeholder="Re-enter your password"
+            [(ngModel)]="confirmPassword" name="confirmPassword" required autocomplete="new-password" />
+        </div>
+
+        <button type="submit" class="auth-submit" [disabled]="isLoading">
+          <span *ngIf="!isLoading">Create Account →</span>
+          <span *ngIf="isLoading" class="btn-spinner">⏳ Creating account...</span>
+        </button>
+
+        <p class="terms-text">
+          By creating an account you agree to our
+          <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+        </p>
+      </form>
 
     </div>
   </div>

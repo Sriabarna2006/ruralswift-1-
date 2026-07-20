@@ -15,7 +15,7 @@ const pool = new Pool({
   },
   max:                      5,
   idleTimeoutMillis:        60_000,   // 60s idle before releasing connection
-  connectionTimeoutMillis:  3000,     // 3s to wait for NeonDB wake-up (fail fast)
+  connectionTimeoutMillis:  10000,    // 10s to wait for NeonDB wake-up (fail fast)
   statement_timeout:        5000,     // 5s max per query
   allowExitOnIdle:          true,
 });

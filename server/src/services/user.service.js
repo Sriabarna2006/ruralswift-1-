@@ -154,15 +154,19 @@ class UserService {
       await sendRegistrationOtp(normalisedEmail, otp);
       logger.info('Registration OTP sent', { email: normalisedEmail });
     } catch (err) {
+      // Log the error but NEVER block the registration flow.
+      // The OTP is already persisted in the DB — the user can verify it
+      // once the email arrives (or an admin can relay it from the server log).
       if (hasSmtpConfig) {
-        logger.error('Failed to send registration OTP email', { email: normalisedEmail, error: err.message });
-        const mailErr = new Error('Failed to send verification email. Please check if your email address is correct and active.');
-        mailErr.status = 400;
-        throw mailErr;
+        logger.error('Failed to send registration OTP email — returning success anyway so UI shows OTP step', {
+          email: normalisedEmail,
+          error: err.message,
+        });
       } else {
-        logger.warn('Failed to send registration OTP email. Falling back to mock mode.', { email: normalisedEmail, message: err.message });
-        console.log(`\n\n[MAILER FALLBACK] Registration OTP for ${normalisedEmail} is: ${otp}\n\n`);
+        logger.warn('No SMTP config — using mock mode.', { email: normalisedEmail, message: err.message });
       }
+      // Always print OTP to server console as a fallback (visible in Vercel/Railway logs)
+      console.log(`\n\n[MAILER FALLBACK] Registration OTP for ${normalisedEmail} is: ${otp}\n\n`);
     }
 
     return {

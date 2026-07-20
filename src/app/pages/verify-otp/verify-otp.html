@@ -1,0 +1,93 @@
+<!-- VERIFY OTP PAGE -->
+<div class="auth-page">
+
+  <!-- ═══ LEFT PANEL ═══ -->
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="brand-logo">🏪</div>
+      <div class="auth-portal-badge">📧 Email Verification</div>
+      <h1 class="brand-title">RuralSwift</h1>
+      <p class="brand-sub">One last step — verify your email to activate your account.</p>
+    </div>
+    <div class="benefits">
+      <div class="benefit-item">
+        <span class="benefit-icon">📧</span>
+        <span class="benefit-text">OTP sent to <strong>{{ maskedEmail }}</strong></span>
+      </div>
+      <div class="benefit-item">
+        <span class="benefit-icon">⏱️</span>
+        <span class="benefit-text">OTP expires in 10 minutes</span>
+      </div>
+      <div class="benefit-item">
+        <span class="benefit-icon">🔒</span>
+        <span class="benefit-text">Secure 6-digit verification code</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ RIGHT FORM ═══ -->
+  <div class="auth-right">
+    <div class="auth-card">
+      <div class="otp-screen">
+
+        <!-- Animated icon -->
+        <div class="otp-icon-wrap">
+          <div class="otp-icon">📩</div>
+        </div>
+
+        <h2 class="auth-heading">Check your email</h2>
+        <p class="otp-desc">
+          We sent a <strong>6-digit verification code</strong> to<br/>
+          <span class="otp-email">{{ email }}</span>
+        </p>
+
+        <!-- Error / Success alerts -->
+        <div *ngIf="errorMessage" class="auth-alert auth-alert--error">
+          <span class="alert-icon">⚠️</span> {{ errorMessage }}
+        </div>
+        <div *ngIf="successMessage" class="auth-alert auth-alert--success">
+          <span class="alert-icon">✅</span> {{ successMessage }}
+        </div>
+
+        <form (ngSubmit)="verifyOtp()" class="auth-form">
+          <div class="form-field">
+            <label for="otp">Verification Code</label>
+            <input
+              id="otp"
+              type="text"
+              class="form-input otp-input"
+              placeholder="Enter 6-digit code"
+              [(ngModel)]="otp"
+              name="otp"
+              required
+              inputmode="numeric"
+              maxlength="6"
+              autocomplete="one-time-code"
+              [disabled]="isLoading" />
+            <span class="otp-hint">Check your spam folder if you don't see it in your inbox</span>
+          </div>
+
+          <button type="submit" class="auth-submit" [disabled]="isLoading">
+            <span *ngIf="!isLoading">Verify &amp; Activate Account ✓</span>
+            <span *ngIf="isLoading" class="btn-spinner">⏳ Verifying...</span>
+          </button>
+        </form>
+
+        <!-- Back / Resend -->
+        <div class="otp-actions">
+          <button class="otp-back-btn" routerLink="/register" [disabled]="isLoading">
+            ← Register with a different email
+          </button>
+          <button
+            class="otp-resend-btn"
+            [disabled]="countdown > 0 || isLoading"
+            (click)="resendOtp()">
+            {{ countdown > 0 ? 'Resend in ' + countdown + 's' : 'Resend OTP' }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
