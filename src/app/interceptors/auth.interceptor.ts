@@ -61,18 +61,22 @@ export const authInterceptor: HttpInterceptorFn = (
       }
 
       // ── 401 — Token expired or missing → force re-login ──────────────────
-      // ── 403 — Token tampered / invalid signature ──────────────────────────
-      if (error.status === 401 || error.status === 403) {
+      // Only 401 means the user is NOT authenticated (bad/expired token).
+      // Clearing the session here is correct.
+      if (error.status === 401) {
         authState.clearSession();
-
         const url = router.url;
-        const isSellerRoute = url.startsWith('/seller-hub');
-
-        // Keep seller users on the dedicated dashboard instead of bouncing to the generic login screen.
-        if (!url.startsWith('/login') && !url.startsWith('/register') && !isSellerRoute) {
+        if (!url.startsWith('/login') && !url.startsWith('/register')) {
           router.navigate(['/login']);
         }
       }
+
+      // ── 403 — Forbidden (authenticated but wrong role) ────────────────────
+      // The user IS logged in — their token is valid — they just don't have
+      // permission (e.g. a customer hitting a seller-only endpoint).
+      // Do NOT clear the session or redirect to login here.
+      // The individual component (seller-hub, driver-dashboard, etc.) will
+      // show an "Access denied" message using the thrown error below.
 
       // Re-throw for individual components to handle if needed
       return throwError(() => error);
