@@ -115,11 +115,12 @@
           <!-- Image -->
           <div class="shop-product-img-wrap">
             <img
-              [src]="product.image_url || placeholderImage"
+              [src]="product.image_url || imageKit.fallback(product.category)"
               [alt]="product.name"
               class="pl-product-img"
               loading="lazy"
               [attr.decoding]="'async'"
+              (error)="$any($event.target).src = imageKit.fallback(product.category); $any($event.target).onerror = null"
             />
             @if (discount(product.price, product.mrp) > 0) {
               <span class="shop-badge">-{{ discount(product.price, product.mrp) }}%</span>

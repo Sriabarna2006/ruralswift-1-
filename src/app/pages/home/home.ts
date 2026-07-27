@@ -42,15 +42,15 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   public heroSlides = [
     {
-      image: this.imageKit.resolve('hero-cookware.webp', 'hero'),
+      image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1920&h=600&fit=crop&q=80',
       link: 'Home & Kitchen'
     },
     {
-      image: this.imageKit.resolve('hero-electronics.webp', 'hero'),
+      image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1920&h=600&fit=crop&q=80',
       link: 'Electronics'
     },
     {
-      image: this.imageKit.resolve('hero-fashion.webp', 'hero'),
+      image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=1920&h=600&fit=crop&q=80',
       link: 'Clothing'
     },
   ];
@@ -60,43 +60,43 @@ export class HomeComponent implements OnInit, OnDestroy {
       title: 'Up to 60% off | Cookware, kitchen tool & more',
       category: 'Home & Kitchen',
       images: [
-        this.imageKit.resolve('cookware-1.webp', 'category'),
-        this.imageKit.resolve('cookware-2.webp', 'category'),
-        this.imageKit.resolve('cookware-3.webp', 'category'),
-        this.imageKit.resolve('cookware-4.webp', 'category'),
+        'https://images.unsplash.com/photo-1585515320310-259814833e62?w=400&h=400&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1593618998160-e34014e67546?w=400&h=400&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=400&h=400&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1565538810643-b5bdb714032a?w=400&h=400&fit=crop&q=80',
       ],
       linkText: 'See all'
     },
     {
-      title: 'Best Sellers in Beauty',
-      category: 'Medicine & Health',
+      title: 'Best Sellers in Seeds & Fertilizers',
+      category: 'Seeds & Fertilizers',
       images: [
-        this.imageKit.resolve('beauty-1.webp', 'category'),
-        this.imageKit.resolve('beauty-2.webp', 'category'),
-        this.imageKit.resolve('beauty-3.webp', 'category'),
-        this.imageKit.resolve('beauty-4.webp', 'category'),
+        'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=400&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400&h=400&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=400&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?w=400&h=400&fit=crop&q=80',
       ],
       linkText: 'See more'
     },
     {
-      title: '50 - 80% off | Sports, outdoor & more',
+      title: '50 - 80% off | Tools, hardware & more',
       category: 'Tools & Hardware',
       images: [
-        this.imageKit.resolve('sports-1.webp', 'category'),
-        this.imageKit.resolve('sports-2.webp', 'category'),
-        this.imageKit.resolve('sports-3.webp', 'category'),
-        this.imageKit.resolve('sports-4.webp', 'category'),
+        'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=400&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=400&h=400&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=400&h=400&fit=crop&q=80',
       ],
       linkText: 'See all deals'
     },
     {
-      title: "Minimum 50% off | Men's clothing",
-      category: 'Clothing',
+      title: 'Best Farming Equipment | Tractor, ploughs & more',
+      category: 'Farming Equipment',
       images: [
-        this.imageKit.resolve('mens-1.webp', 'category'),
-        this.imageKit.resolve('mens-2.webp', 'category'),
-        this.imageKit.resolve('mens-3.webp', 'category'),
-        this.imageKit.resolve('mens-4.webp', 'category'),
+        'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=400&h=400&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=400&h=400&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1589923188900-85dae523342b?w=400&h=400&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1587381420270-3e1a5b9e6904?w=400&h=400&fit=crop&q=80',
       ],
       linkText: 'See all deals'
     }
