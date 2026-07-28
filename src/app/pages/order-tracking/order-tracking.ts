@@ -86,21 +86,6 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
         const o = res.data?.order;
         if (!o) { this.isLoading.set(false); this.error.set('Order not found.'); return; }
         
-        // --- RuralSwift FastTrack Optimization Logic ---
-        // For presentation: dynamically show how RuralSwift cuts down delivery time.
-        // We use the order.id to pseudo-randomly pick long, medium, or short distances.
-        const idVal = o.order_id || 1;
-        if (idVal % 3 === 0) {
-          // Simulate Long-Distance Village Delivery
-          this.fastTrack.set({ standard: 8, optimized: 5, saved: 3, unit: 'Days' });
-        } else if (idVal % 3 === 1) {
-          // Simulate Inter-city/District Delivery
-          this.fastTrack.set({ standard: 48, optimized: 24, saved: 24, unit: 'Hours' });
-        } else {
-          // Simulate Near/Local Village Delivery
-          this.fastTrack.set({ standard: 45, optimized: 20, saved: 25, unit: 'Mins' });
-        }
-        
         this.order.set(o);
         this.timeline.set(this.buildTimeline(o));
         this.isLoading.set(false);
