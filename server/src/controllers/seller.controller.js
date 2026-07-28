@@ -71,7 +71,7 @@ exports.getOrders = async (req, res, next) => {
 
 exports.updateOrderStatus = async (req, res, next) => {
   try {
-    const { status, trackingNumber } = req.body;
+    const { status, trackingNumber, deliveryOtp } = req.body;
     if (!status) return sendError(res, 400, 'status is required.', 'VALIDATION_ERROR');
 
     const validStatuses = ['confirmed', 'packed', 'shipped', 'out_for_delivery', 'delivered'];
@@ -79,19 +79,21 @@ exports.updateOrderStatus = async (req, res, next) => {
       return sendError(res, 400, `Invalid status. Must be one of: ${validStatuses.join(', ')}.`, 'VALIDATION_ERROR');
     }
 
-    const order = await sellerService.updateOrderStatus(parseInt(req.params.id), status, trackingNumber);
+    const order = await sellerService.updateOrderStatus(
+      parseInt(req.params.id), status, { trackingNumber, deliveryOtp }
+    );
     if (!order) return sendError(res, 404, 'Order not found.', 'NOT_FOUND');
-    
+
     sendSuccess(res, 200, 'Order status updated.', { data: { order } });
-  } catch (err) { next(err); }
+  } catch (err) {
+    if (err.message.includes('Invalid Delivery OTP')) return sendError(res, 400, err.message, 'INVALID_OTP');
+    next(err);
+  }
 };
 
 exports.getDrivers = async (req, res, next) => {
   try {
-    const { pool } = require('../config/db');
-    const { rows } = await pool.query(
-      `SELECT user_id, name, email, phone FROM users WHERE role = 'delivery'`
-    );
-    sendSuccess(res, 200, 'Drivers fetched.', { data: { drivers: rows } });
+    const drivers = await sellerService.getDrivers();
+    sendSuccess(res, 200, 'Drivers fetched.', { data: { drivers } });
   } catch (err) { next(err); }
 };

@@ -1,10 +1,7 @@
 'use strict';
 const deliveryService = require('../services/delivery.service');
 const { sendSuccess, sendError } = require('../utils/response');
-
-// In-memory store: driverId -> { lat, lng, updatedAt }
-// (Simple approach — no DB change needed; resets on server restart)
-const driverLocations = new Map();
+const { pool } = require('../config/db');
 
 class DeliveryController {
   async createRun(req, res, next) {
@@ -34,7 +31,16 @@ class DeliveryController {
     try {
       const { lat, lng } = req.body;
       if (!lat || !lng) return sendError(res, 400, 'lat and lng are required', 'VALIDATION_ERROR');
-      driverLocations.set(req.user.id, { lat: parseFloat(lat), lng: parseFloat(lng), updatedAt: new Date() });
+      const parsedLat = parseFloat(lat);
+      const parsedLng = parseFloat(lng);
+      // Persist to DB so location survives serverless cold starts
+      await pool.query(
+        `INSERT INTO driver_locations (driver_id, lat, lng, updated_at)
+         VALUES ($1, $2, $3, NOW())
+         ON CONFLICT (driver_id) DO UPDATE
+           SET lat = EXCLUDED.lat, lng = EXCLUDED.lng, updated_at = NOW()`,
+        [req.user.id, parsedLat, parsedLng]
+      );
       return sendSuccess(res, 200, 'Location updated.', {});
     } catch (err) {
       next(err);
@@ -56,20 +62,25 @@ class DeliveryController {
         return sendSuccess(res, 200, 'Driver not yet assigned.', { data: { driverAssigned: false } });
       }
 
-      const location = driverLocations.get(run.driver_id);
+      // Fetch location from DB (persisted across serverless invocations)
+      const { rows } = await pool.query(
+        `SELECT lat, lng, updated_at FROM driver_locations WHERE driver_id = $1`,
+        [run.driver_id]
+      );
+      const location = rows[0];
       if (!location) {
         return sendSuccess(res, 200, 'Driver location not yet available.', { data: { driverAssigned: true, locationAvailable: false } });
       }
 
-      const ageMs = Date.now() - new Date(location.updatedAt).getTime();
+      const ageMs = Date.now() - new Date(location.updated_at).getTime();
       return sendSuccess(res, 200, 'Driver location fetched.', {
         data: {
-          driverAssigned: true,
+          driverAssigned:    true,
           locationAvailable: true,
-          lat: location.lat,
-          lng: location.lng,
-          updatedAt: location.updatedAt,
-          isStale: ageMs > 30000 // older than 30 seconds
+          lat:       parseFloat(location.lat),
+          lng:       parseFloat(location.lng),
+          updatedAt: location.updated_at,
+          isStale:   ageMs > 30000 // older than 30 seconds
         }
       });
     } catch (err) {

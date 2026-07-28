@@ -33,9 +33,10 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
   public imageKit = inject(ImageKitService);
   public readonly placeholderImage = this.imageKit.placeholder();
 
-  public searchId   = signal('');
-  public isLoading  = signal(false);
-  public error      = signal('');
+  public searchId    = signal('');
+  public isLoading   = signal(false);
+  public isCancelling = signal(false);
+  public error       = signal('');
   public order           = signal<Order | null>(null);
   public timeline        = signal<TimelineStep[]>([]);
   public fastTrack       = signal<{ standard: number, optimized: number, saved: number, unit: string } | null>(null);
@@ -407,5 +408,33 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
       }).addTo(this.map);
       this.map.fitBounds(L.latLngBounds([[driverLat, driverLng], [deliveryLat, deliveryLng]]), { padding: [50, 50] });
     }
+  }
+
+  /** Cancel a pending order */
+  cancelOrder(): void {
+    const o = this.order();
+    if (!o) return;
+    if (!confirm('Are you sure you want to cancel this order?')) return;
+
+    this.isCancelling.set(true);
+    this.error.set('');
+
+    this.api.cancelOrder(o.order_id).subscribe({
+      next: (res) => {
+        this.isCancelling.set(false);
+        // Refresh order to show updated status
+        const updated = res.data?.['order'] as Order | undefined;
+        if (updated) {
+          this.order.set(updated);
+          this.timeline.set(this.buildTimeline(updated));
+        } else {
+          this.trackOrder();
+        }
+      },
+      error: (err) => {
+        this.isCancelling.set(false);
+        this.error.set(err.error?.message || 'Failed to cancel order. Please try again.');
+      }
+    });
   }
 }

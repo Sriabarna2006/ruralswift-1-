@@ -111,8 +111,10 @@ export class RegisterComponent {
       },
       error: (err) => {
         this.isLoading = false;
-        if (err?.name === 'TimeoutError' || err?.status === 0) {
-          this.errorMessage = 'Server is not responding. Please make sure the backend is running.';
+        if (err?.name === 'TimeoutError') {
+          this.errorMessage = 'Request timed out. Please check your internet connection and try again.';
+        } else if (err?.status === 0) {
+          this.errorMessage = 'Cannot reach the server. Please check your connection and try again.';
         } else {
           this.errorMessage = err.error?.message || 'Registration failed. Please try again.';
         }

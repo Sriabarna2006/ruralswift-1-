@@ -57,10 +57,54 @@ class SellerService {
     return sellerRepository.findOrdersBySeller(sellerId, { status, page, limit });
   }
 
-  async updateOrderStatus(orderId, status, trackingNumber) {
+  /**
+   * Update the status of an order.
+   * @param {number} orderId
+   * @param {string} status
+   * @param {{ trackingNumber?: string, deliveryOtp?: string }} [options]
+   */
+  async updateOrderStatus(orderId, status, options = {}) {
+    const { trackingNumber, deliveryOtp } = typeof options === 'object' ? options : { trackingNumber: options };
+
+    // If marking as delivered, validate OTP if one is set on the order
+    if (status === 'delivered') {
+      const { pool } = require('../config/db');
+      const { rows } = await pool.query(
+        `SELECT delivery_otp FROM orders WHERE order_id = $1`,
+        [orderId]
+      );
+      const order = rows[0];
+      if (!order) throw new Error('Order not found.');
+      if (order.delivery_otp && deliveryOtp !== order.delivery_otp) {
+        throw new Error('Invalid Delivery OTP.');
+      }
+    }
+
     const updated = await sellerRepository.updateOrderStatus(orderId, status, trackingNumber);
     if (!updated) throw new Error('Order not found.');
     return updated;
+  }
+
+  /** Fetch all active delivery drivers, formatted for the frontend dropdown */
+  async getDrivers() {
+    const { pool } = require('../config/db');
+    const { rows } = await pool.query(
+      `SELECT user_id, name, email, phone
+       FROM users
+       WHERE role = 'delivery'
+       ORDER BY name ASC`
+    );
+    return rows.map(u => {
+      const parts = (u.name || '').trim().split(/\s+/);
+      return {
+        user_id:    u.user_id,
+        name:       u.name || '',
+        first_name: parts[0] || '',
+        last_name:  parts.length > 1 ? parts.slice(1).join(' ') : '',
+        email:      u.email || '',
+        phone:      u.phone || '',
+      };
+    });
   }
 }
 

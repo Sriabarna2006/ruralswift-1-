@@ -108,67 +108,29 @@ class UserService {
 
     const hasSmtpConfig = !!(env.smtp && env.smtp.user && env.smtp.pass && env.smtp.from);
 
-    if (hasSmtpConfig) {
-      const dns = require('dns').promises;
-      const resolver = new dns.Resolver();
+    // ── Send OTP email in background (fire-and-forget) ──────────────────────
+    // We NEVER block the HTTP response waiting for SMTP.
+    // The OTP is already persisted in the DB — the user can verify it
+    // once the email arrives. On failure we log and print to console.
+    (async () => {
       try {
-        resolver.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
-      } catch (e) {
-        logger.warn('Could not set custom DNS servers', { error: e.message });
+        await sendRegistrationOtp(normalisedEmail, otp);
+        logger.info('Registration OTP sent', { email: normalisedEmail });
+      } catch (err) {
+        if (hasSmtpConfig) {
+          logger.error('Failed to send registration OTP email (background)', {
+            email: normalisedEmail,
+            error: err.message,
+          });
+        } else {
+          logger.warn('No SMTP config — using mock mode.', { email: normalisedEmail, message: err.message });
+        }
+        // Always print OTP to server console as a fallback (visible in Vercel/Railway logs)
+        console.log(`\n\n[MAILER FALLBACK] Registration OTP for ${normalisedEmail} is: ${otp}\n\n`);
       }
-      
-      const domain = normalisedEmail.split('@')[1];
-      try {
-        const dnsTimeout = new Promise((_, reject) => {
-          const t = setTimeout(() => reject(new Error('DNS timeout')), 3000);
-          t.unref?.(); // let node exit if this timer is active
-        });
-        const mxRecords = await Promise.race([
-          resolver.resolveMx(domain),
-          dnsTimeout
-        ]);
-        if (!mxRecords || mxRecords.length === 0) {
-          const err = new Error('The email domain does not have valid mail server records (MX). Please use an active email.');
-          err.status = 400;
-          throw err;
-        }
-      } catch (dnsErr) {
-        if (dnsErr.status === 400) {
-          throw dnsErr;
-        }
-        
-        const definitiveCodes = ['ENOTFOUND', 'ENODATA'];
-        if (definitiveCodes.includes(dnsErr.code)) {
-          logger.warn('Email domain validation failed — domain not found or has no MX records', { domain, code: dnsErr.code });
-          const err = new Error('The email domain is invalid or inactive. Please provide an active email.');
-          err.status = 400;
-          throw err;
-        }
-        
-        // Bypassing network/system DNS errors to avoid breaking registrations when outbound DNS is blocked by environment
-        logger.warn('Email domain MX lookup bypassed due to DNS connection/system issue', { domain, error: dnsErr.message, code: dnsErr.code });
-      }
-    }
+    })();
 
-    try {
-      await sendRegistrationOtp(normalisedEmail, otp);
-      logger.info('Registration OTP sent', { email: normalisedEmail });
-    } catch (err) {
-      // Log the error but NEVER block the registration flow.
-      // The OTP is already persisted in the DB — the user can verify it
-      // once the email arrives (or an admin can relay it from the server log).
-      if (hasSmtpConfig) {
-        logger.error('Failed to send registration OTP email — returning success anyway so UI shows OTP step', {
-          email: normalisedEmail,
-          error: err.message,
-        });
-      } else {
-        logger.warn('No SMTP config — using mock mode.', { email: normalisedEmail, message: err.message });
-      }
-      // Always print OTP to server console as a fallback (visible in Vercel/Railway logs)
-      console.log(`\n\n[MAILER FALLBACK] Registration OTP for ${normalisedEmail} is: ${otp}\n\n`);
-    }
-
+    // ── Return immediately — do NOT await email ───────────────────────────────
     return {
       verificationRequired: true,
       email: normalisedEmail,
@@ -350,7 +312,7 @@ class UserService {
     await userRepository.createResetToken(user.user_id, tokenHash, expiresAt);
 
     const resetLink = `${env.passwordReset.baseUrl}/reset-password?token=${rawToken}`;
-    console.log('\n*** [DEBUG] Reset Link:', resetLink, '\n');
+    logger.info('Password reset link generated', { userId: user.user_id });
     try {
       await sendPasswordResetEmail(normalisedEmail, resetLink);
       logger.info('Password reset email sent', { userId: user.user_id });

@@ -252,11 +252,18 @@
             <a routerLink="/account" [queryParams]="{tab:'orders'}" class="ot-action-btn ot-action-btn--ghost">
               ← All Orders
             </a>
-            @if (order()!.status === 'pending') {
-              <button class="ot-action-btn ot-action-btn--danger">Cancel Order</button>
+            @if (order()!.status === 'pending' || order()!.status === 'confirmed') {
+              <button
+                class="ot-action-btn ot-action-btn--danger"
+                (click)="cancelOrder()"
+                [disabled]="isCancelling()"
+                id="btn-cancel-order"
+              >
+                @if (isCancelling()) { Cancelling… } @else { Cancel Order }
+              </button>
             }
             @if (order()!.status === 'delivered') {
-              <button class="ot-action-btn ot-action-btn--primary">Rate & Review</button>
+              <button class="ot-action-btn ot-action-btn--primary" id="btn-rate-review">Rate &amp; Review</button>
             }
           </div>
         </div>

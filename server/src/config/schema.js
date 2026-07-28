@@ -312,6 +312,17 @@ async function createTables() {
     await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_run_id INT REFERENCES delivery_runs(id) ON DELETE SET NULL`);
     await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_sequence INT DEFAULT 0`);
 
+    // ── 15. Driver Live Location ───────────────────────────────────────────────────
+    // Stores the last known GPS ping for each driver — survives serverless restarts.
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS driver_locations (
+        driver_id   INT          PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
+        lat         NUMERIC(10,7) NOT NULL,
+        lng         NUMERIC(10,7) NOT NULL,
+        updated_at  TIMESTAMP    NOT NULL DEFAULT NOW()
+      )
+    `);
+
 
     console.log('✅  [Schema] Migration complete');
     console.log('    → Tables: users, seller_profiles, products, cart_items, orders, order_items, addresses, wishlist, notifications, password_reset_tokens, reviews, coupons');
