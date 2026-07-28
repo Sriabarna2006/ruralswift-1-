@@ -128,8 +128,26 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
   /** Build the order status timeline steps */
   private buildTimeline(o: Order): TimelineStep[] {
     const rawStatus = o.status?.toLowerCase() ?? 'pending';
-    const currentIdx = this.STATUSES.findIndex(s => s.key === rawStatus);
     const base = new Date(o.created_at);
+
+    if (rawStatus === 'cancelled') {
+      return [
+        {
+          key: 'pending', label: 'Order Placed', emoji: '📦',
+          completed: true, current: false,
+          date: this.formatDate(o.created_at || ''),
+          time: new Date(o.created_at || '').toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+        },
+        {
+          key: 'cancelled', label: 'Order Cancelled', emoji: '❌',
+          completed: true, current: true,
+          date: this.formatDate(o.cancelled_at || o.updated_at || ''),
+          time: new Date(o.cancelled_at || o.updated_at || '').toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+        }
+      ];
+    }
+
+    const currentIdx = this.STATUSES.findIndex(s => s.key === rawStatus);
 
     return this.STATUSES.map((s, i) => {
       const completed = i <= currentIdx;
@@ -372,6 +390,7 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
 
   get progressPercent(): number {
     const t = this.timeline();
+    if (t.some(s => s.key === 'cancelled')) return 100;
     const last = [...t].reverse().findIndex(s => s.completed);
     const idx = last === -1 ? 0 : t.length - 1 - last;
     return Math.round((idx / (this.STATUSES.length - 1)) * 100);
@@ -584,16 +603,10 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
     this.error.set('');
 
     this.api.cancelOrder(o.order_id).subscribe({
-      next: (res) => {
+      next: () => {
         this.isCancelling.set(false);
-        // Refresh order to show updated status
-        const updated = res.data?.['order'] as Order | undefined;
-        if (updated) {
-          this.order.set(updated);
-          this.timeline.set(this.buildTimeline(updated));
-        } else {
-          this.trackOrder();
-        }
+        // Reload the full order to properly populate items array and trigger UI updates
+        this.trackOrder();
       },
       error: (err) => {
         this.isCancelling.set(false);
