@@ -284,7 +284,7 @@
               </button>
             }
             @if (order()!.status === 'delivered') {
-              <button class="ot-action-btn ot-action-btn--primary" id="btn-rate-review">Rate &amp; Review</button>
+              <button class="ot-action-btn ot-action-btn--primary" id="btn-rate-review" (click)="openReviewModal(order()!.items[0])">Rate &amp; Review</button>
             }
           </div>
         </div>
@@ -307,3 +307,48 @@
   }
 
 </div>
+
+<!-- Rate & Review Modal -->
+@if (showReviewModal()) {
+  <div class="review-modal-overlay" (click)="closeReviewModal()">
+    <div class="review-modal" (click)="$event.stopPropagation()">
+      <div class="review-modal-header">
+        <h3>Rate Your Product</h3>
+        <button class="review-close-btn" (click)="closeReviewModal()">&times;</button>
+      </div>
+      <div class="review-modal-body">
+        <div class="review-product-info">
+          <img [src]="reviewProduct()?.image_url || placeholderImage" alt="Product" class="review-product-img">
+          <p>{{ reviewProduct()?.name }}</p>
+        </div>
+        
+        <div class="review-stars">
+          @for (star of [1,2,3,4,5]; track star) {
+            <span class="star" [class.active]="star <= reviewRating()" (click)="setRating(star)">★</span>
+          }
+        </div>
+
+        <div class="review-form-group">
+          <label>Headline</label>
+          <input type="text" [ngModel]="reviewTitle()" (ngModelChange)="reviewTitle.set($event)" placeholder="Sum up your experience (optional)">
+        </div>
+
+        <div class="review-form-group">
+          <label>Review</label>
+          <textarea [ngModel]="reviewBody()" (ngModelChange)="reviewBody.set($event)" rows="4" placeholder="What did you like or dislike? (optional)"></textarea>
+        </div>
+
+        @if (reviewError()) {
+          <div class="review-alert review-alert-error">{{ reviewError() }}</div>
+        }
+        @if (reviewSuccess()) {
+          <div class="review-alert review-alert-success">{{ reviewSuccess() }}</div>
+        }
+
+        <button class="ot-action-btn ot-action-btn--primary" style="width: 100%; justify-content: center;" [disabled]="reviewSubmitting()" (click)="submitReview()">
+          @if (reviewSubmitting()) { Submitting... } @else { Submit Review }
+        </button>
+      </div>
+    </div>
+  </div>
+}

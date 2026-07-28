@@ -418,6 +418,12 @@ export class ApiService {
     return this.http.post<ApiResponse<{ order: Order }>>(`${this.baseUrl}/orders/${id}/cancel`, {});
   }
 
+  // ── Reviews ───────────────────────────────────────────────────────────────
+
+  submitReview(productId: number, data: { rating: number; title: string; body: string; order_id: number }): Observable<ApiResponse<{ review: any }>> {
+    return this.http.post<ApiResponse<{ review: any }>>(`${this.baseUrl}/products/${productId}/reviews`, data);
+  }
+
   // ── Notifications ─────────────────────────────────────────────────────────
 
   getNotifications(limit: number = 20): Observable<ApiResponse<{ notifications: Notification[]; unreadCount: number }>> {

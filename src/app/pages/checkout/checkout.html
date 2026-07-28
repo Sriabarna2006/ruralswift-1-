@@ -283,3 +283,48 @@
     </div>
   }
 </div>
+
+<!-- Razorpay Mock Payment Gateway -->
+@if (showPaymentGateway()) {
+  <div class="rzp-overlay">
+    <div class="rzp-modal">
+      <div class="rzp-header">
+        <div class="rzp-logo-group">
+          <div class="rzp-brand-logo">₹</div>
+          <div>
+            <div class="rzp-title">Razorpay (Test Mode)</div>
+            <div class="rzp-subtitle">Secure Payment to RuralSwift</div>
+          </div>
+        </div>
+      </div>
+      <div class="rzp-body">
+        <div class="rzp-amount">
+          <span class="rzp-label">Amount Payable:</span>
+          <span class="rzp-val">{{ fmt(total()) }}</span>
+        </div>
+        <div class="rzp-method">
+          Paying via {{ paymentMethod() === 'upi' ? 'UPI / ' + upiId() : 'Credit/Debit Card' }}
+        </div>
+        
+        <div class="rzp-actions">
+          <button class="rzp-btn-pay" (click)="processPayment()" [disabled]="paymentProcessing()">
+            @if (paymentProcessing()) { Processing... } @else { Simulate Success }
+          </button>
+          <button class="rzp-btn-cancel" (click)="cancelPayment()" [disabled]="paymentProcessing()">
+            Cancel Payment
+          </button>
+        </div>
+        
+        @if (paymentProcessing()) {
+          <div class="rzp-loading">
+            <div class="rzp-spinner"></div>
+            <p>Please wait, redirecting to bank...</p>
+          </div>
+        }
+      </div>
+      <div class="rzp-footer">
+        Secured by <strong>Razorpay</strong>
+      </div>
+    </div>
+  </div>
+}

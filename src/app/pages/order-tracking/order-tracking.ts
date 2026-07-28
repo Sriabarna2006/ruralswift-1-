@@ -45,6 +45,16 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
   public driverLocation  = signal<{ lat: number; lng: number; isStale: boolean } | null>(null);
   public etaWindow       = signal<{ earliest: string; latest: string; etaMins: number } | null>(null);
 
+  // Rate & Review state
+  public showReviewModal = signal(false);
+  public reviewProduct   = signal<any>(null);
+  public reviewRating    = signal(0);
+  public reviewTitle     = signal('');
+  public reviewBody      = signal('');
+  public reviewSubmitting = signal(false);
+  public reviewError     = signal('');
+  public reviewSuccess   = signal('');
+
   @ViewChild('trackingMap') mapContainer?: ElementRef;
   private map?: L.Map;
   private driverPollInterval: any = null;
@@ -597,6 +607,55 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.isCancelling.set(false);
         this.error.set(err.error?.message || 'Failed to cancel order. Please try again.');
+      }
+    });
+  }
+
+  // --- Rate & Review logic ---
+  openReviewModal(product: any): void {
+    this.reviewProduct.set(product);
+    this.reviewRating.set(0);
+    this.reviewTitle.set('');
+    this.reviewBody.set('');
+    this.reviewError.set('');
+    this.reviewSuccess.set('');
+    this.showReviewModal.set(true);
+  }
+
+  closeReviewModal(): void {
+    this.showReviewModal.set(false);
+  }
+
+  setRating(stars: number): void {
+    this.reviewRating.set(stars);
+  }
+
+  submitReview(): void {
+    const p = this.reviewProduct();
+    const o = this.order();
+    if (!p || !o) return;
+    if (this.reviewRating() === 0) {
+      this.reviewError.set('Please select a rating.');
+      return;
+    }
+
+    this.reviewSubmitting.set(true);
+    this.reviewError.set('');
+
+    this.api.submitReview(p.product_id, {
+      rating: this.reviewRating(),
+      title: this.reviewTitle(),
+      body: this.reviewBody(),
+      order_id: o.order_id
+    }).subscribe({
+      next: () => {
+        this.reviewSubmitting.set(false);
+        this.reviewSuccess.set('Review submitted successfully!');
+        setTimeout(() => this.closeReviewModal(), 2000);
+      },
+      error: (err) => {
+        this.reviewSubmitting.set(false);
+        this.reviewError.set(err.error?.message || 'Failed to submit review.');
       }
     });
   }

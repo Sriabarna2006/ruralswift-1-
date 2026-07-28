@@ -40,6 +40,10 @@ export class CheckoutComponent implements OnInit {
   public placingOrder  = signal(false);
   public placedOrder   = signal<Order | null>(null);
   public upiId         = signal('');
+  
+  // Fake Razorpay State
+  public showPaymentGateway = signal(false);
+  public paymentProcessing  = signal(false);
 
   public steps: { id: CheckoutStep; label: string }[] = [
     { id: 'address', label: 'Address' },
@@ -127,6 +131,30 @@ export class CheckoutComponent implements OnInit {
 
   placeOrder(): void {
     if (!this.selectedAddr()) { this.toast.error('Select an address first'); return; }
+    
+    if (this.paymentMethod() === 'upi' || this.paymentMethod() === 'card') {
+      // Simulate Razorpay Gateway Opening
+      this.showPaymentGateway.set(true);
+    } else {
+      this.finalizeOrder();
+    }
+  }
+
+  processPayment(): void {
+    this.paymentProcessing.set(true);
+    setTimeout(() => {
+      this.paymentProcessing.set(false);
+      this.showPaymentGateway.set(false);
+      this.finalizeOrder();
+    }, 2500);
+  }
+
+  cancelPayment(): void {
+    this.showPaymentGateway.set(false);
+    this.toast.error('Payment cancelled by user.');
+  }
+
+  private finalizeOrder(): void {
     const addr = this.selectedAddr()!;
     const fullAddress = `${addr.full_name}, ${addr.address_line1}, ${addr.city}, ${addr.state} ${addr.pincode}`;
 

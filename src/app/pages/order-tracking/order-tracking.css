@@ -602,3 +602,23 @@
   color: #fff;
   font-weight: 600;
 }
+
+/* Review Modal */
+.review-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(4px); }
+.review-modal { background: var(--surface-bg); width: 90%; max-width: 400px; border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-xl); }
+.review-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.review-modal-header h3 { font-size: 18px; font-weight: 800; margin: 0; }
+.review-close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted); }
+.review-product-info { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; background: var(--surface-hover); padding: 10px; border-radius: var(--radius-sm); }
+.review-product-img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
+.review-product-info p { margin: 0; font-size: 13px; font-weight: 600; }
+.review-stars { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
+.review-stars .star { font-size: 32px; color: #d1d5db; cursor: pointer; transition: color 0.2s; }
+.review-stars .star.active { color: #f59e0b; }
+.review-form-group { margin-bottom: 16px; }
+.review-form-group label { display: block; font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; }
+.review-form-group input, .review-form-group textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--surface-border); border-radius: var(--radius-sm); font-family: var(--font-family); font-size: 14px; resize: vertical; }
+.review-form-group input:focus, .review-form-group textarea:focus { outline: none; border-color: var(--primary); }
+.review-alert { padding: 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+.review-alert-error { background: #fee2e2; color: var(--danger); }
+.review-alert-success { background: #d1fae5; color: var(--accent-dark); }
