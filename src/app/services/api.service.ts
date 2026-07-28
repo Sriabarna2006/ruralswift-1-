@@ -82,6 +82,11 @@ export interface Order {
   created_at:       string;
   delivered_at?:    string;
   delivery_otp?:    string;
+  // Seller location fields (for real ETA calculation)
+  seller_lat?:      number | null;
+  seller_lng?:      number | null;
+  seller_address?:  string;
+  seller_name?:     string;
 }
 
 export interface Address {

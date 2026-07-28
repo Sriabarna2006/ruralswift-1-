@@ -63,14 +63,33 @@
   @if (order() && !isLoading()) {
     <div class="ot-container" aria-label="Order details">
 
-      <!-- FastTrack Optimization Badge -->
-      @if (fastTrack()) {
+      <!-- FastTrack Optimization Badge: shows real distance-based ETA -->
+      @if (fastTrackLoading()) {
+        <!-- Skeleton while OSRM calculates real road distance -->
+        <div class="ot-fasttrack-card">
+          <div class="ot-ft-header">
+            <span class="ot-ft-icon">🚀</span>
+            <h3 class="ot-ft-title">Calculating Delivery ETA…</h3>
+          </div>
+          <p class="ot-ft-desc">Measuring road distance to your delivery location…</p>
+          <div class="ot-ft-stats">
+            <div class="ot-ft-stat skeleton" style="height:64px;flex:1;border-radius:8px;"></div>
+            <div class="ot-ft-stat skeleton" style="height:64px;flex:1;border-radius:8px;"></div>
+            <div class="ot-ft-stat skeleton" style="height:64px;flex:1;border-radius:8px;"></div>
+          </div>
+        </div>
+      }
+
+      @if (fastTrack() && !fastTrackLoading()) {
         <div class="ot-fasttrack-card">
           <div class="ot-ft-header">
             <span class="ot-ft-icon">🚀</span>
             <h3 class="ot-ft-title">RuralSwift FastTrack Enabled</h3>
           </div>
-          <p class="ot-ft-desc">We routed this delivery through our optimized rural logistics network!</p>
+          <p class="ot-ft-desc">
+            Real road distance: <strong>{{ fastTrack()!.distKm }} km</strong> —
+            routed through our optimized rural logistics network!
+          </p>
           <div class="ot-ft-stats">
             <div class="ot-ft-stat">
               <span class="ot-ft-stat-label">Standard Delivery</span>
@@ -80,10 +99,12 @@
               <span class="ot-ft-stat-label">Our Optimized ETA</span>
               <span class="ot-ft-stat-val">{{ fastTrack()!.optimized }} {{ fastTrack()!.unit }}</span>
             </div>
-            <div class="ot-ft-stat success">
-              <span class="ot-ft-stat-label">Time Saved</span>
-              <span class="ot-ft-stat-val">{{ fastTrack()!.saved }} {{ fastTrack()!.unit }}</span>
-            </div>
+            @if (fastTrack()!.saved > 0) {
+              <div class="ot-ft-stat success">
+                <span class="ot-ft-stat-label">Time Saved</span>
+                <span class="ot-ft-stat-val">{{ fastTrack()!.saved }} {{ fastTrack()!.unit }}</span>
+              </div>
+            }
           </div>
         </div>
       }

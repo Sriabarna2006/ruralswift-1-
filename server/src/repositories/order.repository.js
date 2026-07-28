@@ -40,6 +40,11 @@ class OrderRepository {
 
     const { rows } = await pool.query(
       `SELECT o.*, u.name AS customer_name, u.email AS customer_email, u.phone AS customer_phone,
+              -- Seller location from the first item's seller profile (for ETA calculation)
+              sp.latitude  AS seller_lat,
+              sp.longitude AS seller_lng,
+              sp.business_address AS seller_address,
+              sp.business_name    AS seller_name,
               json_agg(json_build_object(
                 'product_id', oi.product_id, 'quantity', oi.quantity,
                 'unit_price', oi.unit_price, 'name', p.name, 'image_url', p.image_url
@@ -48,8 +53,9 @@ class OrderRepository {
        LEFT JOIN users u ON u.user_id = o.user_id
        LEFT JOIN order_items oi ON oi.order_id = o.order_id
        LEFT JOIN products p ON p.product_id = oi.product_id
+       LEFT JOIN seller_profiles sp ON sp.user_id = p.seller_id
        WHERE ${cond}
-       GROUP BY o.order_id, u.name, u.email, u.phone`,
+       GROUP BY o.order_id, u.name, u.email, u.phone, sp.latitude, sp.longitude, sp.business_address, sp.business_name`,
       values
     );
     return rows[0] || null;

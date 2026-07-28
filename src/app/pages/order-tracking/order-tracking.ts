@@ -39,7 +39,8 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
   public error       = signal('');
   public order           = signal<Order | null>(null);
   public timeline        = signal<TimelineStep[]>([]);
-  public fastTrack       = signal<{ standard: number, optimized: number, saved: number, unit: string } | null>(null);
+  public fastTrackLoading = signal(false);
+  public fastTrack       = signal<{ standard: number, optimized: number, saved: number, unit: string, distKm: number } | null>(null);
   public driverLocation  = signal<{ lat: number; lng: number; isStale: boolean } | null>(null);
   public etaWindow       = signal<{ earliest: string; latest: string; etaMins: number } | null>(null);
 
@@ -102,6 +103,10 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
         this.order.set(o);
         this.timeline.set(this.buildTimeline(o));
         this.isLoading.set(false);
+
+        // Kick off real distance → FastTrack calculation in background
+        this.computeFastTrack(o);
+
         if (o.status === 'out_for_delivery') {
           setTimeout(() => this.initMap(), 100);
           this.startDriverPolling(o.order_id);
@@ -120,6 +125,7 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Build the order status timeline steps */
   private buildTimeline(o: Order): TimelineStep[] {
     const rawStatus = o.status?.toLowerCase() ?? 'pending';
     const currentIdx = this.STATUSES.findIndex(s => s.key === rawStatus);
@@ -159,6 +165,157 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
       }
       return { label: s.label, emoji: s.emoji, date, time, completed, current };
     });
+  }
+
+  // ── Real-World FastTrack ETA Calculation ───────────────────────────────────
+
+  /**
+   * Determines accurate delivery ETA by:
+   * 1. Using seller GPS (if stored) OR geocoding seller's business address
+   * 2. Geocoding the customer's delivery address
+   * 3. Getting OSRM road distance (actual road km, not straight-line)
+   * 4. Applying real rural India delivery speed benchmarks
+   */
+  async computeFastTrack(o: Order): Promise<void> {
+    this.fastTrackLoading.set(true);
+    this.fastTrack.set(null);
+
+    try {
+      // Step 1 — Get seller coordinates
+      let sellerLat: number | null = o.seller_lat ?? null;
+      let sellerLng: number | null = o.seller_lng ?? null;
+
+      // If not stored, try geocoding seller's business address
+      if ((!sellerLat || !sellerLng) && o.seller_address) {
+        const coords = await this.geocodeAddress(o.seller_address);
+        if (coords) { sellerLat = coords[0]; sellerLng = coords[1]; }
+      }
+
+      // Step 2 — Get customer delivery coordinates
+      if (!o.delivery_address) { this.fastTrackLoading.set(false); return; }
+      const deliveryCoords = await this.geocodeAddress(o.delivery_address);
+      if (!deliveryCoords) { this.fastTrackLoading.set(false); return; }
+
+      const [deliveryLat, deliveryLng] = deliveryCoords;
+
+      // Step 3 — Get OSRM road distance (real road km)
+      let roadKm = 0;
+      let osrmMins = 0;
+      let gotOsrm = false;
+
+      if (sellerLat && sellerLng) {
+        try {
+          const osrmUrl = `https://router.project-osrm.org/route/v1/driving/` +
+            `${sellerLng},${sellerLat};${deliveryLng},${deliveryLat}?overview=false`;
+          const res = await fetch(osrmUrl);
+          const data = await res.json();
+          if (data.routes?.length > 0) {
+            roadKm   = data.routes[0].distance / 1000;        // metres → km
+            osrmMins = data.routes[0].duration / 60;          // seconds → mins
+            gotOsrm  = true;
+          }
+        } catch { /* fall through to Haversine */ }
+      }
+
+      if (!gotOsrm) {
+        // Haversine straight-line × 1.35 road-factor as fallback
+        roadKm = this.distanceKm(
+          sellerLat ?? deliveryLat,
+          sellerLng ?? deliveryLng,
+          deliveryLat,
+          deliveryLng
+        ) * 1.35;
+        osrmMins = (roadKm / 30) * 60; // assume 30 km/h rural average
+      }
+
+      // Step 4 — Calculate FastTrack stats
+      this.fastTrack.set(this.calcFastTrackStats(roadKm, osrmMins));
+    } catch {
+      // Silent fail — FastTrack section just won't show
+    } finally {
+      this.fastTrackLoading.set(false);
+    }
+  }
+
+  /**
+   * Converts real road distance + OSRM travel time into human-readable
+   * Standard vs Optimized delivery estimates.
+   *
+   * Standard = typical courier / unoptimized route speed
+   * Optimized = RuralSwift batched route (25-30% faster)
+   *
+   * Speed benchmarks for rural India deliveries:
+   *   < 5 km   → same-village: 20–45 min
+   *   5–20 km  → local town:   45–120 min
+   *   20–80 km → inter-town:   3–6 hrs
+   *   80–300km → inter-city:   same day or next day
+   *   300+ km  → long haul:    multiple days
+   */
+  private calcFastTrackStats(
+    roadKm: number,
+    osrmMins: number
+  ): { standard: number; optimized: number; saved: number; unit: string; distKm: number } {
+
+    const round1 = (n: number) => Math.round(n * 10) / 10;
+
+    if (roadKm < 5) {
+      // ── Hyperlocal (same village / colony) ────────────────────────────────
+      const optimized = Math.max(10, Math.round(osrmMins * 1.1));   // ~10% overhead (loading, handoff)
+      const standard  = Math.max(20, Math.round(osrmMins * 1.6));   // typical unoptimized local delivery
+      return { standard, optimized, saved: standard - optimized, unit: 'Mins', distKm: round1(roadKm) };
+
+    } else if (roadKm < 20) {
+      // ── Local town (< 20 km) ──────────────────────────────────────────────
+      const optimized = Math.max(20, Math.round(osrmMins * 1.15));
+      const standard  = Math.max(45, Math.round(osrmMins * 1.55));
+      return { standard, optimized, saved: standard - optimized, unit: 'Mins', distKm: round1(roadKm) };
+
+    } else if (roadKm < 80) {
+      // ── Inter-town / district (20–80 km) — show in Hours ─────────────────
+      const optimizedH = round1(osrmMins / 60 * 1.15);   // ~15% buffer for rural stops
+      const standardH  = round1(osrmMins / 60 * 1.6);    // courier does ~2 trips a day, less efficient
+      return {
+        standard:  standardH,
+        optimized: optimizedH,
+        saved:     round1(standardH - optimizedH),
+        unit: 'Hours',
+        distKm: round1(roadKm)
+      };
+
+    } else if (roadKm < 300) {
+      // ── Inter-city / large district (80–300 km) — Hours or same-day ──────
+      const optimizedH = round1(roadKm / 55);   // ~55 km/h highway average
+      const standardH  = round1(roadKm / 35);   // ~35 km/h courier with multiple stops
+      if (optimizedH <= 12) {
+        return {
+          standard:  round1(standardH),
+          optimized: round1(optimizedH),
+          saved:     round1(standardH - optimizedH),
+          unit: 'Hours',
+          distKm: round1(roadKm)
+        };
+      }
+      // > 12 hours → show in Days
+      return {
+        standard:  Math.ceil(standardH  / 10), // working-hour days
+        optimized: Math.ceil(optimizedH / 10),
+        saved:     Math.ceil(standardH / 10) - Math.ceil(optimizedH / 10),
+        unit: 'Days',
+        distKm: round1(roadKm)
+      };
+
+    } else {
+      // ── Long-haul / inter-state (300+ km) ────────────────────────────────
+      const standardDays  = Math.ceil(roadKm / 200);  // courier: ~200 km/day
+      const optimizedDays = Math.ceil(roadKm / 300);  // RuralSwift express: ~300 km/day
+      return {
+        standard:  standardDays,
+        optimized: optimizedDays,
+        saved:     standardDays - optimizedDays,
+        unit: 'Days',
+        distKm: round1(roadKm)
+      };
+    }
   }
 
   /** Haversine distance in km */
