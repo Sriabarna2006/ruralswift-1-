@@ -242,6 +242,13 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     const centerLng = stopCoords[0][1];
     this.map = L.map(this.mapContainer.nativeElement).setView([centerLat, centerLng], 13);
 
+    // Force Leaflet to recalculate container size (fixes the blank grey map issue)
+    setTimeout(() => {
+      if (this.map) {
+        this.map.invalidateSize();
+      }
+    }, 250);
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       maxZoom: 19

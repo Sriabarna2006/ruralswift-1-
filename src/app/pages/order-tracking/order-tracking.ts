@@ -469,6 +469,13 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
 
     // --- Step 3: Initialize map at delivery location ---
     this.map = L.map(this.mapContainer.nativeElement).setView([deliveryLat, deliveryLng], 14);
+    
+    setTimeout(() => {
+      if (this.map) {
+        this.map.invalidateSize();
+      }
+    }, 250);
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19
