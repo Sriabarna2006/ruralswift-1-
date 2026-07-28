@@ -10,6 +10,7 @@ import { ImageKitService } from '../../services/imagekit.service';
 import * as L from 'leaflet';
 
 interface TimelineStep {
+  key?:      string;
   label:     string;
   emoji:     string;
   date:      string;

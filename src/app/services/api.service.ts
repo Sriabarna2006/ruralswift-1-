@@ -81,6 +81,8 @@ export interface Order {
   items:            OrderItem[];
   created_at:       string;
   delivered_at?:    string;
+  cancelled_at?:    string;
+  updated_at?:      string;
   delivery_otp?:    string;
   // Seller location fields (for real ETA calculation)
   seller_lat?:      number | null;
