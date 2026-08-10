@@ -318,12 +318,32 @@
   cursor: pointer;
 }
 
-.review-edit-btn:hover { text-decoration: underline; }
+.review-edit-btn:hover {
+  text-decoration: underline;
+}
 
-.review-addr-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
-.review-addr-text { font-size: 13px; color: var(--text-secondary); margin-bottom: 2px; }
-.review-addr-phone { font-size: 13px; color: var(--text-secondary); }
-.review-payment-val { font-size: 14px; color: var(--text-primary); font-weight: 600; }
+.review-addr-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.review-addr-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+.review-addr-phone {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.review-payment-val {
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
 
 .review-items {
   display: flex;
@@ -346,10 +366,26 @@
   background: var(--surface-hover);
 }
 
-.review-item-info { flex: 1; }
-.review-item-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-.review-item-qty  { font-size: 12px; color: var(--text-muted); }
-.review-item-price { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.review-item-info {
+  flex: 1;
+}
+
+.review-item-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.review-item-qty {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.review-item-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
 
 .review-notes {
   margin-bottom: 20px;
@@ -377,7 +413,9 @@
   transition: border-color var(--transition-base);
 }
 
-.notes-input:focus { border-color: var(--primary-dark); }
+.notes-input:focus {
+  border-color: var(--primary-dark);
+}
 
 /* Nav buttons */
 .payment-nav {
@@ -403,8 +441,14 @@
   font-family: var(--font-family);
 }
 
-.step-next-btn:hover:not(:disabled) { background: var(--primary); }
-.step-next-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.step-next-btn:hover:not(:disabled) {
+  background: var(--primary);
+}
+
+.step-next-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .step-back-btn {
   font-size: 14px;
@@ -419,7 +463,10 @@
   font-family: var(--font-family);
 }
 
-.step-back-btn:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+.step-back-btn:hover {
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
+}
 
 .place-order-btn {
   display: flex;
@@ -434,16 +481,19 @@
   font-weight: 800;
   cursor: pointer;
   transition: all var(--transition-bounce);
-  box-shadow: 0 4px 16px rgba(255,215,0,0.3);
+  box-shadow: 0 4px 16px rgba(255, 215, 0, 0.3);
   font-family: var(--font-family);
 }
 
 .place-order-btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(255,215,0,0.4);
+  box-shadow: 0 8px 24px rgba(255, 215, 0, 0.4);
 }
 
-.place-order-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+.place-order-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
 
 /* ── Checkout Summary ── */
 .checkout-summary {
@@ -490,12 +540,33 @@
   background: var(--surface-hover);
 }
 
-.cs-item-info { flex: 1; min-width: 0; }
-.cs-item-name { font-size: 12px; font-weight: 600; color: var(--text-primary); }
-.cs-item-qty  { font-size: 11px; color: var(--text-muted); }
-.cs-item-price { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.cs-item-info {
+  flex: 1;
+  min-width: 0;
+}
 
-.cs-divider { height: 1px; background: var(--surface-border); margin: 12px 0; }
+.cs-item-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.cs-item-qty {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.cs-item-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cs-divider {
+  height: 1px;
+  background: var(--surface-border);
+  margin: 12px 0;
+}
 
 .cs-line {
   display: flex;
@@ -505,7 +576,10 @@
   margin-bottom: 8px;
 }
 
-.cs-free { font-weight: 700; color: var(--accent-dark); }
+.cs-free {
+  font-weight: 700;
+  color: var(--accent-dark);
+}
 
 .cs-total {
   display: flex;
@@ -542,8 +616,15 @@
 }
 
 @keyframes successPop {
-  from { transform: scale(0); opacity: 0; }
-  to   { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .success-heading {
@@ -607,25 +688,159 @@
 }
 
 /* Razorpay Mock UI */
-.rzp-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(2px); }
-.rzp-modal { background: #fff; width: 90%; max-width: 420px; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-.rzp-header { background: #002e6e; color: #fff; padding: 20px; }
-.rzp-logo-group { display: flex; align-items: center; gap: 12px; }
-.rzp-brand-logo { width: 40px; height: 40px; background: #0073ea; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; }
-.rzp-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-.rzp-subtitle { font-size: 12px; opacity: 0.8; }
-.rzp-body { padding: 24px; background: #f9f9f9; text-align: center; }
-.rzp-amount { margin-bottom: 8px; }
-.rzp-label { font-size: 14px; color: #555; margin-right: 8px; }
-.rzp-val { font-size: 24px; font-weight: 800; color: #111; }
-.rzp-method { font-size: 13px; color: #666; margin-bottom: 30px; }
-.rzp-actions { display: flex; flex-direction: column; gap: 12px; }
-.rzp-btn-pay { background: #0073ea; color: #fff; border: none; padding: 14px; border-radius: 4px; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
-.rzp-btn-pay:hover:not(:disabled) { opacity: 0.9; }
-.rzp-btn-cancel { background: transparent; color: #666; border: 1px solid #ccc; padding: 12px; border-radius: 4px; font-size: 14px; cursor: pointer; }
-.rzp-btn-cancel:hover:not(:disabled) { background: #eee; }
-.rzp-btn-pay:disabled, .rzp-btn-cancel:disabled { opacity: 0.6; cursor: not-allowed; }
-.rzp-loading { margin-top: 24px; color: #555; font-size: 13px; }
-.rzp-spinner { width: 30px; height: 30px; border: 3px solid #ccc; border-top-color: #0073ea; border-radius: 50%; animation: rzpSpin 1s linear infinite; margin: 0 auto 12px; }
-@keyframes rzpSpin { to { transform: rotate(360deg); } }
-.rzp-footer { background: #fff; padding: 12px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #eee; }
+.rzp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(2px);
+}
+
+.rzp-modal {
+  background: #fff;
+  width: 90%;
+  max-width: 420px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.rzp-header {
+  background: #002e6e;
+  color: #fff;
+  padding: 20px;
+}
+
+.rzp-logo-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rzp-brand-logo {
+  width: 40px;
+  height: 40px;
+  background: #0073ea;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.rzp-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.rzp-subtitle {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.rzp-body {
+  padding: 24px;
+  background: #f9f9f9;
+  text-align: center;
+}
+
+.rzp-amount {
+  margin-bottom: 8px;
+}
+
+.rzp-label {
+  font-size: 14px;
+  color: #555;
+  margin-right: 8px;
+}
+
+.rzp-val {
+  font-size: 24px;
+  font-weight: 800;
+  color: #111;
+}
+
+.rzp-method {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.rzp-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rzp-btn-pay {
+  background: #0073ea;
+  color: #fff;
+  border: none;
+  padding: 14px;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.rzp-btn-pay:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.rzp-btn-cancel {
+  background: transparent;
+  color: #666;
+  border: 1px solid #ccc;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.rzp-btn-cancel:hover:not(:disabled) {
+  background: #eee;
+}
+
+.rzp-btn-pay:disabled,
+.rzp-btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.rzp-loading {
+  margin-top: 24px;
+  color: #555;
+  font-size: 13px;
+}
+
+.rzp-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #ccc;
+  border-top-color: #0073ea;
+  border-radius: 50%;
+  animation: rzpSpin 1s linear infinite;
+  margin: 0 auto 12px;
+}
+
+@keyframes rzpSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rzp-footer {
+  background: #fff;
+  padding: 12px;
+  text-align: center;
+  font-size: 11px;
+  color: #999;
+  border-top: 1px solid #eee;
+}
