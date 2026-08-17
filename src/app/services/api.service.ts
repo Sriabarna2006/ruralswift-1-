@@ -466,6 +466,14 @@ export class ApiService {
     return this.http.get<ApiResponse<{ runs: any[] }>>(`${this.baseUrl}/delivery-runs`);
   }
 
+  getAvailableOrders(): Observable<ApiResponse<{ orders: any[] }>> {
+    return this.http.get<ApiResponse<{ orders: any[] }>>(`${this.baseUrl}/available-orders`);
+  }
+
+  claimOrder(orderId: number): Observable<ApiResponse<{ runId: number }>> {
+    return this.http.post<ApiResponse<{ runId: number }>>(`${this.baseUrl}/claim-order`, { orderId });
+  }
+
   getCompletedDeliveries(): Observable<ApiResponse<{ deliveries: any[] }>> {
     return this.http.get<ApiResponse<{ deliveries: any[] }>>(`${this.baseUrl}/completed-deliveries`);
   }

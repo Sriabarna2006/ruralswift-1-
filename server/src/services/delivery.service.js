@@ -133,6 +133,63 @@ class DeliveryService {
     return { runId, route: optimizedRoute };
   }
 
+  async getAvailableOrders() {
+    const { rows } = await pool.query(
+      `SELECT o.order_id, o.delivery_address, o.total, o.created_at,
+              json_agg(json_build_object('name', p.name, 'quantity', oi.quantity, 'image_url', p.image_url)) AS items,
+              (SELECT business_name FROM seller_profiles WHERE user_id = p.seller_id LIMIT 1) AS seller_name
+       FROM orders o
+       JOIN order_items oi ON oi.order_id = o.order_id
+       JOIN products p ON p.product_id = oi.product_id
+       WHERE o.status = 'packed' AND o.delivery_run_id IS NULL
+       GROUP BY o.order_id, p.seller_id
+       ORDER BY o.created_at DESC`
+    );
+    return rows;
+  }
+
+  async claimOrder(userId, orderId) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      
+      // 1. Ensure user is a driver (upgrade if not)
+      await client.query(`UPDATE users SET role = 'delivery' WHERE user_id = $1 AND role != 'delivery'`, [userId]);
+      
+      // 2. Check if order is still available
+      const orderRes = await client.query(
+        `SELECT order_id, status, delivery_run_id FROM orders WHERE order_id = $1 FOR UPDATE`,
+        [orderId]
+      );
+      if (orderRes.rowCount === 0) throw new Error('Order not found.');
+      const order = orderRes.rows[0];
+      if (order.status !== 'packed' || order.delivery_run_id !== null) {
+        throw new Error('Order is no longer available for delivery.');
+      }
+      
+      // 3. Create delivery run for this driver with this single order
+      const runRes = await client.query(
+        `INSERT INTO delivery_runs (driver_id, status, start_time) VALUES ($1, 'pending', NOW()) RETURNING id`,
+        [userId]
+      );
+      const runId = runRes.rows[0].id;
+      
+      // 4. Update order to out_for_delivery and assign to run
+      await client.query(
+        `UPDATE orders SET delivery_run_id = $1, delivery_sequence = 1, status = 'out_for_delivery', updated_at = NOW() WHERE order_id = $2`,
+        [runId, orderId]
+      );
+      
+      await client.query('COMMIT');
+      return { success: true, runId };
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  }
+
   /** GET driver's active runs with stops in optimized sequence */
   async getDriverRuns(driverId) {
     const { rows } = await pool.query(

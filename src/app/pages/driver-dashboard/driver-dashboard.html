@@ -44,6 +44,9 @@
 
         <!-- Tab Selector -->
         <div class="dapp-tabs">
+          <button class="dapp-tab-btn" [class.dapp-tab-active]="activeTab() === 'available'" (click)="setTab('available')">
+            📦 Available Orders
+          </button>
           <button class="dapp-tab-btn" [class.dapp-tab-active]="activeTab() === 'runs'" (click)="setTab('runs')">
             🛵 Active Runs
           </button>
@@ -52,7 +55,53 @@
           </button>
         </div>
 
-        @if (activeTab() === 'runs') {
+        @if (activeTab() === 'available') {
+          <div class="dapp-completed-section">
+            @if (availableOrders().length === 0) {
+              <div class="dapp-empty">
+                <div class="dapp-empty-icon">📦</div>
+                <h3>No available orders</h3>
+                <p>There are no unassigned orders in your area right now.</p>
+              </div>
+            } @else {
+              <div class="dapp-completed-grid">
+                @for (order of availableOrders(); track order.order_id) {
+                  <div class="dapp-completed-card">
+                    <div class="dapp-completed-card-header">
+                      <span class="dapp-completed-order-no">Order #{{ order.order_id }}</span>
+                      <span class="dapp-completed-date">{{ order.created_at | date:'d MMM, h:mm a' }}</span>
+                    </div>
+                    <div class="dapp-completed-address">
+                      <span class="dapp-completed-address-lbl">📍 Dropoff Location</span>
+                      <p>{{ order.delivery_address }}</p>
+                      <span class="dapp-completed-address-lbl" style="margin-top: 8px;">🏪 Pickup From</span>
+                      <p>{{ order.seller_name || 'RuralSwift Hub' }}</p>
+                    </div>
+                    <div class="dapp-completed-items">
+                      <span class="dapp-completed-items-lbl">📦 Order Items</span>
+                      <div class="dapp-completed-items-list">
+                        @for (item of order.items; track item.name) {
+                          <div class="dapp-completed-item">
+                            <img [src]="item.image_url || 'https://via.placeholder.com/150'" class="dapp-completed-item-img" alt="product image" />
+                            <div class="dapp-completed-item-details">
+                              <span class="dapp-completed-item-name">{{ item.name }}</span>
+                              <span class="dapp-completed-item-qty">Qty: {{ item.quantity }}</span>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                      <button class="dportal-cta" style="width: 100%; padding: 12px; font-size: 14px; border-radius: 8px;" (click)="claimOrder(order.order_id)">
+                        Claim & Deliver
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        } @else if (activeTab() === 'runs') {
           @if (isLoading()) {
             <div class="dapp-runs-grid">
               <div class="dapp-run-skeleton"></div>
@@ -334,6 +383,56 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- PART-TIME FREELANCE SECTION -->
+    <div style="max-width: 1000px; margin: 40px auto; padding: 0 20px;">
+      <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 10px; color: #111827;">📦 Deliver on your way</h2>
+      <p style="color: #6b7280; margin-bottom: 30px; font-size: 15px;">Not looking for a full-time commitment? Pick up available orders along your route and earn extra cash on the side!</p>
+      
+      @if (availableOrders().length === 0) {
+        <div class="dapp-empty" style="background: white; border-radius: 16px; border: 1px solid #eee;">
+          <div class="dapp-empty-icon">📦</div>
+          <h3>No available orders</h3>
+          <p>There are no unassigned orders in your area right now.</p>
+        </div>
+      } @else {
+        <div class="dapp-completed-grid">
+          @for (order of availableOrders(); track order.order_id) {
+            <div class="dapp-completed-card" style="background: white; border: 1px solid #e5e7eb;">
+              <div class="dapp-completed-card-header">
+                <span class="dapp-completed-order-no">Order #{{ order.order_id }}</span>
+                <span class="dapp-completed-date">{{ order.created_at | date:'d MMM, h:mm a' }}</span>
+              </div>
+              <div class="dapp-completed-address">
+                <span class="dapp-completed-address-lbl">📍 Dropoff Location</span>
+                <p>{{ order.delivery_address }}</p>
+                <span class="dapp-completed-address-lbl" style="margin-top: 8px;">🏪 Pickup From</span>
+                <p>{{ order.seller_name || 'RuralSwift Hub' }}</p>
+              </div>
+              <div class="dapp-completed-items" style="border-top: 1px solid #f3f4f6; margin-top: 12px; padding-top: 12px;">
+                <span class="dapp-completed-items-lbl">📦 Order Items</span>
+                <div class="dapp-completed-items-list" style="max-height: 120px; overflow-y: auto;">
+                  @for (item of order.items; track item.name) {
+                    <div class="dapp-completed-item" style="padding: 8px 0; border: none;">
+                      <img [src]="item.image_url || 'https://via.placeholder.com/150'" class="dapp-completed-item-img" style="width: 36px; height: 36px;" alt="product image" />
+                      <div class="dapp-completed-item-details">
+                        <span class="dapp-completed-item-name" style="font-size: 13px;">{{ item.name }}</span>
+                        <span class="dapp-completed-item-qty" style="font-size: 12px;">Qty: {{ item.quantity }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+              <div style="margin-top: 15px;">
+                <button class="dportal-cta" style="width: 100%; padding: 12px; font-size: 14px; border-radius: 8px;" (click)="claimOrder(order.order_id)">
+                  Claim & Deliver
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
     </div>
 
   </div>

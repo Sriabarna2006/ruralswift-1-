@@ -28,7 +28,8 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
   public activeRun = signal<any | null>(null);
   public stopEtas = signal<string[]>([]);
   public completedDeliveries = signal<any[]>([]);
-  public activeTab = signal<'runs' | 'completed'>('runs');
+  public availableOrders = signal<any[]>([]);
+  public activeTab = signal<'available' | 'runs' | 'completed'>('available');
 
   // Auth & State
   public isAuthenticated = signal(false);
@@ -48,9 +49,14 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     const user = this.api.getStoredUser();
     this.isDriver.set(user?.role === 'delivery');
 
-    if (this.isAuthenticated() && this.isDriver()) {
-      this.loadRuns();
-      this.loadCompletedDeliveries();
+    if (this.isAuthenticated()) {
+      this.loadAvailableOrders();
+      if (this.isDriver()) {
+        this.loadRuns();
+        this.loadCompletedDeliveries();
+      } else {
+        this.isLoading.set(false);
+      }
     } else {
       this.isLoading.set(false);
     }
@@ -380,12 +386,48 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  setTab(tab: 'runs' | 'completed') {
+  loadAvailableOrders() {
+    this.api.getAvailableOrders().subscribe({
+      next: (res) => {
+        this.availableOrders.set(res.data?.orders || []);
+      },
+      error: () => {
+        this.toast.error('Failed to load available orders.');
+      }
+    });
+  }
+
+  claimOrder(orderId: number) {
+    if (!this.isAuthenticated()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.isUpgrading.set(true);
+    this.api.claimOrder(orderId).subscribe({
+      next: (res) => {
+        this.toast.success('Order claimed successfully! Start your delivery run.');
+        this.isDriver.set(true);
+        const updatedUser = { ...this.api.getStoredUser(), role: 'delivery' };
+        localStorage.setItem('rs_user', JSON.stringify(updatedUser));
+        this.isUpgrading.set(false);
+        this.setTab('runs');
+      },
+      error: (err) => {
+        this.toast.error(err.error?.message || 'Failed to claim order.');
+        this.isUpgrading.set(false);
+        this.loadAvailableOrders();
+      }
+    });
+  }
+
+  setTab(tab: 'available' | 'runs' | 'completed') {
     this.activeTab.set(tab);
     if (tab === 'completed') {
       this.loadCompletedDeliveries();
-    } else {
+    } else if (tab === 'runs') {
       this.loadRuns();
+    } else {
+      this.loadAvailableOrders();
     }
   }
 }

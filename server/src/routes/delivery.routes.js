@@ -9,6 +9,10 @@ router.use(authenticateToken);
 // Sellers/Admins use this to bundle orders and create a route
 router.post('/delivery-runs', deliveryController.createRun);
 
+// Part-time drivers can view and claim unassigned orders
+router.get('/available-orders', deliveryController.getAvailableOrders);
+router.post('/claim-order', deliveryController.claimOrder);
+
 // Drivers use this to fetch their optimized routes
 router.get('/delivery-runs', deliveryController.getRuns);
 

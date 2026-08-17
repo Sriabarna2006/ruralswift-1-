@@ -17,6 +17,30 @@ class DeliveryController {
     }
   }
 
+  async getAvailableOrders(req, res, next) {
+    try {
+      const orders = await deliveryService.getAvailableOrders();
+      return sendSuccess(res, 200, 'Available orders fetched.', { data: { orders } });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async claimOrder(req, res, next) {
+    try {
+      const { orderId } = req.body;
+      if (!orderId) return sendError(res, 400, 'orderId is required.', 'VALIDATION_ERROR');
+      
+      const result = await deliveryService.claimOrder(req.user.id, orderId);
+      return sendSuccess(res, 200, 'Order claimed successfully.', { data: result });
+    } catch (err) {
+      if (err.message.includes('not found') || err.message.includes('no longer available')) {
+        return sendError(res, 400, err.message, 'NOT_AVAILABLE');
+      }
+      next(err);
+    }
+  }
+
   async getRuns(req, res, next) {
     try {
       const runs = await deliveryService.getDriverRuns(req.user.id);
