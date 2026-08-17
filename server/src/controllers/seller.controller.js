@@ -97,3 +97,13 @@ exports.getDrivers = async (req, res, next) => {
     sendSuccess(res, 200, 'Drivers fetched.', { data: { drivers } });
   } catch (err) { next(err); }
 };
+
+exports.unassignOrder = async (req, res, next) => {
+  try {
+    const order = await sellerService.unassignOrder(parseInt(req.params.id));
+    sendSuccess(res, 200, 'Order unassigned and reverted to packed.', { data: { order } });
+  } catch (err) {
+    if (err.message.includes('not found')) return sendError(res, 404, err.message, 'NOT_FOUND');
+    next(err);
+  }
+};

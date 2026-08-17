@@ -122,4 +122,9 @@ export class SellerService {
   updateOrderStatus(orderId: number, status: string, options?: { trackingNumber?: string, deliveryOtp?: string }): Observable<ApiResponse> {
     return this.api.updateSellerOrderStatus(orderId, status, options?.trackingNumber, options?.deliveryOtp);
   }
+
+  /** Unassign driver from order */
+  unassignOrder(orderId: number): Observable<ApiResponse> {
+    return this.http.put<ApiResponse>(`${this.baseUrl}/seller/orders/${orderId}/unassign`, {});
+  }
 }

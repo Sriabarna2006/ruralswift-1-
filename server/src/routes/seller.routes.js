@@ -40,6 +40,9 @@ router.get('/seller/orders', sellerController.getOrders);
 // ── PUT /api/seller/orders/:id/status ──
 router.put('/seller/orders/:id/status', sellerController.updateOrderStatus);
 
+// ── PUT /api/seller/orders/:id/unassign ──
+router.put('/seller/orders/:id/unassign', sellerController.unassignOrder);
+
 router.get('/seller/drivers', sellerController.getDrivers);
 
 module.exports = router;

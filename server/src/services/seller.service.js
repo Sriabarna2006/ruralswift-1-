@@ -106,6 +106,12 @@ class SellerService {
       };
     });
   }
+
+  async unassignOrder(orderId) {
+    const updated = await sellerRepository.unassignOrder(orderId);
+    if (!updated) throw new Error('Order not found or cannot be unassigned.');
+    return updated;
+  }
 }
 
 module.exports = new SellerService();

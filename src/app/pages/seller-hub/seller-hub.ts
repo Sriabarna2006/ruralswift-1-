@@ -518,6 +518,17 @@ export class SellerHubComponent implements OnInit {
     });
   }
 
+  rollbackOrderStatus(orderId: number): void {
+    if (!confirm('Are you sure you want to unassign this order from the driver? The status will revert to packed.')) return;
+    this.sellerSvc.unassignOrder(orderId).subscribe({
+      next: () => {
+        this.toast.success('Order unassigned and reverted to packed.');
+        this.loadOrders();
+      },
+      error: (err) => this.toast.error(err.error?.message || 'Failed to unassign order.')
+    });
+  }
+
   getNextActionLabel(currentStatus: string): string {
     const actionMap: Record<string, string> = {
       pending: 'Confirm Order',

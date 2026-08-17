@@ -271,6 +271,23 @@ class SellerRepository {
       throw err;
     }
   }
+
+  /** Unassign an order from a delivery run and rollback status to packed */
+  async unassignOrder(orderId) {
+    try {
+      const { rows } = await pool.query(
+        `UPDATE orders
+         SET delivery_run_id = NULL, delivery_sequence = NULL, status = 'packed', updated_at = NOW()
+         WHERE order_id = $1 AND status IN ('shipped', 'out_for_delivery')
+         RETURNING *`,
+        [orderId]
+      );
+      return rows[0] || null;
+    } catch (err) {
+      logger.dbError('SellerRepository.unassignOrder', err, { orderId });
+      throw err;
+    }
+  }
 }
 
 module.exports = new SellerRepository();

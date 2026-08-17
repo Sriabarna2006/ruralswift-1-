@@ -735,6 +735,11 @@
                             <button class="sh-action-btn" (click)="advanceOrderStatus(order.order_id, order.status)">
                               {{ getNextActionLabel(order.status) }}
                             </button>
+                            @if (order.status === 'out_for_delivery' || order.status === 'shipped') {
+                              <button class="sh-action-btn" style="background-color: var(--danger); margin-left: 8px;" (click)="rollbackOrderStatus(order.order_id)">
+                                Unassign
+                              </button>
+                            }
                           }
                         </td>
                       </tr>
