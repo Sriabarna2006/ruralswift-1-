@@ -677,15 +677,21 @@
             } @else {
               <!-- Batch Assign Delivery -->
               <div style="margin-bottom: 20px; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                
+                <div style="flex: 1 1 100%; height: 300px; border-radius: 8px; overflow: hidden; margin-bottom: 16px; z-index: 1;" #driverMap id="seller-driver-map"></div>
+
                 <strong style="color: #0f172a;">🚚 Assign Route:</strong>
                 <select class="sh-form-input" style="width: auto; min-width: 200px; padding: 8px; border-radius: 6px;" [ngModel]="selectedDriverId()" (ngModelChange)="selectedDriverId.set($event)">
                   <option [ngValue]="null">Select a Delivery Partner...</option>
                   @for (driver of drivers(); track driver.user_id) {
-                    <option [ngValue]="driver.user_id">{{ driver.name || driver.first_name }} ({{ driver.email }})</option>
+                    <option [ngValue]="driver.user_id">{{ driver.name || driver.first_name }}{{ driver.address ? ' - Base: ' + driver.address : '' }} ({{ driver.distance ? driver.distance + ' km away' : 'Live location unknown' }})</option>
                   }
                 </select>
                 <button class="sh-primary-btn" style="background: #059669;" (click)="createDeliveryRun()">
                   Dispatch {{ selectedOrderIds().length }} Orders
+                </button>
+                <button class="sh-secondary-btn" (click)="autoAssignNearest()">
+                  Auto-Select Nearest Driver
                 </button>
               </div>
 

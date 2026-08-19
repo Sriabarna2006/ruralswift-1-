@@ -93,8 +93,8 @@ exports.updateOrderStatus = async (req, res, next) => {
 
 exports.getDrivers = async (req, res, next) => {
   try {
-    const drivers = await sellerService.getDrivers();
-    sendSuccess(res, 200, 'Drivers fetched.', { data: { drivers } });
+    const { drivers, hubLocation } = await sellerService.getDrivers(req.user.id);
+    sendSuccess(res, 200, 'Drivers fetched.', { data: { drivers, hubLocation } });
   } catch (err) { next(err); }
 };
 

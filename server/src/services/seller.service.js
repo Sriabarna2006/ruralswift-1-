@@ -86,15 +86,24 @@ class SellerService {
   }
 
   /** Fetch all active delivery drivers, formatted for the frontend dropdown */
-  async getDrivers() {
+  async getDrivers(sellerId) {
     const { pool } = require('../config/db');
+    // Fetch seller hub location
+    const hubRes = await pool.query(`SELECT latitude, longitude FROM seller_profiles WHERE user_id = $1`, [sellerId]);
+    let sellerLat = 10.7905, sellerLng = 78.7047; // Default fallback
+    if (hubRes.rows[0] && hubRes.rows[0].latitude) {
+      sellerLat = parseFloat(hubRes.rows[0].latitude);
+      sellerLng = parseFloat(hubRes.rows[0].longitude);
+    }
+
     const { rows } = await pool.query(
-      `SELECT user_id, name, email, phone
-       FROM users
-       WHERE role = 'delivery'
-       ORDER BY name ASC`
+      `SELECT u.user_id, u.name, u.email, u.phone, u.address, dl.lat, dl.lng, dl.updated_at
+       FROM users u
+       LEFT JOIN driver_locations dl ON u.user_id = dl.driver_id
+       WHERE u.role = 'delivery'
+       ORDER BY u.name ASC`
     );
-    return rows.map(u => {
+    const drivers = rows.map(u => {
       const parts = (u.name || '').trim().split(/\s+/);
       return {
         user_id:    u.user_id,
@@ -103,8 +112,14 @@ class SellerService {
         last_name:  parts.length > 1 ? parts.slice(1).join(' ') : '',
         email:      u.email || '',
         phone:      u.phone || '',
+        address:    u.address || '',
+        lat:        u.lat ? parseFloat(u.lat) : null,
+        lng:        u.lng ? parseFloat(u.lng) : null,
+        updated_at: u.updated_at
       };
     });
+    
+    return { drivers, hubLocation: { lat: sellerLat, lng: sellerLng } };
   }
 
   async unassignOrder(orderId) {

@@ -105,8 +105,8 @@ export class SellerService {
 
   // ── Delivery / Drivers ──────────────────────────────────────────────
 
-  getDrivers(): Observable<ApiResponse<{ drivers: any[] }>> {
-    return this.http.get<ApiResponse<{ drivers: any[] }>>(`${this.baseUrl}/seller/drivers`);
+  getDrivers(): Observable<ApiResponse<{ drivers: any[], hubLocation: any }>> {
+    return this.http.get<ApiResponse<{ drivers: any[], hubLocation: any }>>(`${this.baseUrl}/seller/drivers`);
   }
 
   createDeliveryRun(driverId: number, orderIds: number[]): Observable<ApiResponse> {

@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectionStrategy, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
 import * as L from 'leaflet';
@@ -8,7 +9,7 @@ import * as L from 'leaflet';
 @Component({
   selector: 'app-driver-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './driver-dashboard.html',
   styleUrl: './driver-dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -22,6 +23,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
   private map!: L.Map;
   private liveWatchId: number | null = null;
   private locationPushInterval: any = null;
+  private availableMapInst: L.Map | null = null;
 
   public runs = signal<any[]>([]);
   public isLoading = signal(true);
@@ -29,7 +31,11 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
   public stopEtas = signal<string[]>([]);
   public completedDeliveries = signal<any[]>([]);
   public availableOrders = signal<any[]>([]);
-  public activeTab = signal<'available' | 'runs' | 'completed'>('available');
+  public activeTab = signal<'available' | 'runs' | 'completed' | 'settings'>('available');
+
+  // Profile Settings
+  public homeAddress = signal('');
+  public isSavingSettings = signal(false);
 
   // Auth & State
   public isAuthenticated = signal(false);
@@ -48,6 +54,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     this.isAuthenticated.set(this.api.isLoggedIn());
     const user = this.api.getStoredUser();
     this.isDriver.set(user?.role === 'delivery');
+    this.homeAddress.set(user?.address || '');
 
     if (this.isAuthenticated()) {
       this.loadAvailableOrders();
@@ -85,6 +92,26 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
       error: () => {
         this.toast.error('Failed to register as delivery partner.');
         this.isUpgrading.set(false);
+      }
+    });
+  }
+
+  saveSettings() {
+    if (!this.homeAddress().trim()) {
+      this.toast.error('Please enter a valid base location.');
+      return;
+    }
+    this.isSavingSettings.set(true);
+    this.api.updateProfile({ address: this.homeAddress() }).subscribe({
+      next: (res) => {
+        this.toast.success('Base location saved successfully!');
+        this.isSavingSettings.set(false);
+        const updatedUser = { ...this.api.getStoredUser(), address: this.homeAddress() } as any;
+        localStorage.setItem('rs_user', JSON.stringify(updatedUser));
+      },
+      error: () => {
+        this.toast.error('Failed to save location.');
+        this.isSavingSettings.set(false);
       }
     });
   }
@@ -161,14 +188,17 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
 
   // ─── OSRM Route ───────────────────────────────────────────────────────────
 
-  async getOsrmRoute(waypoints: [number, number][]): Promise<[number, number][] | null> {
+  async getOsrmRouteData(waypoints: [number, number][]): Promise<any | null> {
     try {
       const coords = waypoints.map(([lat, lng]) => `${lng},${lat}`).join(';');
       const url = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
       const res = await fetch(url);
       const data = await res.json();
       if (data.routes?.length > 0) {
-        return data.routes[0].geometry.coordinates.map((c: number[]) => [c[1], c[0]] as [number, number]);
+        return {
+          coordinates: data.routes[0].geometry.coordinates.map((c: number[]) => [c[1], c[0]] as [number, number]),
+          legs: data.routes[0].legs
+        };
       }
     } catch { }
     return null;
@@ -184,6 +214,86 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
   }
 
   // ─── Map Initialization ───────────────────────────────────────────────────
+
+  async initAvailableMap() {
+    if (this.availableMapInst) {
+      this.availableMapInst.remove();
+      this.availableMapInst = null;
+    }
+
+    const mapEl = document.getElementById('available-map-driver') || document.getElementById('available-map-freelance');
+    if (!mapEl) return;
+
+    let dLat = 20.5937;
+    let dLng = 78.9629;
+    let hasGps = false;
+
+    try {
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 })
+      );
+      dLat = pos.coords.latitude;
+      dLng = pos.coords.longitude;
+      hasGps = true;
+    } catch { }
+
+    this.availableMapInst = L.map(mapEl).setView([dLat, dLng], hasGps ? 13 : 5);
+    
+    setTimeout(() => {
+      if (this.availableMapInst) {
+        this.availableMapInst.invalidateSize();
+      }
+    }, 250);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap', maxZoom: 19
+    }).addTo(this.availableMapInst);
+
+    if (hasGps) {
+      const driverIcon = L.divIcon({
+        className: '',
+        html: `<div style="background:#1a73e8;color:#fff;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 5px rgba(0,0,0,0.3);border:2px solid #fff;">📍</div>`,
+        iconSize: [30, 30], iconAnchor: [15, 15]
+      });
+      L.marker([dLat, dLng], { icon: driverIcon }).addTo(this.availableMapInst).bindPopup('<b>You are here</b>').openPopup();
+    }
+
+    const orders = this.availableOrders();
+    const markers: L.Marker[] = [];
+    const updatedOrders = [...orders];
+
+    for (let i = 0; i < updatedOrders.length; i++) {
+      const order = updatedOrders[i];
+      const coords = await this.geocodeIndianAddress(order.delivery_address || '');
+      if (coords) {
+        if (hasGps) {
+          order.distanceKm = this.distanceKm(dLat, dLng, coords[0], coords[1]);
+        }
+        const pinIcon = L.divIcon({
+          className: '',
+          html: `<div style="background:#ea4335;color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;border:2px solid #fff;">📦</div>`,
+          iconSize: [24, 24], iconAnchor: [12, 12]
+        });
+        const m = L.marker([coords[0], coords[1]], { icon: pinIcon })
+          .addTo(this.availableMapInst)
+          .bindPopup(`<b>Order #${order.order_id}</b><br>${order.delivery_address}`);
+        markers.push(m);
+      }
+    }
+
+    if (hasGps) {
+      updatedOrders.sort((a, b) => (a.distanceKm || 9999) - (b.distanceKm || 9999));
+    }
+    this.availableOrders.set(updatedOrders);
+
+    if (markers.length > 0) {
+      const group = L.featureGroup(markers);
+      if (hasGps) {
+        group.addLayer(L.marker([dLat, dLng]));
+      }
+      this.availableMapInst.fitBounds(group.getBounds(), { padding: [30, 30] });
+    }
+  }
 
   async initMap(run: any) {
     if (this.map) { this.map.remove(); }
@@ -228,18 +338,32 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
       driverLng = stopCoords[0][1] - 0.02;
     }
 
-    // ── Step 4: Calculate ETAs per stop (avg 30 km/h on rural roads) ───────
-    const avgSpeedKmh = 30;
-    let cumulativeKm = 0;
-    let prevLat = driverLat, prevLng = driverLng;
+    // ── Step 4: Calculate ETAs per stop using real road geometry ───────────
+    const waypoints: [number, number][] = [[driverLat, driverLng], ...stopCoords];
+    const routeData = await this.getOsrmRouteData(waypoints);
     const etaStrings: string[] = [];
 
-    for (const [sLat, sLng] of stopCoords) {
-      cumulativeKm += this.distanceKm(prevLat, prevLng, sLat, sLng);
-      const etaMins = Math.round((cumulativeKm / avgSpeedKmh) * 60);
-      const etaDate = new Date(Date.now() + etaMins * 60 * 1000);
-      etaStrings.push(`~${etaMins} min (${etaDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })})`);
-      prevLat = sLat; prevLng = sLng;
+    if (routeData && routeData.legs) {
+      // Use real OSRM driving durations (seconds)
+      let cumulativeSeconds = 0;
+      for (const leg of routeData.legs) {
+        cumulativeSeconds += leg.duration;
+        const etaMins = Math.round(cumulativeSeconds / 60);
+        const etaDate = new Date(Date.now() + etaMins * 60 * 1000);
+        etaStrings.push(`~${etaMins} min (${etaDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })})`);
+      }
+    } else {
+      // Fallback straight-line haversine approximation
+      const avgSpeedKmh = 30;
+      let cumulativeKm = 0;
+      let prevLat = driverLat, prevLng = driverLng;
+      for (const [sLat, sLng] of stopCoords) {
+        cumulativeKm += this.distanceKm(prevLat, prevLng, sLat, sLng);
+        const etaMins = Math.round((cumulativeKm / avgSpeedKmh) * 60);
+        const etaDate = new Date(Date.now() + etaMins * 60 * 1000);
+        etaStrings.push(`~${etaMins} min (${etaDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })})`);
+        prevLat = sLat; prevLng = sLng;
+      }
     }
     this.stopEtas.set(etaStrings);
 
@@ -290,14 +414,11 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     });
 
     // ── Step 8: Draw OSRM road route through all waypoints ─────────────────
-    const waypoints: [number, number][] = [[driverLat, driverLng], ...stopCoords];
-    const routeCoords = await this.getOsrmRoute(waypoints);
-
-    if (routeCoords) {
-      L.polyline(routeCoords, {
+    if (routeData) {
+      L.polyline(routeData.coordinates, {
         color: '#1a73e8', weight: 6, opacity: 0.85, lineJoin: 'round', lineCap: 'round'
       }).addTo(this.map);
-      this.map.fitBounds(L.latLngBounds(routeCoords), { padding: [50, 50] });
+      this.map.fitBounds(L.latLngBounds(routeData.coordinates), { padding: [50, 50] });
     } else {
       // Fallback straight lines
       L.polyline(waypoints, { color: '#1a73e8', weight: 5, dashArray: '10, 8' }).addTo(this.map);
@@ -390,6 +511,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     this.api.getAvailableOrders().subscribe({
       next: (res) => {
         this.availableOrders.set(res.data?.orders || []);
+        setTimeout(() => this.initAvailableMap(), 150);
       },
       error: () => {
         this.toast.error('Failed to load available orders.');
@@ -416,6 +538,45 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
         this.toast.error(err.error?.message || 'Failed to claim order.');
         this.isUpgrading.set(false);
         this.loadAvailableOrders();
+      }
+    });
+  }
+
+  unclaimOrder(orderId: number) {
+    if (!confirm('Are you sure you want to cancel this delivery? It will be returned to the available orders list.')) return;
+    this.api.unclaimOrder(orderId).subscribe({
+      next: () => {
+        this.toast.success('Delivery cancelled successfully.');
+        
+        // Refresh runs
+        this.api.getDriverRuns().subscribe({
+          next: (resUpdated) => {
+            const updatedRuns = resUpdated.data?.runs || [];
+            this.runs.set(updatedRuns);
+            
+            const currentActive = this.activeRun();
+            if (currentActive) {
+              const freshRun = updatedRuns.find((r: any) => r.id === currentActive.id);
+              if (freshRun) {
+                if (freshRun.status === 'completed' || freshRun.stops?.length === 0) {
+                  this.activeRun.set(null);
+                  this.stopGpsTracking();
+                  if (this.map) { this.map.remove(); }
+                } else {
+                  this.activeRun.set(freshRun);
+                  setTimeout(() => { this.initMap(freshRun); }, 150);
+                }
+              } else {
+                this.activeRun.set(null);
+                this.stopGpsTracking();
+                if (this.map) { this.map.remove(); }
+              }
+            }
+          }
+        });
+      },
+      error: (err) => {
+        this.toast.error(err.error?.message || 'Failed to cancel delivery.');
       }
     });
   }

@@ -1,6 +1,6 @@
 // src/app/pages/seller-hub/seller-hub.ts
 import {
-  Component, OnInit, ChangeDetectionStrategy, inject, signal, HostListener, ChangeDetectorRef
+  Component, OnInit, ChangeDetectionStrategy, inject, signal, HostListener, ChangeDetectorRef, ViewChild, ElementRef
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -10,6 +10,7 @@ import { SellerService, SellerDashboard, SellerOrder, SellerProfile } from '../.
 import { Product } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
 import { ImageKitService } from '../../services/imagekit.service';
+import * as L from 'leaflet';
 
 type SellerTab = 'dashboard' | 'inventory' | 'add-product' | 'orders' | 'settings';
 
@@ -40,6 +41,13 @@ export class SellerHubComponent implements OnInit {
   public drivers = signal<any[]>([]);
   public selectedDriverId = signal<number | null>(null);
   public selectedOrderIds = signal<number[]>([]);
+  public hubLocation = signal<any>(null);
+  public activeMap: L.Map | null = null;
+  @ViewChild('driverMap') set mapEl(el: ElementRef) {
+    if (el && !this.activeMap) {
+      setTimeout(() => this.initMap(el.nativeElement), 100);
+    }
+  }
 
   // Form State while checking session on load
   public isLoginMode      = signal(true);
@@ -357,10 +365,98 @@ export class SellerHubComponent implements OnInit {
   }
 
   // ── Delivery Routing ──────────────────────────────────────────────────────
+  
+  distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  initMap(element: HTMLElement) {
+    const hub = this.hubLocation() || { lat: 20.5937, lng: 78.9629 };
+    this.activeMap = L.map(element).setView([hub.lat, hub.lng], 12);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19
+    }).addTo(this.activeMap);
+
+    this.plotDriversOnMap();
+  }
+
+  plotDriversOnMap() {
+    if (!this.activeMap) return;
+    
+    this.activeMap.eachLayer((layer: any) => {
+      if (layer instanceof L.Marker) {
+        this.activeMap?.removeLayer(layer);
+      }
+    });
+
+    const hub = this.hubLocation();
+    if (hub) {
+      const hubIcon = L.divIcon({
+        className: '',
+        html: `<div style="background:#ea4335;color:#fff;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 3px 10px rgba(0,0,0,0.3);border:2px solid #fff;">🏪</div>`,
+        iconSize: [30, 30], iconAnchor: [15, 15]
+      });
+      L.marker([hub.lat, hub.lng], { icon: hubIcon }).addTo(this.activeMap!).bindPopup('<b>Seller Hub</b>');
+      this.activeMap!.setView([hub.lat, hub.lng], 12);
+    }
+
+    this.drivers().forEach(d => {
+      if (d.lat && d.lng) {
+        const dIcon = L.divIcon({
+          className: '',
+          html: `<div style="background:#1a73e8;color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 5px rgba(0,0,0,0.3);border:2px solid #fff;">🛵</div>`,
+          iconSize: [24, 24], iconAnchor: [12, 12]
+        });
+        const marker = L.marker([d.lat, d.lng], { icon: dIcon }).addTo(this.activeMap!);
+        marker.bindPopup(`<b>${d.first_name}</b><br>${d.distance} km away`);
+      }
+    });
+  }
+
   loadDrivers() {
     (this.sellerSvc as any).getDrivers().subscribe({
-      next: (res: any) => this.drivers.set(res.data?.drivers || [])
+      next: (res: any) => {
+        const hub = res.data?.hubLocation;
+        this.hubLocation.set(hub);
+        
+        let drivers = res.data?.drivers || [];
+        if (hub) {
+          drivers = drivers.map((d: any) => {
+            if (d.lat && d.lng) {
+              d.distance = this.distanceKm(hub.lat, hub.lng, d.lat, d.lng).toFixed(1);
+            }
+            return d;
+          });
+          // Sort by distance
+          drivers.sort((a: any, b: any) => {
+            if (!a.distance) return 1;
+            if (!b.distance) return -1;
+            return parseFloat(a.distance) - parseFloat(b.distance);
+          });
+        }
+        this.drivers.set(drivers);
+        
+        if (this.activeMap) {
+          this.plotDriversOnMap();
+        }
+      }
     });
+  }
+
+  autoAssignNearest() {
+    const drivers = this.drivers();
+    const nearest = drivers.find(d => d.distance !== undefined);
+    if (nearest) {
+      this.selectedDriverId.set(nearest.user_id);
+      this.toast.success(`Selected nearest driver: ${nearest.first_name} (${nearest.distance} km)`);
+    } else {
+      this.toast.error('No driver locations available.');
+    }
   }
 
   toggleOrderSelection(orderId: number) {

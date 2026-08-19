@@ -190,6 +190,56 @@ class DeliveryService {
     }
   }
 
+  async unclaimOrder(userId, orderId) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      
+      // 1. Check if order belongs to a run owned by this driver
+      const orderRes = await client.query(
+        `SELECT o.order_id, o.status, o.delivery_run_id, r.driver_id 
+         FROM orders o
+         JOIN delivery_runs r ON o.delivery_run_id = r.id
+         WHERE o.order_id = $1 FOR UPDATE`,
+        [orderId]
+      );
+      if (orderRes.rowCount === 0) throw new Error('Order or Delivery Run not found.');
+      const order = orderRes.rows[0];
+      
+      if (order.driver_id !== userId) {
+        throw new Error('Unauthorized to unclaim this order.');
+      }
+      if (order.status === 'delivered') {
+        throw new Error('Cannot unclaim an already delivered order.');
+      }
+      
+      const runId = order.delivery_run_id;
+
+      // 2. Unassign order
+      await client.query(
+        `UPDATE orders SET delivery_run_id = NULL, delivery_sequence = NULL, status = 'packed', updated_at = NOW() WHERE order_id = $1`,
+        [orderId]
+      );
+
+      // 3. Check if the delivery run is now empty, if so, delete it
+      const runCheckRes = await client.query(
+        `SELECT COUNT(*) as count FROM orders WHERE delivery_run_id = $1`,
+        [runId]
+      );
+      if (parseInt(runCheckRes.rows[0].count) === 0) {
+        await client.query(`DELETE FROM delivery_runs WHERE id = $1`, [runId]);
+      }
+      
+      await client.query('COMMIT');
+      return { success: true };
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  }
+
   /** GET driver's active runs with stops in optimized sequence */
   async getDriverRuns(driverId) {
     const { rows } = await pool.query(

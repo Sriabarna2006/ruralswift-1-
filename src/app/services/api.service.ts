@@ -474,6 +474,10 @@ export class ApiService {
     return this.http.post<ApiResponse<{ runId: number }>>(`${this.baseUrl}/claim-order`, { orderId });
   }
 
+  unclaimOrder(orderId: number): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(`${this.baseUrl}/unclaim-order`, { orderId });
+  }
+
   getCompletedDeliveries(): Observable<ApiResponse<{ deliveries: any[] }>> {
     return this.http.get<ApiResponse<{ deliveries: any[] }>>(`${this.baseUrl}/completed-deliveries`);
   }

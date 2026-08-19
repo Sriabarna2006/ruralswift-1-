@@ -41,6 +41,21 @@ class DeliveryController {
     }
   }
 
+  async unclaimOrder(req, res, next) {
+    try {
+      const { orderId } = req.body;
+      if (!orderId) return sendError(res, 400, 'orderId is required.', 'VALIDATION_ERROR');
+      
+      const result = await deliveryService.unclaimOrder(req.user.id, orderId);
+      return sendSuccess(res, 200, 'Order unclaimed successfully.', { data: result });
+    } catch (err) {
+      if (err.message.includes('not found') || err.message.includes('Unauthorized') || err.message.includes('Cannot unclaim')) {
+        return sendError(res, 400, err.message, 'BAD_REQUEST');
+      }
+      next(err);
+    }
+  }
+
   async getRuns(req, res, next) {
     try {
       const runs = await deliveryService.getDriverRuns(req.user.id);

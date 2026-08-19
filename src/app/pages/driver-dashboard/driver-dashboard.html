@@ -53,10 +53,14 @@
           <button class="dapp-tab-btn" [class.dapp-tab-active]="activeTab() === 'completed'" (click)="setTab('completed')">
             ✅ Completed ({{ completedDeliveries().length }})
           </button>
+          <button class="dapp-tab-btn" [class.dapp-tab-active]="activeTab() === 'settings'" (click)="setTab('settings')">
+            ⚙️ Settings
+          </button>
         </div>
 
         @if (activeTab() === 'available') {
           <div class="dapp-completed-section">
+            <div id="available-map-driver" style="height: 300px; width: 100%; border-radius: 12px; margin-bottom: 20px; z-index: 1;"></div>
             @if (availableOrders().length === 0) {
               <div class="dapp-empty">
                 <div class="dapp-empty-icon">📦</div>
@@ -69,7 +73,12 @@
                   <div class="dapp-completed-card">
                     <div class="dapp-completed-card-header">
                       <span class="dapp-completed-order-no">Order #{{ order.order_id }}</span>
-                      <span class="dapp-completed-date">{{ order.created_at | date:'d MMM, h:mm a' }}</span>
+                      <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                        <span class="dapp-completed-date">{{ order.created_at | date:'d MMM, h:mm a' }}</span>
+                        @if (order.distanceKm !== undefined) {
+                          <span style="color: #1a73e8; font-weight: bold; font-size: 13px; margin-top: 4px;">📍 {{ order.distanceKm | number:'1.1-1' }} km away</span>
+                        }
+                      </div>
                     </div>
                     <div class="dapp-completed-address">
                       <span class="dapp-completed-address-lbl">📍 Dropoff Location</span>
@@ -207,6 +216,31 @@
             }
           </div>
         }
+
+        @if (activeTab() === 'settings') {
+          <div class="dapp-completed-section" style="padding: 20px;">
+            <h2 style="margin-bottom: 20px; color: #1e293b;">Driver Settings</h2>
+            
+            <div class="dapp-run-card" style="padding: 20px;">
+              <h3 style="margin-top: 0; margin-bottom: 12px; color: #0f172a; font-size: 16px;">Preferred Base Location</h3>
+              <p style="color: #64748b; font-size: 14px; margin-bottom: 20px; line-height: 1.5;">
+                Sellers use this location to automatically assign nearby orders to you. Save your home address or preferred delivery area.
+              </p>
+              
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label for="driver-base-address" style="font-size: 13px; font-weight: 600; color: #334155;">Base Address / Location Name</label>
+                <input id="driver-base-address" type="text" [ngModel]="homeAddress()" (ngModelChange)="homeAddress.set($event)"
+                       placeholder="e.g. Trichy City Center or your home address" 
+                       style="padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; outline: none; transition: border-color 0.2s;" />
+              </div>
+              
+              <button (click)="saveSettings()" [disabled]="isSavingSettings()" 
+                      style="margin-top: 24px; padding: 12px 24px; background: #0f172a; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; width: 100%;">
+                {{ isSavingSettings() ? 'Saving...' : 'Save Location' }}
+              </button>
+            </div>
+          </div>
+        }
       </div>
 
     } @else {
@@ -269,16 +303,20 @@
                   }
                 </div>
 
-                <div class="dapp-stop-action">
+                <div class="dapp-stop-action" style="display: flex; gap: 8px;">
                   @if (stop.status === 'delivered') {
                     <div class="dapp-delivered-badge">
                       <span>✅</span>
                       <span>Done</span>
                     </div>
                   } @else {
-                    <button class="dapp-deliver-btn" (click)="markDelivered(stop.order_id)">
+                    <button class="dapp-deliver-btn" style="flex: 1;" (click)="markDelivered(stop.order_id)">
                       <span>Deliver</span>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </button>
+                    <button class="dapp-deliver-btn" style="flex: 1; background: #fff; color: #dc2626; border: 1px solid #dc2626;" (click)="unclaimOrder(stop.order_id)">
+                      <span>Cancel</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
                   }
                 </div>
@@ -390,6 +428,7 @@
       <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 10px; color: #111827;">📦 Deliver on your way</h2>
       <p style="color: #6b7280; margin-bottom: 30px; font-size: 15px;">Not looking for a full-time commitment? Pick up available orders along your route and earn extra cash on the side!</p>
       
+      <div id="available-map-freelance" style="height: 300px; width: 100%; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e5e7eb; z-index: 1; position: relative;"></div>
       @if (availableOrders().length === 0) {
         <div class="dapp-empty" style="background: white; border-radius: 16px; border: 1px solid #eee;">
           <div class="dapp-empty-icon">📦</div>
@@ -402,7 +441,12 @@
             <div class="dapp-completed-card" style="background: white; border: 1px solid #e5e7eb;">
               <div class="dapp-completed-card-header">
                 <span class="dapp-completed-order-no">Order #{{ order.order_id }}</span>
-                <span class="dapp-completed-date">{{ order.created_at | date:'d MMM, h:mm a' }}</span>
+                <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                  <span class="dapp-completed-date">{{ order.created_at | date:'d MMM, h:mm a' }}</span>
+                  @if (order.distanceKm !== undefined) {
+                    <span style="color: #1a73e8; font-weight: bold; font-size: 13px; margin-top: 4px;">📍 {{ order.distanceKm | number:'1.1-1' }} km away</span>
+                  }
+                </div>
               </div>
               <div class="dapp-completed-address">
                 <span class="dapp-completed-address-lbl">📍 Dropoff Location</span>
