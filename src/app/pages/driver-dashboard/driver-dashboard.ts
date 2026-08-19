@@ -581,14 +581,19 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  setTab(tab: 'available' | 'runs' | 'completed') {
+  setTab(tab: 'available' | 'runs' | 'completed' | 'settings') {
     this.activeTab.set(tab);
     if (tab === 'completed') {
       this.loadCompletedDeliveries();
     } else if (tab === 'runs') {
       this.loadRuns();
-    } else {
+    } else if (tab === 'available') {
       this.loadAvailableOrders();
+      setTimeout(() => {
+        if (this.availableMapInst) {
+          this.availableMapInst.invalidateSize();
+        }
+      }, 100);
     }
   }
 }
