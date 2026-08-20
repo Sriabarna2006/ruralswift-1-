@@ -3,6 +3,15 @@
 const { pool } = require('../config/db');
 const { optimizeRouteNearestNeighbor } = require('../utils/geo');
 
+/** Haversine distance in km */
+function distanceKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 /** Geocode an Indian address using Nominatim — PIN first, then city/state fallback */
 async function geocodeIndianAddress(address) {
   if (!address) return null;
@@ -133,19 +142,55 @@ class DeliveryService {
     return { runId, route: optimizedRoute };
   }
 
-  async getAvailableOrders() {
+  async getAvailableOrders(driverId) {
+    // 1. Get Driver Location (from live GPS or home address fallback)
+    let dLat = null;
+    let dLng = null;
+    
+    if (driverId) {
+      const locRes = await pool.query(`SELECT lat, lng FROM driver_locations WHERE driver_id = $1`, [driverId]);
+      if (locRes.rowCount > 0) {
+        dLat = parseFloat(locRes.rows[0].lat);
+        dLng = parseFloat(locRes.rows[0].lng);
+      } else {
+        // Fallback to driver's home address profile
+        const userRes = await pool.query(`SELECT address FROM users WHERE user_id = $1`, [driverId]);
+        if (userRes.rowCount > 0 && userRes.rows[0].address) {
+          const coords = await geocodeIndianAddress(userRes.rows[0].address);
+          if (coords) {
+            dLat = coords.latitude;
+            dLng = coords.longitude;
+          }
+        }
+      }
+    }
+
+    // 2. Fetch all packed orders with the seller's location
     const { rows } = await pool.query(
       `SELECT o.order_id, o.delivery_address, o.total, o.created_at,
+              MAX(s.latitude) as seller_lat, MAX(s.longitude) as seller_lng,
               json_agg(json_build_object('name', p.name, 'quantity', oi.quantity, 'image_url', p.image_url)) AS items,
-              (SELECT business_name FROM seller_profiles WHERE user_id = p.seller_id LIMIT 1) AS seller_name
+              (SELECT business_name FROM seller_profiles WHERE user_id = MAX(p.seller_id) LIMIT 1) AS seller_name
        FROM orders o
        JOIN order_items oi ON oi.order_id = o.order_id
        JOIN products p ON p.product_id = oi.product_id
+       LEFT JOIN seller_profiles s ON s.user_id = p.seller_id
        WHERE o.status = 'packed' AND o.delivery_run_id IS NULL
-       GROUP BY o.order_id, p.seller_id
+       GROUP BY o.order_id
        ORDER BY o.created_at DESC`
     );
-    return rows;
+
+    // 3. Filter orders to only those near the driver (e.g. 25km radius)
+    if (dLat !== null && dLng !== null) {
+      const MAX_RADIUS_KM = 25;
+      return rows.filter(order => {
+        if (!order.seller_lat || !order.seller_lng) return true; // If we don't know where the seller is, let the driver decide
+        const dist = distanceKm(dLat, dLng, parseFloat(order.seller_lat), parseFloat(order.seller_lng));
+        return dist <= MAX_RADIUS_KM;
+      });
+    }
+
+    return rows; // If we don't know the driver's location, show all
   }
 
   async claimOrder(userId, orderId) {

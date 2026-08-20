@@ -19,7 +19,7 @@ class DeliveryController {
 
   async getAvailableOrders(req, res, next) {
     try {
-      const orders = await deliveryService.getAvailableOrders();
+      const orders = await deliveryService.getAvailableOrders(req.user.id);
       return sendSuccess(res, 200, 'Available orders fetched.', { data: { orders } });
     } catch (err) {
       next(err);
