@@ -482,8 +482,8 @@ export class ApiService {
     return this.http.get<ApiResponse<{ deliveries: any[] }>>(`${this.baseUrl}/completed-deliveries`);
   }
 
-  updateDriverOrderStatus(orderId: number, status: string, deliveryOtp?: string): Observable<ApiResponse> {
-    return this.http.put<ApiResponse>(`${this.baseUrl}/delivery-runs/orders/${orderId}/status`, { status, deliveryOtp });
+  updateDriverOrderStatus(orderId: number, status: string, deliveryOtp?: string, deliveryExceptionReason?: string, deliveryProofUrl?: string): Observable<ApiResponse> {
+    return this.http.put<ApiResponse>(`${this.baseUrl}/delivery-runs/orders/${orderId}/status`, { status, deliveryOtp, deliveryExceptionReason, deliveryProofUrl });
   }
 
   /** Driver pushes their live GPS coords to the backend (called every 5s) */

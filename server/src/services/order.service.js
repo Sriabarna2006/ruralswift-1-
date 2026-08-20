@@ -35,11 +35,11 @@ class OrderService {
     const order = await orderRepo.updateStatus(orderId, status, extra);
     if (!order) throw new Error('Order not found.');
 
-    // ── Auto-complete the run when ALL its orders are delivered ──────────
-    if (status === 'delivered' && order.delivery_run_id) {
+    // ── Auto-complete the run when ALL its orders are delivered or failed ──
+    if ((status === 'delivered' || status === 'delivery_failed') && order.delivery_run_id) {
       const { pool } = require('../config/db');
       const { rows } = await pool.query(
-        `SELECT COUNT(*) FILTER (WHERE status != 'delivered') AS remaining
+        `SELECT COUNT(*) FILTER (WHERE status NOT IN ('delivered', 'delivery_failed')) AS remaining
          FROM orders WHERE delivery_run_id = $1`,
         [order.delivery_run_id]
       );

@@ -24,6 +24,9 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
   private liveWatchId: number | null = null;
   private locationPushInterval: any = null;
   private availableMapInst: L.Map | null = null;
+  
+  private pollingInterval: any = null;
+  private previousOrderIds = new Set<number>();
 
   public runs = signal<any[]>([]);
   public isLoading = signal(true);
@@ -32,6 +35,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
   public completedDeliveries = signal<any[]>([]);
   public availableOrders = signal<any[]>([]);
   public activeTab = signal<'available' | 'runs' | 'completed' | 'settings'>('available');
+  public isGpsActive = signal(false);
 
   // Profile Settings
   public homeAddress = signal('');
@@ -44,10 +48,48 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.checkAuth();
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+    this.checkGpsPermission();
+  }
+
+  checkGpsPermission() {
+    if ('permissions' in navigator && 'geolocation' in navigator) {
+      navigator.permissions.query({ name: 'geolocation' as PermissionName }).then(result => {
+        if (result.state === 'granted') {
+          // Verify it actually works
+          navigator.geolocation.getCurrentPosition(
+            () => this.isGpsActive.set(true),
+            () => this.isGpsActive.set(false),
+            { timeout: 5000 }
+          );
+        } else {
+          this.isGpsActive.set(false);
+        }
+        result.onchange = () => {
+          if (result.state === 'granted') {
+            this.isGpsActive.set(true);
+          } else {
+            this.isGpsActive.set(false);
+          }
+        };
+      });
+    } else if ('geolocation' in navigator) {
+      // Fallback for browsers without permissions API
+      (navigator as any).geolocation.getCurrentPosition(
+        () => this.isGpsActive.set(true),
+        () => this.isGpsActive.set(false),
+        { timeout: 5000 }
+      );
+    }
   }
 
   ngOnDestroy() {
     this.stopGpsTracking();
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+    }
   }
 
   checkAuth() {
@@ -58,6 +100,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
 
     if (this.isAuthenticated()) {
       this.loadAvailableOrders();
+      this.startOrderPolling();
       if (this.isDriver()) {
         this.loadRuns();
         this.loadCompletedDeliveries();
@@ -67,6 +110,41 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     } else {
       this.isLoading.set(false);
     }
+  }
+
+  startOrderPolling() {
+    if (this.pollingInterval) return;
+    
+    // Poll every 15 seconds
+    this.pollingInterval = setInterval(() => {
+      this.api.getAvailableOrders().subscribe({
+        next: (res) => {
+          const currentOrders = res.data?.orders || [];
+          const currentOrderIds = currentOrders.map((o: any) => o.order_id);
+          
+          if (this.previousOrderIds.size > 0) {
+            const newOrders = currentOrders.filter((o: any) => !this.previousOrderIds.has(o.order_id));
+            if (newOrders.length > 0) {
+              this.toast.info(`🔔 ${newOrders.length} new order(s) available in your area!`);
+              
+              if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('New Deliveries Available!', {
+                  body: `${newOrders.length} new order(s) are ready for pickup near your base location.`,
+                });
+              }
+              
+              // Only update the map if the user is actively viewing the available tab
+              if (this.activeTab() === 'available') {
+                this.availableOrders.set(currentOrders);
+                setTimeout(() => this.initAvailableMap(), 150);
+              }
+            }
+          }
+          
+          this.previousOrderIds = new Set(currentOrderIds);
+        }
+      });
+    }, 15000);
   }
 
   /** Returns how many stops in a run are already delivered */
@@ -151,6 +229,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
       clearInterval(this.locationPushInterval);
       this.locationPushInterval = null;
     }
+    this.isGpsActive.set(false);
   }
 
   // ─── Geocoding ────────────────────────────────────────────────────────────
@@ -435,11 +514,14 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
 
       this.liveWatchId = navigator.geolocation.watchPosition(
         (pos) => {
+          this.isGpsActive.set(true);
           const newLat = pos.coords.latitude;
           const newLng = pos.coords.longitude;
           driverMarker.setLatLng([newLat, newLng]);
         },
-        () => {},
+        () => {
+          this.isGpsActive.set(false);
+        },
         { enableHighAccuracy: true, maximumAge: 3000 }
       );
 
@@ -450,11 +532,26 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  markDelivered(orderId: number) {
+  onProofSelected(event: any, orderId: number) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      this.markDelivered(orderId, dataUrl);
+    };
+    reader.readAsDataURL(file);
+    
+    // Reset input so the same file can be selected again if needed
+    event.target.value = '';
+  }
+
+  markDelivered(orderId: number, proofUrl?: string) {
     const otp = prompt('Please ask the customer for their Delivery OTP:');
     if (!otp) return;
 
-    this.api.updateDriverOrderStatus(orderId, 'delivered', otp).subscribe({
+    this.api.updateDriverOrderStatus(orderId, 'delivered', otp, undefined, proofUrl).subscribe({
       next: () => {
         this.toast.success('Order delivered successfully!');
         
@@ -496,6 +593,51 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  markFailed(orderId: number) {
+    const reason = prompt('Why is this delivery failing? (e.g., Customer unavailable, Address not found)');
+    if (!reason) return;
+
+    this.api.updateDriverOrderStatus(orderId, 'delivery_failed', undefined, reason).subscribe({
+      next: () => {
+        this.toast.info('Delivery marked as failed.');
+        
+        // Reload driver runs and keep active run if there are remaining stops
+        this.api.getDriverRuns().subscribe({
+          next: (resUpdated) => {
+            const updatedRuns = resUpdated.data?.runs || [];
+            this.runs.set(updatedRuns);
+            
+            // Reload completed deliveries list (failed ones might show up there depending on backend logic)
+            this.loadCompletedDeliveries();
+
+            const currentActive = this.activeRun();
+            if (currentActive) {
+              const freshRun = updatedRuns.find((r: any) => r.id === currentActive.id);
+              if (freshRun) {
+                if (freshRun.status === 'completed') {
+                  this.activeRun.set(null);
+                  this.stopGpsTracking();
+                  if (this.map) { this.map.remove(); }
+                  this.toast.info('Delivery run is complete.');
+                } else {
+                  this.activeRun.set(freshRun);
+                  setTimeout(() => { this.initMap(freshRun); }, 150);
+                }
+              } else {
+                this.activeRun.set(null);
+                this.stopGpsTracking();
+                if (this.map) { this.map.remove(); }
+              }
+            }
+          }
+        });
+      },
+      error: (err) => {
+        this.toast.error(err.error?.message || 'Failed to update order status.');
+      }
+    });
+  }
+
   loadCompletedDeliveries() {
     this.api.getCompletedDeliveries().subscribe({
       next: (res) => {
@@ -510,7 +652,9 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
   loadAvailableOrders() {
     this.api.getAvailableOrders().subscribe({
       next: (res) => {
-        this.availableOrders.set(res.data?.orders || []);
+        const orders = res.data?.orders || [];
+        this.availableOrders.set(orders);
+        this.previousOrderIds = new Set(orders.map((o: any) => o.order_id));
         setTimeout(() => this.initAvailableMap(), 150);
       },
       error: () => {

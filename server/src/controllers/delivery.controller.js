@@ -129,10 +129,10 @@ class DeliveryController {
 
   async updateOrderStatus(req, res, next) {
     try {
-      const { status, deliveryOtp } = req.body;
+      const { status, deliveryOtp, deliveryExceptionReason, deliveryProofUrl } = req.body;
       const orderId = parseInt(req.params.id);
       const orderService = require('../services/order.service');
-      const order = await orderService.updateOrderStatus(orderId, status, { deliveryOtp });
+      const order = await orderService.updateOrderStatus(orderId, status, { deliveryOtp, deliveryExceptionReason, deliveryProofUrl });
       return sendSuccess(res, 200, 'Order marked as delivered.', { data: { order } });
     } catch (err) {
       if (err.message.includes('not found')) return sendError(res, 404, err.message, 'ORDER_NOT_FOUND');

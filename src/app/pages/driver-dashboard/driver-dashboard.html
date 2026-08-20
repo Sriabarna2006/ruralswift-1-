@@ -18,9 +18,9 @@
         </div>
       </div>
       <div class="dapp-topbar-right">
-        <div class="dapp-gps-pill" [class.dapp-gps-live]="true">
+        <div class="dapp-gps-pill" [class.dapp-gps-live]="isGpsActive()" [class.dapp-gps-off]="!isGpsActive()">
           <span class="dapp-gps-dot"></span>
-          <span>GPS Active</span>
+          <span>{{ isGpsActive() ? 'GPS Active' : 'GPS Off' }}</span>
         </div>
       </div>
     </nav>
@@ -178,6 +178,21 @@
         } @else {
           <!-- Completed Deliveries View -->
           <div class="dapp-completed-section">
+            
+            <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 12px; padding: 24px; color: white; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+              <div>
+                <span style="font-size: 14px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Total Earnings</span>
+                <div style="font-size: 36px; font-weight: 700; margin-top: 4px; display: flex; align-items: center; gap: 8px;">
+                  <span>₹{{ completedDeliveries().length * 50 }}</span>
+                  <span style="font-size: 12px; font-weight: 500; background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 4px 8px; border-radius: 12px; vertical-align: middle;">₹50 / Delivery</span>
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 24px; font-weight: 700;">{{ completedDeliveries().length }}</div>
+                <div style="font-size: 14px; color: #94a3b8;">Orders Delivered</div>
+              </div>
+            </div>
+
             @if (completedDeliveries().length === 0) {
               <div class="dapp-empty">
                 <div class="dapp-empty-icon">✅</div>
@@ -310,14 +325,21 @@
                       <span>Done</span>
                     </div>
                   } @else {
-                    <button class="dapp-deliver-btn" style="flex: 1;" (click)="markDelivered(stop.order_id)">
-                      <span>Deliver</span>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    </button>
-                    <button class="dapp-deliver-btn" style="flex: 1; background: #fff; color: #dc2626; border: 1px solid #dc2626;" (click)="unclaimOrder(stop.order_id)">
-                      <span>Cancel</span>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
+                    <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; width: 100%;">
+                      <div style="display: flex; gap: 8px;">
+                        <input type="file" accept="image/*" capture="environment" #proofInput style="display: none" (change)="onProofSelected($event, stop.order_id)" />
+                        <button class="dapp-deliver-btn" style="flex: 1; background: #10b981; border-color: #10b981;" (click)="proofInput.click()">
+                          <span>📸 Deliver</span>
+                        </button>
+                        <button class="dapp-deliver-btn" style="flex: 1; background: #fff; color: #dc2626; border: 1px solid #dc2626;" (click)="unclaimOrder(stop.order_id)">
+                          <span>Cancel</span>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                      </div>
+                      <button class="dapp-deliver-btn" style="background: #fff; color: #d97706; border: 1px solid #d97706; padding: 8px; width: 100%;" (click)="markFailed(stop.order_id)">
+                        <span>⚠️ Report Issue / Unable to Deliver</span>
+                      </button>
+                    </div>
                   }
                 </div>
 

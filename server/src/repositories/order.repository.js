@@ -110,7 +110,7 @@ class OrderRepository {
   }
 
   async updateStatus(orderId, status, extra = {}) {
-    const validStatuses = ['pending','confirmed','packed','shipped','out_for_delivery','delivered','cancelled'];
+    const validStatuses = ['pending','confirmed','packed','shipped','out_for_delivery','delivered','delivery_failed','cancelled'];
     if (!validStatuses.includes(status)) throw new Error(`Invalid status: ${status}`);
 
     const sets = ['status = $1', 'updated_at = NOW()'];
@@ -119,6 +119,8 @@ class OrderRepository {
 
     if (extra.trackingNumber) { sets.push(`tracking_number = $${idx++}`); values.push(extra.trackingNumber); }
     if (extra.deliveryOtp) { sets.push(`delivery_otp = $${idx++}`); values.push(extra.deliveryOtp); }
+    if (extra.deliveryExceptionReason) { sets.push(`delivery_exception_reason = $${idx++}`); values.push(extra.deliveryExceptionReason); }
+    if (extra.deliveryProofUrl) { sets.push(`delivery_proof_url = $${idx++}`); values.push(extra.deliveryProofUrl); }
     if (status === 'delivered') {
       sets.push(`delivered_at = NOW()`);
       sets.push(`payment_status = 'paid'`);

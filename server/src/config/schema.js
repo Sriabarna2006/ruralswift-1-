@@ -288,6 +288,8 @@ async function createTables() {
     await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMP`);
     await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_code  VARCHAR(50) DEFAULT ''`);
     await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_discount NUMERIC(10,2) DEFAULT 0`);
+    await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_exception_reason TEXT DEFAULT ''`);
+    await client.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_proof_url TEXT DEFAULT ''`);
 
     // ── 14. Delivery Routing & Optimization ──────────────────────────────────────
     await client.query(`ALTER TABLE addresses ADD COLUMN IF NOT EXISTS latitude  NUMERIC(10,7)`);
