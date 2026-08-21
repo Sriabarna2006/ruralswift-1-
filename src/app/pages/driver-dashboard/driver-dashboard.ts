@@ -243,8 +243,16 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
           { headers }
         );
         const data = await res.json();
-        if (data?.length > 0) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-      } catch { }
+        if (data && data.length > 0) {
+          const lat = parseFloat(data[0].lat);
+          const lon = parseFloat(data[0].lon);
+          // Reject fallback to the geographic center of India
+          if (Math.abs(lat - 20.5937) < 0.05 && Math.abs(lon - 78.9629) < 0.05) return null;
+          return [lat, lon];
+        }
+      } catch (err) {
+        console.error('Geocoding attempt failed:', err);
+      }
       return null;
     };
 
@@ -386,7 +394,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     try {
       const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
         navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true, timeout: 10000, maximumAge: 0
+          enableHighAccuracy: true, timeout: 4000, maximumAge: 0
         })
       );
       driverLat = pos.coords.latitude;

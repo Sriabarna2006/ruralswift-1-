@@ -420,7 +420,11 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
         );
         const data = await res.json();
         if (data && data.length > 0) {
-          return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+          const lat = parseFloat(data[0].lat);
+          const lon = parseFloat(data[0].lon);
+          // Reject fallback to the geographic center of India
+          if (Math.abs(lat - 20.5937) < 0.05 && Math.abs(lon - 78.9629) < 0.05) return null;
+          return [lat, lon];
         }
       } catch (err) {
         console.error('Geocoding attempt failed:', err);
@@ -459,27 +463,38 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
     const orderData = this.order();
 
     // --- Step 1: Geocode the real delivery address ---
-    let deliveryLat = 20.5937;
-    let deliveryLng = 78.9629;
+    let deliveryLat: number | null = null;
+    let deliveryLng: number | null = null;
     if (orderData?.delivery_address) {
       const coords = await this.geocodeAddress(orderData.delivery_address);
       if (coords) { [deliveryLat, deliveryLng] = coords; }
     }
 
-    // --- Step 2: Get customer's live GPS for driver start point ---
-    let driverLat = deliveryLat - 0.02;
-    let driverLng = deliveryLng - 0.02;
+    // --- Step 2: Determine driver start point ---
+    const liveLoc = this.driverLocation();
+    const hasRealDriverLoc = liveLoc?.lat && liveLoc?.lng;
+    
+    let driverLat: number | null = null;
+    let driverLng: number | null = null;
 
-    try {
-      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true, timeout: 8000, maximumAge: 0
-        })
-      );
-      driverLat = pos.coords.latitude;
-      driverLng = pos.coords.longitude;
-    } catch {
-      // use fallback offset from delivery address
+    if (hasRealDriverLoc) {
+      driverLat = liveLoc!.lat;
+      driverLng = liveLoc!.lng;
+    } else if (orderData?.seller_lat && orderData?.seller_lng) {
+      // Fallback to seller location if driver live location isn't available yet
+      driverLat = orderData.seller_lat;
+      driverLng = orderData.seller_lng;
+    }
+
+    // If we have neither a valid delivery address nor a driver location, don't show the map route
+    if (!deliveryLat || !deliveryLng || !driverLat || !driverLng) {
+      this.etaWindow.set(null); // Hide ETA since we can't calculate it
+      // Just initialize an empty map centered on the customer's device or seller
+      const centerLat = deliveryLat || driverLat || 10.7905;
+      const centerLng = deliveryLng || driverLng || 78.7047;
+      this.map = L.map(this.mapContainer.nativeElement).setView([centerLat, centerLng], 14);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(this.map);
+      return;
     }
 
     // --- Step 3: Initialize map at delivery location ---
@@ -512,13 +527,7 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
       .addTo(this.map)
       .bindPopup(`<b>🏠 Your Delivery Address</b><br>${orderData?.delivery_address || ''}`);
 
-    // --- Step 5: Driver marker (uses real GPS if available, else offset) ---
-    const liveLoc = this.driverLocation();
-    const hasRealDriverLoc = liveLoc?.lat && liveLoc?.lng;
-    if (hasRealDriverLoc) {
-      driverLat = liveLoc!.lat;
-      driverLng = liveLoc!.lng;
-    }
+    // --- Step 5: Driver marker ---
 
     const driverIcon = L.divIcon({
       className: '',
@@ -551,35 +560,18 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
 
         this.map.fitBounds(L.latLngBounds(coordinates), { padding: [50, 50] });
 
-        // Animate driver along road only if no real location available (simulation)
-        if (!hasRealDriverLoc) {
-          const totalPoints = coordinates.length;
-          const pointsPerStep = totalPoints / (15 * 60 * 1000 / 2000);
-          let progress = 0;
-          const animate = () => {
-            if (progress >= totalPoints - 1 || !this.map) return;
-            progress += pointsPerStep;
-            const idx = Math.min(Math.floor(progress), totalPoints - 1);
-            const currentPos = coordinates[idx];
-            this.driverMarker?.setLatLng(currentPos);
-
-            // Update simulated ETA
-            const distKm = this.distanceKm(currentPos[0], currentPos[1], deliveryLat, deliveryLng);
-            const etaMins = Math.round((distKm / 30) * 60);
-            const minMins = Math.max(1, etaMins - 5);
-            const maxMins = etaMins + 10;
-            const earliest = new Date(Date.now() + minMins * 60000);
-            const latest = new Date(Date.now() + maxMins * 60000);
-            this.etaWindow.set({
-              etaMins,
-              earliest: earliest.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-              latest: latest.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
-            });
-
-            setTimeout(animate, 2000);
-          };
-          setTimeout(animate, 1000);
-        }
+        // Calculate initial ETA based on real distance
+        const distKm = this.distanceKm(driverLat, driverLng, deliveryLat, deliveryLng);
+        const etaMins = Math.round((distKm / 30) * 60);
+        const minMins = Math.max(1, etaMins - 5);
+        const maxMins = etaMins + 10;
+        const earliest = new Date(Date.now() + minMins * 60000);
+        const latest = new Date(Date.now() + maxMins * 60000);
+        this.etaWindow.set({
+          etaMins,
+          earliest: earliest.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+          latest: latest.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+        });
       }
     } catch {
       L.polyline([[driverLat, driverLng], [deliveryLat, deliveryLng]], {

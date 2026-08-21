@@ -24,7 +24,13 @@ async function geocodeIndianAddress(address) {
         { headers }
       );
       const data = await res.json();
-      if (data && data.length > 0) return { latitude: parseFloat(data[0].lat), longitude: parseFloat(data[0].lon) };
+      if (data && data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        // Reject fallback to the geographic center of India
+        if (Math.abs(lat - 20.5937) < 0.05 && Math.abs(lon - 78.9629) < 0.05) return null;
+        return { latitude: lat, longitude: lon };
+      }
     } catch { /* ignore */ }
     return null;
   };
@@ -212,17 +218,35 @@ class DeliveryService {
         throw new Error('Order is no longer available for delivery.');
       }
       
-      // 3. Create delivery run for this driver with this single order
-      const runRes = await client.query(
-        `INSERT INTO delivery_runs (driver_id, status, start_time) VALUES ($1, 'pending', NOW()) RETURNING id`,
+      // 3. Find if driver already has a 'pending' delivery run
+      const existingRunRes = await client.query(
+        `SELECT id FROM delivery_runs WHERE driver_id = $1 AND status = 'pending' LIMIT 1`,
         [userId]
       );
-      const runId = runRes.rows[0].id;
+      
+      let runId;
+      let nextSeq = 1;
+      
+      if (existingRunRes.rowCount > 0) {
+        runId = existingRunRes.rows[0].id;
+        const seqRes = await client.query(
+          `SELECT COALESCE(MAX(delivery_sequence), 0) + 1 AS next_seq FROM orders WHERE delivery_run_id = $1`,
+          [runId]
+        );
+        nextSeq = seqRes.rows[0].next_seq;
+      } else {
+        // Create new delivery run
+        const runRes = await client.query(
+          `INSERT INTO delivery_runs (driver_id, status, start_time) VALUES ($1, 'pending', NOW()) RETURNING id`,
+          [userId]
+        );
+        runId = runRes.rows[0].id;
+      }
       
       // 4. Update order to out_for_delivery and assign to run
       await client.query(
-        `UPDATE orders SET delivery_run_id = $1, delivery_sequence = 1, status = 'out_for_delivery', updated_at = NOW() WHERE order_id = $2`,
-        [runId, orderId]
+        `UPDATE orders SET delivery_run_id = $1, delivery_sequence = $2, status = 'out_for_delivery', updated_at = NOW() WHERE order_id = $3`,
+        [runId, nextSeq, orderId]
       );
       
       await client.query('COMMIT');
@@ -298,7 +322,7 @@ class DeliveryService {
                 ) ORDER BY o.delivery_sequence ASC
               ) as stops
        FROM delivery_runs r
-       LEFT JOIN orders o ON o.delivery_run_id = r.id
+       INNER JOIN orders o ON o.delivery_run_id = r.id
        WHERE r.driver_id = $1
        GROUP BY r.id
        ORDER BY r.created_at DESC`,

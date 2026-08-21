@@ -41,11 +41,18 @@ async function authenticateToken(req, res, next) {
     };
     next();
   } catch (err) {
-    logger.warn('JWT verification failed', { requestId: req.id, error: err.message });
-    if (err.name === 'TokenExpiredError') {
-      return sendError(res, 401, 'Session expired. Please log in again.', 'AUTH_TOKEN_EXPIRED');
+    // If it's a JWT validation error (JsonWebTokenError, TokenExpiredError, NotBeforeError)
+    if (err.name === 'TokenExpiredError' || err.name === 'JsonWebTokenError' || err.name === 'NotBeforeError') {
+      logger.warn('JWT verification failed', { requestId: req.id, error: err.message });
+      if (err.name === 'TokenExpiredError') {
+        return sendError(res, 401, 'Session expired. Please log in again.', 'AUTH_TOKEN_EXPIRED');
+      }
+      return sendError(res, 401, 'Invalid token. Please log in again.', 'AUTH_INVALID_TOKEN');
     }
-    return sendError(res, 401, 'Invalid token. Please log in again.', 'AUTH_INVALID_TOKEN');
+    
+    // For database or other errors, pass to global error handler (will yield 500)
+    // Do NOT return 401 here, or the frontend interceptor will log the user out!
+    next(err);
   }
 }
 
