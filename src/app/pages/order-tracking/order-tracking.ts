@@ -104,8 +104,9 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
         this.computeFastTrack(o);
 
         if (o.status === 'out_for_delivery') {
-          setTimeout(() => this.initMap(), 100);
           this.startDriverPolling(o.order_id);
+        } else {
+          setTimeout(() => this.initMap(), 100);
         }
       },
       error: (err) => {
@@ -345,16 +346,22 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
   startDriverPolling(orderId: number) {
     if (this.driverPollInterval) clearInterval(this.driverPollInterval);
 
+    let isFirstPoll = true;
+
     const poll = () => {
       this.api.getOrderDriverLocation(orderId).subscribe({
         next: (res) => {
           const d = res.data;
-          if (!d?.locationAvailable || !d.lat || !d.lng) return;
+          
+          if (d?.locationAvailable && d.lat && d.lng) {
+            this.driverLocation.set({ lat: d.lat, lng: d.lng, isStale: d.isStale ?? false });
+          }
 
-          this.driverLocation.set({ lat: d.lat, lng: d.lng, isStale: d.isStale ?? false });
-
-          // Update driver marker on map
-          if (this.driverMarker) {
+          if (isFirstPoll) {
+            isFirstPoll = false;
+            setTimeout(() => this.initMap(), 100);
+          } else if (this.driverMarker && d?.locationAvailable && d.lat && d.lng) {
+            // Update driver marker on map only if it's already initialized
             this.driverMarker.setLatLng([d.lat, d.lng]);
           }
 
@@ -362,7 +369,7 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
           const order = this.order();
           // We have the geocoded delivery coords stored after initMap runs
           const deliverCoords = (this as any)._deliveryCoords as [number, number] | undefined;
-          if (deliverCoords) {
+          if (deliverCoords && d?.locationAvailable && d.lat && d.lng) {
             const distKm = this.distanceKm(d.lat, d.lng, deliverCoords[0], deliverCoords[1]);
             const etaMins = Math.round((distKm / 30) * 60); // 30 km/h avg rural speed
             const minMins = Math.max(1, etaMins - 5);
@@ -376,7 +383,12 @@ export class OrderTrackingComponent implements OnInit, OnDestroy {
             });
           }
         },
-        error: () => {}
+        error: () => {
+          if (isFirstPoll) {
+            isFirstPoll = false;
+            setTimeout(() => this.initMap(), 100);
+          }
+        }
       });
     };
 
