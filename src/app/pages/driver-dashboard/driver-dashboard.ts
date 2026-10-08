@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectionStrategy, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed, ChangeDetectionStrategy, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -29,6 +29,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
   private previousOrderIds = new Set<number>();
 
   public runs = signal<any[]>([]);
+  public activeRunsList = computed(() => this.runs().filter(r => r.status !== 'completed'));
   public isLoading = signal(true);
   public activeRun = signal<any | null>(null);
   public stopEtas = signal<string[]>([]);
@@ -392,15 +393,25 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     let hasGps = false;
 
     try {
+      // First try: High accuracy, short timeout
       const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
         navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true, timeout: 4000, maximumAge: 0
+          enableHighAccuracy: true, timeout: 6000, maximumAge: 5000
         })
-      );
+      ).catch(() => {
+        // Second try: Low accuracy, longer timeout and allows cached location
+        return new Promise<GeolocationPosition>((resolve, reject) =>
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: false, timeout: 10000, maximumAge: 60000
+          })
+        );
+      }) as GeolocationPosition;
+      
       driverLat = pos.coords.latitude;
       driverLng = pos.coords.longitude;
       hasGps = true;
-    } catch {
+    } catch (err) {
+      console.warn('Geolocation failed:', err);
       this.toast.error('📍 GPS unavailable. Map centered on delivery area.');
     }
 
